@@ -1,8 +1,46 @@
 ---
-import Shell from '../../layouts/Shell.astro';
-import Icon from '../../components/Icon.astro';
-import { releases, time } from '../../lib/catalogue';
-export const getStaticPaths = () => releases.map(release => ({ params: { slug: release.slug }, props: { release } }));
+import Shell from "../../layouts/Shell.astro";
+import { releases, time } from "../../lib/catalogue";
+export const getStaticPaths = () =>
+  releases.map((release) => ({
+    params: { slug: release.slug },
+    props: { release },
+  }));
 const { release } = Astro.props;
 ---
-<Shell title={`${release.title} — Brian Dillon`} section="music"><div class="page-column inner-page"><a href="/music" class="back-link micro">← ALL RELEASES</a><div class="release-detail"><img src={release.artwork} width="600" height="600" alt={`${release.title} artwork`} transition:name={`cover-${release.slug}`}/><div><p class="micro section-index">{release.artist} / {release.year}</p><h1 class="detail-title">{release.title}</h1><p class="muted">{release.tracks.length} tracks</p><button class="primary-action" data-track-id={release.tracks[0].id}><Icon name="play"/>Play release</button></div></div><div class="track-list">{release.tracks.map((track,i) => <button class="track-row" data-track-id={track.id}><span class="micro">{String(i+1).padStart(2,'0')}</span><span>{track.title}</span><span class="micro">{time(track.duration)}</span><Icon name="play" size={16}/></button>)}</div></div></Shell>
+
+<Shell title={`${release.title} — Brian Dillon`} section="music">
+  <div class="page-column inner-page">
+    <a href="/music" class="back-link micro">
+      ← MUSIC
+    </a>
+    <div class="release-detail">
+      <img
+        src={release.artwork}
+        width="220"
+        height="220"
+        alt={`${release.title} artwork`}
+        data-cover-name={release.slug}
+      />
+      <div>
+        <h1 data-stage-exclude class="page-title">{release.title}</h1>
+        <p data-stage-exclude class="micro route-body">
+          {release.artist} · {release.year} · {release.tracks.length} TRACKS
+        </p>
+        <button class="primary-action" data-track-id={release.tracks[0].id}>
+          <span data-play-glyph>▶</span>Play release
+        </button>
+      </div>
+    </div>
+    <div data-stage-exclude class="track-list">
+      {release.tracks.map((track, i) => (
+        <button class="track-row" data-row data-track-id={track.id}>
+          <span class="micro">{String(i + 1).padStart(2, "0")}</span>
+          <span>{track.title}</span>
+          <span class="micro">{time(track.duration)}</span>
+          <span data-play-glyph>▶</span>
+        </button>
+      ))}
+    </div>
+  </div>
+</Shell>

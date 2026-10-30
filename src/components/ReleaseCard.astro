@@ -1,9 +1,36 @@
 ---
-import Icon from './Icon.astro';
-import type { releases } from '../lib/catalogue';
-const { release } = Astro.props as { release: typeof releases[number] };
+import type { releases } from "../lib/catalogue";
+const { release } = Astro.props as { release: (typeof releases)[number] };
 ---
-<article class="release-card">
-  <div class="cover-wrap"><a href={`/music/${release.slug}`} data-astro-prefetch class="cover-link" aria-label={`Explore ${release.title}`}><img src={release.artwork} width="500" height="500" loading="lazy" alt={`${release.title} artwork`} transition:name={`cover-${release.slug}`}/></a><button class="art-play" data-track-id={release.tracks[0].id} aria-label={`Play ${release.title}`}><Icon name="play"/></button></div>
-  <div class="release-meta"><a href={`/music/${release.slug}`}>{release.title}</a><span>{release.year}</span></div><p class="micro muted">{release.tracks.length} tracks <span class="dot-separator">·</span> {release.artist}</p>
+
+<article class="release-card" data-row>
+  <div class="cover-wrap">
+    <a
+      href={`/music/${release.slug}`}
+      data-cover-link={release.slug}
+      data-astro-prefetch
+      class="cover-link"
+      aria-label={`Open ${release.title}`}
+    >
+      <img
+        src={release.artwork}
+        width="220"
+        height="220"
+        loading="lazy"
+        alt={`${release.title} artwork`}
+        data-cover-name={release.slug}
+      />
+    </a>
+    <button
+      class="art-play"
+      data-track-id={release.tracks[0].id}
+      aria-label={`Play ${release.title}`}
+    >
+      <span data-play-glyph>▶</span>
+    </button>
+  </div>
+  <p class="release-caption micro">
+    <a href={`/music/${release.slug}`}>{release.title}</a> · {release.year}
+  </p>
+  <p class="release-credit micro">{release.artist}</p>
 </article>

@@ -180,7 +180,7 @@ src/
     player/Scrubber.tsx
   lib/
     audio/engine.ts              ← singleton (§7)
-    audio/analysis.ts            ← energy + playing envelope (§8)
+    audio/score.ts               ← visual-owned score reader (§8)
     stores.ts                    ← nanostores (UI only)
     feed/showcase.ts             ← reads fixture now, live feed later; normalises
   content/
@@ -196,40 +196,32 @@ scripts/ingest-mix.ts            ← single-mix ingest (§10)
 - The engine is created lazily on the first user gesture and never recreated.
 
 ### 6.2 Data flow
-- Engine → stores: track, playing, buffered, error, interruption, and `time` (throttled to ~4Hz for the UI). Set `playing` from confirmed transport/context state, not just a successful button click.
+- Engine → stores: track, playing, buffered, error, and `time` (throttled to ~4Hz for the UI). Set `playing` from confirmed transport state, not just a successful button click.
 - Engine → Stage: the Stage calls `engine.getFeatures()` inside its own rAF loop. No store subscription and no UI rerender.
 - UI → Engine: `load(item)`, `play()`, `pause()`, `seek(s)`, `next()`, `prev()`.
-- Scene rendering, visible transport progress and pointer preview have independent scheduling gates. Pausing/hiding graphics must not freeze an active player's seek UI. A shared scheduler may dispatch them, but never stop all UI work with the scene's pause flag. Per-frame analysis/preview stays outside UI stores; store time remains ~4Hz.
+- Scene rendering, visible transport progress and pointer preview have independent scheduling gates. Pausing/hiding graphics must not freeze an active player's seek UI. A shared scheduler may dispatch them, but never stop all UI work with the scene's pause flag. Per-frame score sampling/preview stays outside UI stores; store time remains ~4Hz.
 
 
 ### 6.3 App → visual bridge (D-042)
 `src/lib/stage-bridge.ts` is the only app interface the separate visual may read. Codex does not modify src/components/stage/**, shaders, posters or framing code. Existing visuals continue working until their owner integrates the bridge.
 
-The module singleton exposes getSnapshot(), getFeatures(), getItemMeta(), and subscribe(event,callback) with unsubscribe. Snapshot includes phase/phaseSince, positionSec, durationSec|null, itemKind/itemId, route/routeSince, reducedMotion, userPausedAnimation and analysisAvailable. Phases: idle, loading, playing, buffering, paused, ended, interrupted, error. Routes: home, music, release, mixes, mix, work, writing, post, about, other. Phase is confirmed transport state, not button intent. Position uses the active audio clock. Query/hash changes do not change route; use astro:after-swap and history navigation.
+The module singleton exposes getSnapshot(), getFeatures(), getItemMeta(), and subscribe(event,callback) with unsubscribe. Snapshot includes phase/phaseSince, positionSec, durationSec|null, itemKind/itemId, route/routeSince, reducedMotion, userPausedAnimation and analysisAvailable. Phases: idle, loading, playing, buffering, paused, ended, error. Routes: home, music, release, mixes, mix, work, writing, post, about, other. Phase is confirmed transport state, not button intent. Position uses the active audio clock. Query/hash changes do not change route; use astro:after-swap and history navigation.
 
-Events: phase, route, seek, itemchange, motionprefs. One seek event per committed seek on the active item, never for page-only staging. Snapshot/features objects are reused and allocate nothing per read; no per-frame nanostore updates. Static item metadata changes only with item identity: itemKind, itemId, durationSec, peaksUrl|null, boundariesSec[], bpm|null, beatStartAtSec|null. Pass only existing, sanitized confirmed/manual release sections or mix tracklist times. Do not invent timing data, promote detected boundaries or fetch visual peaks/scores in the bridge.
+Events: phase, route, seek, itemchange, motionprefs. One seek event per committed seek on the active item, never for page-only staging. Snapshot/features objects are reused and allocate nothing per read; no per-frame nanostore updates. Static item metadata changes only with item identity: itemKind, itemId, durationSec, peaksUrl|null, scoreUrl|null, boundariesSec[], bpm|null, beatStartAtSec|null. Pass only existing, sanitized confirmed/manual release sections or mix tracklist times. Do not invent timing data, promote detected boundaries or fetch visual peaks/scores in the bridge.
 
-Document semantics in src/lib/stage-bridge.md. A dev-only ?bridge overlay shows actual phase, route, time and energy; it must be absent from production bundles. ?noanalysis=1 forces the native-output policy for dev verification before first bind. These controls implement no scene behaviour.
+Document semantics in src/lib/stage-bridge.md. A dev-only ?bridge overlay shows actual phase, route, time and energy; it must be absent from production bundles. Native output is used on every platform; analysisAvailable is always false and getFeatures() retains energy: 0 for compatibility. These controls implement no scene behaviour.
 
 ---
 
 ## 7. Audio engine & player
 
-### 7.1 Engine
-- One `<audio crossorigin="anonymous" preload="metadata">`. Never fetch or decode whole files.
-- The `AudioContext` and `MediaElementAudioSourceNode` are created on the first play gesture and resumed on later gestures if suspended.
-- **Three distinct states**, each surfaced separately:
-  1. **Media error.** Load or decode failure, including CORS rejection. Show an inline error in the player with a **Retry** action.
-  2. **Analysis unavailable.** If analysis fails before binding the element to Web Audio, retain native playback and use only the `playing` envelope. If analysis fails while a healthy output graph remains running, keep audible playback through that graph and use the same visual fallback. This is not a CORS bypass or a guarantee of playback through a suspended context.
-  3. **Legitimate silence.** Never treat low energy as an error.
-- CORS facts the build must respect: with `crossorigin="anonymous"`, a failed CORS check **stops the media loading**. Without the attribute, a cross-origin source routed through a `MediaElementAudioSourceNode` **outputs silence**. So keep the attribute and configure the host (§10.3).
-- Media Session API: title, artist, artwork, play/pause/seek/prev/next handlers.
-- **Context recovery:** once the element is bound to a `MediaElementAudioSourceNode`, the output path depends on its AudioContext. Keep that graph running during playback even when animation is paused or hidden. Observe context state changes and playback promise rejections. On an unexpected suspension/interruption, attempt supported recovery while playback is still intended; if it cannot resume, preserve the item and position, show **“Playback interrupted — Resume”**, and resume context plus transport from that explicit gesture. Do not show a playing state while output is unavailable. A user pause must cancel pending automatic recovery. Do not recreate the source node or promise a transparent native-output bypass after binding. Test this path in M2.
-- No mandatory 150ms gain ramp for every transport action. Assess actual audible clicks first. If mitigation is needed, use the shortest effective envelope with explicit cancellation/retargeting, seek/buffer sequencing and preserved mute/volume. Rapid Pause/Play/seek must not leave stale automation or delayed actions overriding current intent.
-- New selection intent supersedes old pending loads/seeks/play promises. Keep item-specific tokens/listeners so stale callbacks cannot change the current item. Treat a rejected play promise as a state to recover, not as confirmed playback.
-- **iOS / iPadOS output policy (D-032).** On WebKit for iOS, media routed through Web Audio can be muted by the hardware silent switch. The AudioContext can also be interrupted when the page is backgrounded or the screen locks, which would break lock-screen listening to a long mix. Default: **on iOS/iPadOS, do not bind the element to Web Audio.** Use native `<audio>` output, drive the visual from the `playing` envelope only (§8.3), and set `navigator.audioSession.type = 'playback'` before first play where the API exists. Re-enable analysis on iOS only after M2 proves silent-switch, screen-lock and background playback on a real device. Desktop browsers and Android keep analysis. Detect capability and platform once, before first bind, because binding is irreversible (above).
-- **Element ownership (D-034).** The engine module creates the single `HTMLAudioElement` in JavaScript and owns it outside page and island markup, so DOM swaps can never remove, clone or re-render it. Create and `resume()` the AudioContext **synchronously inside the first Play gesture handler**, before any `await`. Otherwise Safari treats it as non-gesture and leaves it suspended.
-- **Global controls target the active item (D-034).** `Space`/`J`/`L`/`M`, Media Session actions and player-bar buttons always act on the engine's active item, never on a mix that is only displayed or staged on the current page (§7.4).
+### 7.1 Engine (D-043)
+- One engine-owned, JS-created `<audio preload="metadata">` outside page/island markup. Native output on every platform: no `crossOrigin`, `AudioContext`, source node, analyser or context recovery. Never fetch or decode whole audio files in the browser.
+- Call `play()` synchronously in the user gesture before any await. Set `navigator.audioSession.type = 'playback'` where supported; failure of this optional hint must not block playback.
+- Confirm playing from media events, never button intent. Loading/buffering are pending states; native/OS pause becomes paused and cancels pending play intent; natural completion becomes ended. A rejected play promise or load/decode failure shows an inline error with Retry. Silence is not an error. Preserve current item and position for retry.
+- New selection intent supersedes old pending loads/seeks/play promises. Keep item-specific tokens/listeners so stale callbacks cannot change the current item. Animation pause/visibility never pauses audio or transport UI.
+- Media Session API: title, artist, artwork, play/pause/seek/prev/next handlers. Global shortcuts, Media Session and player buttons always target the active item, never a staged mix (D-034).
+- Native output removes the Web Audio dependency; silent-switch, background and lock-screen behavior still requires real-device M2 checks.
 
 ### 7.2 Player bar (persistent)
 - Hidden until something has been loaded, then slides in. Controls use an outlined Play button and thin 1–2px seek track; thumb appears on hover/focus/drag and is always visible on touch. Desktop volume is an icon with an accessible focus/hover slider, hidden on mobile. Desktop target height is 56px before safe-area padding; it may grow with content or zoom. `--player-h` tracks the measured outer height (§4.3).
@@ -294,10 +286,13 @@ The runtime hosts exactly **one** scene in v1. There is no crossfade machinery, 
 - Reset/clamp render delta after tab restoration and integrate audio-driven phase (`phase += dt * speed`) rather than multiplying total elapsed time by a changing speed. Smooth audio parameters alone cannot prevent that phase jump.
 - Start with main-thread rendering and stable downward quality steps when measured frame times remain poor. No repeated quality oscillation. Respect motion settings before loading graphics where practical. Shader dithering is an optional remedy for observed gradient banding; sparse point fragments cannot replace grain across untouched background pixels.
 
-### 8.3 Analysis (`analysis.ts`)
-- `AnalyserNode`, fftSize 2048. **Energy** is the RMS of the time-domain signal, normalised by a slowly adapting running max that decays with **elapsed time** (half-life ~20s), so ambient mixes still register. Floor the denominator at `1e-4`; silence produces zero, reject non-finite samples/results, and clamp the final energy to [0,1].
-- Envelopes are **time-based**: `a = 1 - exp(-dt / tau)`, with attack tau 80ms and release tau 600ms. The result is independent of frame rate.
-- `playing` eases 0→1 over 1.5s on play and 1→0 over 2.5s on pause or end. Seeking and track changes **hold** the current energy envelope and must not reset it, so there are no flashes.
+### 8.3 Precomputed visual score (D-043)
+- Native audio provides the clock. `StageItemMeta.scoreUrl` is a URL or null. The visual, not the bridge, loads and validates the score and samples at `positionSec`, with 2–8s lookahead where needed. Missing/invalid scores fall back to playing plus authored section/BPM metadata and never block playback.
+- Score v1: `version: 1`, `rateHz: 4`, `duration` in seconds, `bands: [energy, low, mid, high]`, `data` arrays of byte values 0–255, and detected `boundaries`. Initially use energy/boundaries only; spectral styling is deferred.
+- Boundary priority: confirmed tracklist `at` → manual release `section_times` → detected score boundaries → none. Detected boundaries remain in the score, never promoted to confirmed tracklist metadata.
+- Score sampling and seeded target motion are deterministic for item + position; transient easing after a seek may depend on the previous frame. Ease section changes over `min(0.35 × section length, 6s)`; hold/smooth visual envelopes across seek/item changes to avoid flashes. Use elapsed-time easing, not frame counts.
+- Bridge `getFeatures()` retains compatibility `energy: 0`; `analysisAvailable` stays false. `playing` eases toward 1 with tau 1.5s while confirmed playing, toward 0 with tau 2.5s otherwise. Releases have `scoreUrl: null` until scores are available.
+- D-044: mark page titles, main text groups, list containers and player with `data-stage-exclude`. No rectangle API yet. First verify route poses/contrast; only add bounded, throttled rectangle handling if measurements require it. The proposed +20% atmosphere-height cap remains unapproved; §8.4 is unchanged.
 
 ### 8.4 Caps **[LOCKED]**
 | Uniform | Drives | Max change vs. idle |
@@ -364,14 +359,13 @@ cv (json): { roles: { id, org, title, start, end?, summary, bullets: string[], c
 - **Eligibility order:** normalize accepted legacy field names, then exclude albums explicitly marked `active: false` (missing `active` defaults to true per the upstream contract), apply local `hidden` overlays, and retain only tracks explicitly published with valid public MP3 URLs under the contract. Omit albums with no eligible tracks. Use this single eligibility result for pages, catalogue rows, featured selection and queues. Malformed records fail validation with a clear error; unpublished/inactive records are intentionally filtered.
 - **Track identity is the Roam Studio track `id`.** Release URLs use a diacritic-stripped album slug (same rule as productions).
 - Overlays are merged by `albumSlug`. `hidden: true` removes an album from the site.
-- `audio.rdelune.dev` must serve CORS for this site's origin (§10.3). **This is verified in M2.**
+- Cross-origin peaks/score JSON needs CORS for this site’s origin (§10.3). Native audio does not depend on analyser CORS. **Host playback is verified in M2.**
 
 ### 10.3 Media host requirements (R2)
-- CORS on **both** buckets, for the production origin and `http://localhost:4321`:
-  `AllowedMethods: GET, HEAD` · `AllowedHeaders: Range` · `ExposeHeaders: Content-Length, Content-Range, Accept-Ranges, ETag` · `MaxAgeSeconds: 86400`.
+- Cross-origin JSON (peaks/scores) requires CORS for the production origin and local preview origins (`http://localhost:4357`, `http://127.0.0.1:4357`, and port 4358 for static preview). Allow GET/HEAD and expose cache/length headers as needed. Native audio has no `crossOrigin` attribute and requires no analyser CORS.
 - M1 uses a **local development preview**, where visibly marked placeholder copy is permitted. Hosted preview publication is not required. If a hosted preview is later used, declare its exact origin in the media CORS policy before claiming host verification; do not assume production-origin permissions cover it. Production build checks continue to reject `TODO(copy)` placeholders.
-- Verify that a `Range` request returns **206** with a `Content-Range` header, that seeking near the end of a long mix is fast, and that audio is **audible** while routed through the analyser.
-- **Mix derivative filenames are content-hashed:** `mixes/<slug>.<sha8>.<mp3|m4a>`, `mixes/<slug>.<sha8>.peaks.json`. Served with `Cache-Control: public, max-age=31536000, immutable`. Slugs and page URLs stay stable.
+- Verify that a `Range` request returns **206** with a `Content-Range` header, that seeking near the end of a long mix is fast, and that native audio is **audible** on each target browser.
+- **Mix derivative filenames are content-hashed:** `mixes/<slug>.<sha8>.<mp3|m4a>`, `mixes/<slug>.<sha8>.peaks.json`, `mixes/<slug>.<sha8>.score.json`. Served with `Cache-Control: public, max-age=31536000, immutable`. Slugs and page URLs stay stable.
 
 ### 10.4 `scripts/ingest-mix.ts` (one mix at a time in v1)
 1. Input: a master file plus a slug.
@@ -380,9 +374,9 @@ cv (json): { roles: { id, org, title, start, end?, summary, bullets: string[], c
    - **Lossless source (WAV/AIFF/FLAC):** encode on macOS with **Apple's AAC encoder** (`ffmpeg -c:a aac_at -b:a 256k -movflags +faststart`, or `afconvert -f m4af -d aac -b 256000`), *not* ffmpeg's built-in `aac`. Fallback where Apple AAC is unavailable: LAME MP3 320 kbps CBR.
    - **Post-encode check (all transcodes):** decode the derivative and count samples above 0 dBFS. If any are found, re-encode with a fixed gain trim (start at -1 dB, step -0.5 dB, max -3 dB) until clean, and record `media.gainDb`. Fail with a clear message if still not clean at -3 dB. Pass-through files skip this step.
    - Evidence: on the first real mix (a -10.6 LUFS, 320 kbps MP3), ffmpeg's built-in AAC produced decoded overs of up to +4.8 dBFS at 192–320 kbps, and still overshot after a -1.2 dB trim. The source MP3 peaks at +0.19 dBFS. See `inputs/mixes/roam-mix-2026/README.md`.
-3. `audiowaveform` → raw peaks, converted to the §7.3 format.
-4. `sha` = hash of (master bytes + recipe string + ffmpeg version + audiowaveform version). A changed recipe or tool produces a new derivative.
-5. Upload the audio, then the peaks. **Write or update the mix `.md` front-matter only after both uploads succeed.**
+3. `audiowaveform` → raw peaks, converted to the §7.3 format. Generate score v1 (§8.3) aligned with the delivered audio; record generator/recipe version. Existing unscored items remain playable.
+4. `sha` = hash of (master bytes + recipe string + ffmpeg version + audiowaveform version + score generator version). A changed recipe or tool produces a new derivative.
+5. Upload audio, peaks and any generated score. **Write or update mix metadata only after every referenced upload succeeds.** A missing score uses null; never publish a guessed URL. Local development currently serves the supplied ROAM score from `/data/roam-mix-2026.score.json`; hashed R2 publication and the score generator are separate visual-owner work.
 6. Optional `--tracklist file.txt` parses lines like `00:00 Artist - Title` / `1:02:30 Artist - Title`.
 
 ---
@@ -402,7 +396,7 @@ cv (json): { roles: { id, org, title, start, end?, summary, bullets: string[], c
 - Target visible control acknowledgement within 100ms on named tested devices; pointer preview should follow the next rendered frame. Do not guarantee all input under 16ms or equate network playback latency with UI response.
 - Inspect actual frame-time distributions and sustained bad frames during navigation, playback, dragging and resizing. Record device/browser/network conditions. Do not substitute a universal zero-dropped-frame assertion or CPU-throttled desktop for real mobile checks.
 - Navigation persistence checks use a sufficiently long, playing fixture: record engine/audio/renderer initialization counts and object identities, unexpected pause/load events and media-time progression with tolerance for browser clock precision/buffering. One DOM canvas is not proof of one WebGL context, and advancing time alone is not proof of audible output. Listen manually too.
-- Test static/reduced-motion/paused graphics with active seeking so rendering pause cannot disable transport UI. Test stale media callbacks, rapid selections, context recovery, menu focus and page/history scroll restoration.
+- Test static/reduced-motion/paused graphics with active seeking so rendering pause cannot disable transport UI. Test stale media callbacks, rapid selections, native/OS pauses and rejected play, menu focus and page/history scroll restoration.
 - Check visible layout stability in addition to CLS telemetry, including player appearance at the bottom of a page. Recent-input shifts may be excluded from CLS. No padding animation is allowed to move the reading surface.
 - A short repeat-use pass includes 15 minutes of listening while reading/browsing, repeated scrubbing, phone rotation and background/restore. Record available devices and remaining verification limits. Automate meaningful state/routing cases when tooling exists; no image-perfect assertion against an unconstrained animated frame.
 
@@ -424,9 +418,9 @@ cv (json): { roles: { id, org, title, start, end?, summary, bullets: string[], c
 - **Required inputs, not yet verified:** the actual long-mix master, single-mix derivative/peaks upload, validated release fixture, chosen media hostname, and ability to configure CORS on both hosts. Start local engine work independently, but leave host/browser checks incomplete until these inputs are available. Record browsers/devices unavailable for testing.
 - [ ] Play, seek to 2:20:00, navigate through every route, use back/forward: **no gap and no duplicate audio or WebGL**.
 - [ ] Reload → inline resume choice → resumes only on click. Fresh and internally navigated `?t=` links stage the correct mix/time; browsing or scrubbing a different mix leaves current playback untouched until explicit Play. Chapter playback and waveform staging/seek follow §7.4; URL time wins over saved resume time, invalid times are ignored and out-of-range times clamp safely.
-- [ ] Media errors show Retry. Analysis-unavailable follows §7.1 without promising output through a suspended context. Simulate context suspension and recovery, including failed recovery and explicit Resume; a user pause never triggers automatic restart. Silence produces finite zero energy and is not flagged.
+- [ ] Media/play errors show Retry; native/OS pauses show paused and cancel pending playback. No automatic restart after user pause. Missing/invalid scores fall back without affecting audio; silence is not flagged.
 - [ ] Fixture validation and eligibility checks cover the normalized-input mismatch, inactive albums, unpublished tracks, local hidden overlays, empty albums, featured selection and queues.
-- [ ] CORS, 206 responses and audible analysed playback are verified **on both media hosts** in Safari (macOS + iOS) and Chrome (desktop + Android if available).
+- [ ] JSON CORS, 206 responses and audible native playback are verified **on both media hosts** in Safari (macOS + iOS) and Chrome (desktop + Android if available).
 - [ ] Only then: energy modulation switched on, the §8.4 caps verified, and the idle-vs-playing screenshot test passed.
 - [ ] Complete §11.1 checks: truthful feedback, seek commit without playhead glide, animation pause without frozen controls, rapid-input race handling, and sustained listening. No mandatory mobile sheet, gain ramps, worker or animation library added to pass this milestone.
 

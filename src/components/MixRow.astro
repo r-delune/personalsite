@@ -1,0 +1,40 @@
+---
+import { time } from "../lib/format";
+import type { mixes } from "../lib/catalogue";
+const { mix, index } = Astro.props as {
+  mix: (typeof mixes)[number];
+  index: number;
+};
+---
+
+<article class="mix-row" data-row>
+  <span class="micro mix-number">{String(index + 1).padStart(2, "0")}</span>
+  <a href={mix.href} class="mix-title">
+    {mix.title}
+    {mix.filename && <span class="source-filename micro">{mix.filename}</span>}
+  </a>
+  <span class="mix-series micro">{mix.series || "—"}</span>
+  <span class="micro mix-year">
+    {mix.year ? `${mix.dateApprox ? "c. " : ""}${mix.year}` : "TODO(copy)"}
+  </span>
+  <span class="micro mix-duration">{time(mix.duration)}</span>
+  <button
+    class="row-play"
+    data-track-id={mix.id}
+    disabled={!mix.src}
+    aria-label={
+      mix.src
+        ? `Play ${mix.filename || mix.title}`
+        : `Audio unavailable for ${mix.title}`
+    }
+  >
+    <span data-play-glyph>▶</span>
+  </button>
+  <a
+    class="row-link"
+    href={mix.href}
+    aria-label={`Open ${mix.filename || mix.title}`}
+  >
+    →
+  </a>
+</article>

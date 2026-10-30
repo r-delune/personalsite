@@ -62,10 +62,10 @@ test("pose changes ignore query/hash and classify detail routes", () => {
   w.route(routePose(new URL("https://site.test/music?t=2").pathname));
   assert.equal(count, 1);
 });
-test("silence and unavailable analysis produce finite features", () => {
+test("native playback exposes only a playing envelope and zero compatibility energy", () => {
   let now = 0;
   const w = createStageBridge(() => now);
-  w.analysis(true, () => NaN);
+  assert.equal(w.bridge.getSnapshot().analysisAvailable, false);
   w.transport("playing", 0, 100);
   for (let i = 0; i < 20; i++) {
     now += 100;
@@ -74,6 +74,12 @@ test("silence and unavailable analysis produce finite features", () => {
     assert.equal(f.energy, 0);
     assert(f.playing >= 0 && f.playing <= 1);
   }
+  const playing = w.bridge.getFeatures().playing;
+  assert(playing > 0);
+  w.transport("paused", 2, 100);
+  now += 100;
+  assert(w.bridge.getFeatures().playing < playing);
+  assert.equal(w.bridge.getSnapshot().analysisAvailable, false);
 });
 test("URL time parser rejects malformed and unsafe input", () => {
   assert.equal(parseTime("1h12m30s"), 4350);
@@ -82,4 +88,24 @@ test("URL time parser rejects malformed and unsafe input", () => {
   assert.equal(parseTime("1s2h"), null);
   assert.equal(parseTime("Infinity"), null);
   assert.equal(parseTime("999999999999999999999"), null);
+});
+
+test("score metadata preserves confirmed boundaries and clears on unscored items", () => {
+  const w = createStageBridge(() => 0);
+  const meta = {
+    itemKind: "mix" as const, itemId: "mix:roam-mix-2026",
+    durationSec: 3626.74, peaksUrl: "/data/roam-mix-2026.peaks.json",
+    scoreUrl: "/data/roam-mix-2026.score.json", boundariesSec: [60, 120],
+    bpm: null, beatStartAtSec: null,
+  };
+  let observed: unknown;
+  w.bridge.subscribe("itemchange", () => { observed = w.bridge.getItemMeta(); });
+  w.item(meta.itemId, "mix", meta.durationSec, meta);
+  assert.equal(observed, meta);
+  w.seek(100);
+  assert.equal(w.bridge.getItemMeta(), meta);
+  assert.deepEqual(meta.boundariesSec, [60, 120]);
+  w.item("track:unscored", "track", 100);
+  assert.equal(w.bridge.getItemMeta()?.scoreUrl, null);
+  assert.deepEqual(w.bridge.getItemMeta()?.boundariesSec, []);
 });

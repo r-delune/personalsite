@@ -1,5 +1,72 @@
 ---
-import Shell from '../layouts/Shell.astro';
-import Icon from '../components/Icon.astro';
+import Shell from "../layouts/Shell.astro";
+import { workContent } from "../lib/content";
+const { cv, projects } = await workContent();
 ---
-<Shell title="Work — Brian Dillon" section="work"><div class="page-column inner-page reading-page"><p class="micro section-index">03 / SELECTED WORK</p><h1 class="page-title">Ideas into<br/><span class="accent">working things.</span></h1><p class="page-intro">My professional work lives at rdelune.</p><a href="https://rdelune.dev" target="_blank" rel="noreferrer" class="primary-action">Explore rdelune <Icon name="external"/></a><div class="empty-editorial"><span class="micro">CASE STUDIES</span><p>Selected projects and the stories behind them will be added here.</p><p class="preview-caption">LAYOUT PREVIEW · PROJECT CONTENT TO FOLLOW</p></div></div></Shell>
+
+<Shell title="Work — Brian Dillon" section="work">
+  <div class="page-column inner-page reading-page work-page">
+    <header class="page-header">
+      <h1 data-stage-exclude class="page-title">Work</h1>
+      <p data-stage-exclude class="fact-line route-body">
+        Software consultancy: <a href="https://rdelune.dev">rdelune ↗</a>
+      </p>
+    </header>
+    <section id="cv" data-stage-exclude>
+      <div class="subsection-heading">
+        <h2>CV</h2>
+        <button class="text-control" data-print>
+          Print / save PDF ↗
+        </button>
+      </div>
+      <div class="cv-roles">
+        {cv.roles.map((role) => (
+          <article class="cv-role" data-row>
+            <span class="micro">{role.years}</span>
+            <div>
+              <h3>{role.title}</h3>
+              <p class="cv-org">{role.organisation}</p>
+              <p>{role.summary}</p>
+              <div class="case-chips">
+                {role.caseStudies.map((slug) => (
+                  <a href={`/work/${slug}`}>
+                    {projects.find((p) => p.data.slug === slug)?.data.title} →
+                  </a>
+                ))}
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+      <h3 class="cv-label">Skills</h3>
+      {cv.skills.map((skill) => (
+        <div class="cv-skill" data-row>
+          <span class="micro">{skill.group}</span>
+          <span>{skill.items.join(" · ")}</span>
+        </div>
+      ))}
+      <h3 class="cv-label">Education</h3>
+      {cv.education.map((education) => (
+        <div class="cv-role" data-row>
+          <span class="micro">{education.years}</span>
+          <div>
+            <h3>{education.title}</h3>
+            <p>{education.institution}</p>
+          </div>
+        </div>
+      ))}
+    </section>
+    {projects.length > 0 && (
+      <section data-stage-exclude class="case-studies">
+        <h2>Case studies</h2>
+        {projects.map((project) => (
+          <a class="project-row" data-row href={`/work/${project.data.slug}`}>
+            <span>{project.data.title}</span>
+            <span class="micro">{project.data.year}</span>
+            <span>→</span>
+          </a>
+        ))}
+      </section>
+    )}
+  </div>
+</Shell>

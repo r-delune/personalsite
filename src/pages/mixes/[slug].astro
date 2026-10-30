@@ -1,9 +1,37 @@
 ---
-import Shell from '../../layouts/Shell.astro';
-import Icon from '../../components/Icon.astro';
-import { mixes } from '../../lib/catalogue';
-export const getStaticPaths = () => mixes.map(mix => ({ params: { slug: mix.slug }, props: { mix } }));
+import Shell from "../../layouts/Shell.astro";
+import MixScrubber from "../../components/player/MixScrubber";
+import { mixes, time } from "../../lib/catalogue";
+export const getStaticPaths = () =>
+  mixes.map((mix) => ({ params: { slug: mix.slug }, props: { mix } }));
 const { mix } = Astro.props;
-const waveform = Array.from({length:180}, (_,i) => 8 + Math.abs(Math.sin(i*1.73)*Math.cos(i*.19)) * 44 + 10*Math.abs(Math.sin(i*.05)));
 ---
-<Shell title={`${mix.title} — Brian Dillon`} section="mixes"><div class="page-column inner-page mix-detail"><a href="/mixes" class="back-link micro">← ALL MIXES</a><p class="micro section-index">{mix.subtitle} <span class="dot-separator">/</span> c. {mix.year}</p><h1 class="detail-title">{mix.title}<span class="accent">.</span></h1><p class="page-intro">{mix.description || 'A selection from the archive.'}</p><div class="mix-detail-meta"><span class="micro">{mix.duration} / CONTINUOUS MIX</span><a href="https://www.mixcloud.com/brian-diolun/" class="quiet-link" target="_blank" rel="noreferrer">Listen on Mixcloud <Icon name="external" size={16}/></a></div><div class="waveform-preview" role="img" aria-label="Illustrative waveform layout. Actual waveform and mix playback will be added after audio import."><div class="wave-bars" aria-hidden="true">{waveform.map(h => <span style={`height:${h}%`}></span>)}</div><div class="wave-times micro"><span>0:00</span><span>{mix.duration}</span></div></div><p class="preview-caption">WAVEFORM LAYOUT STUDY — ILLUSTRATIVE DATA, AUDIO AWAITING IMPORT</p><div class="mix-notes"><span class="micro">LISTENING NOTES</span><p>The recording will live here, with a scrubbable waveform and timestamped tracklist. For now, explore the layout or listen to the original on Mixcloud.</p></div></div></Shell>
+
+<Shell title={`${mix.title} — Brian Dillon`} section="mixes">
+  <div class="page-column inner-page mix-detail">
+    <a href="/mixes" class="back-link micro">
+      ← MIXES
+    </a>
+    <header class="page-header">
+      <h1 data-stage-exclude class="page-title">{mix.title}</h1>
+      <p data-stage-exclude class="micro route-body">
+        {mix.year || "TODO(copy)"} · {time(mix.duration)} · {mix.series || "—"}
+      </p>
+      {mix.filename && (
+        <p data-stage-exclude class="source-filename micro route-body">{mix.filename}</p>
+      )}
+    </header>
+    <MixScrubber
+      client:load
+      id={mix.id}
+      src={mix.src}
+      duration={mix.duration}
+      peaks={mix.peaks}
+    />
+    {!mix.src && (
+      <a href="https://www.mixcloud.com/brian-diolun/" class="quiet-link">
+        Mixcloud ↗
+      </a>
+    )}
+  </div>
+</Shell>

@@ -1,0 +1,124 @@
+[
+  {
+    "id": "mix:roam-mix-2026",
+    "slug": "roam-mix-2026",
+    "title": "TODO(copy)",
+    "year": null,
+    "dateApprox": false,
+    "series": "TODO(copy)",
+    "duration": 3626.74,
+    "filename": "ROAM_MIX_2026.mp3",
+    "peaks": "/data/roam-mix-2026.peaks.json",
+    "score": "/data/roam-mix-2026.score.json"
+  },
+  {
+    "id": "mix:long-distance-runaround",
+    "slug": "long-distance-runaround",
+    "title": "Long Distance Runaround // Running Tunes",
+    "year": "2025",
+    "dateApprox": true,
+    "series": "Running",
+    "duration": 8706,
+    "filename": null,
+    "peaks": null
+  },
+  {
+    "id": "mix:year-24",
+    "slug": "year-24",
+    "title": "'24",
+    "year": "2025",
+    "dateApprox": true,
+    "series": "Year mixes",
+    "duration": 3600,
+    "filename": null,
+    "peaks": null
+  },
+  {
+    "id": "mix:year-23",
+    "slug": "year-23",
+    "title": "'23",
+    "year": "2024",
+    "dateApprox": true,
+    "series": "Year mixes",
+    "duration": 3456,
+    "filename": null,
+    "peaks": null
+  },
+  {
+    "id": "mix:year-22",
+    "slug": "year-22",
+    "title": "'22",
+    "year": "2022",
+    "dateApprox": true,
+    "series": "Year mixes",
+    "duration": 3600,
+    "filename": null,
+    "peaks": null
+  },
+  {
+    "id": "mix:holiday-fizzler",
+    "slug": "holiday-fizzler",
+    "title": "Holiday Fizzler (Ambient)",
+    "year": "2020",
+    "dateApprox": true,
+    "series": "",
+    "duration": 4764,
+    "filename": null,
+    "peaks": null
+  },
+  {
+    "id": "mix:autnote-6",
+    "slug": "autnote-6",
+    "title": "Skirmish Blog AUTNOTE series #6 (Jazz, Lo-fi, Eastern)",
+    "year": "2017",
+    "dateApprox": true,
+    "series": "AUTNOTE",
+    "duration": 3905,
+    "filename": null,
+    "peaks": null
+  },
+  {
+    "id": "mix:roam-mix-1",
+    "slug": "roam-mix-1",
+    "title": "Roam mix 1",
+    "year": "2017",
+    "dateApprox": true,
+    "series": "Roam",
+    "duration": 5435,
+    "filename": null,
+    "peaks": null
+  },
+  {
+    "id": "mix:autnote-1",
+    "slug": "autnote-1",
+    "title": "Skirmish Blog AUTNOTE series #1",
+    "year": "2015",
+    "dateApprox": true,
+    "series": "AUTNOTE",
+    "duration": 3632,
+    "filename": null,
+    "peaks": null
+  },
+  {
+    "id": "mix:bank-holiday-chillout",
+    "slug": "bank-holiday-chillout",
+    "title": "Bank Holiday Chillout",
+    "year": "2014",
+    "dateApprox": true,
+    "series": "",
+    "duration": 3593,
+    "filename": null,
+    "peaks": null
+  },
+  {
+    "id": "mix:dream-gathering-african-vibes",
+    "slug": "dream-gathering-african-vibes",
+    "title": "Dream Gathering DJ set (African Vibes)",
+    "year": "2014",
+    "dateApprox": true,
+    "series": "",
+    "duration": 5019,
+    "filename": null,
+    "peaks": null
+  }
+]

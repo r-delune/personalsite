@@ -1,21 +1,81 @@
 ---
-import Shell from '../layouts/Shell.astro';
-import Icon from '../components/Icon.astro';
-import ReleaseCard from '../components/ReleaseCard.astro';
-import { releases, mixes } from '../lib/catalogue';
-const featured = releases[0];
+import Shell from "../layouts/Shell.astro";
+import { releases, mixes, time } from "../lib/catalogue";
+import { visiblePosts } from "../lib/content";
+const featured = releases[0],
+  latestRelease = [...releases].sort(
+    (a, b) => Number(b.year) - Number(a.year),
+  )[0];
+const latestMix = mixes.find((m) => m.src),
+  post = (await visiblePosts())[0];
 ---
+
 <Shell>
-  <section class="hero page-column">
-    <div class="hero-content"><p class="eyebrow micro"><span class="status-dot"></span> BRIAN DILLON <span class="eyebrow-slash">/</span> BRIAN DIOLÚN</p>
-      <h1>Software, sound<br/><span class="soft">& the long way</span><br/><span class="accent">around.</span></h1>
-      <p class="hero-blurb">A home for my music, mixes, and things I’m working on.<br class="desktop-break"/> A few different pursuits. One ongoing exploration.</p>
-      <div class="hero-actions"><button class="primary-action" data-track-id={featured.tracks[0].id}><Icon name="play" size={16}/><span>Play {featured.title}</span></button><a href="https://rdelune.dev" target="_blank" rel="noreferrer" class="quiet-link">My work at rdelune <Icon name="external" size={16}/></a></div>
-      <div class="hero-featured"><span class="micro">ON THE RECORD</span><span>{featured.artist} <span class="muted">— {featured.title}, {featured.year}</span></span></div>
+  <section class="page-column home-screen">
+    <div class="home-content">
+      <h1 data-stage-exclude class="page-title">Brian Dillon</h1>
+      <p data-stage-exclude class="fact-line route-body">
+        Music as Brian Diolún. Mixes as Roam.
+        <br />
+        Software at <a href="https://rdelune.dev">rdelune ↗</a>
+      </p>
+      <div data-stage-exclude class="featured-listen route-body">
+        <button class="primary-action" data-track-id={featured.tracks[0].id}>
+          <span data-play-glyph>▶</span>
+          {featured.title}
+        </button>
+        <span class="micro">
+          {featured.year} ·{" "}
+          {time(featured.tracks.reduce((n, t) => n + t.duration, 0))} ·{" "}
+          {featured.artist}
+        </span>
+      </div>
+      <div data-stage-exclude class="latest-block">
+        <h2 class="micro">LATEST</h2>
+        <div class="latest-row" data-row>
+          <span class="micro">RELEASE</span>
+          <a href={`/music/${latestRelease.slug}`}>{latestRelease.title}</a>
+          <button
+            data-track-id={latestRelease.tracks[0].id}
+            aria-label={`Play ${latestRelease.title}`}
+          >
+            <span data-play-glyph>▶</span>
+          </button>
+          <a
+            href={`/music/${latestRelease.slug}`}
+            aria-label={`Open ${latestRelease.title}`}
+          >
+            →
+          </a>
+        </div>
+        {latestMix && (
+          <div class="latest-row" data-row>
+            <span class="micro">MIX</span>
+            <a href={latestMix.href}>{latestMix.title}</a>
+            <button data-track-id={latestMix.id} aria-label="Play latest mix">
+              <span data-play-glyph>▶</span>
+            </button>
+            <a href={latestMix.href} aria-label="Open latest mix">
+              →
+            </a>
+          </div>
+        )}
+        {post && (
+          <div class="latest-row" data-row>
+            <span class="micro">
+              {post.data.sample ? "SAMPLE POST" : "POST"}
+            </span>
+            <a href={`/writing/${post.data.slug}`}>{post.data.title}</a>
+            <span></span>
+            <a
+              href={`/writing/${post.data.slug}`}
+              aria-label={`Open ${post.data.title}`}
+            >
+              →
+            </a>
+          </div>
+        )}
+      </div>
     </div>
-    <a class="scroll-cue micro" href="#music"><span>SCROLL TO EXPLORE</span><span>↓</span></a><span class="hero-coordinate micro" aria-hidden="true">SOUND / SPACE / MOVEMENT</span>
   </section>
-  <section class="content-section page-column" id="music"><div class="section-heading"><div><p class="micro section-index">01 / ORIGINAL MUSIC</p><h2>A few things<br/>I’ve put into the world.</h2></div><a href="/music" class="section-link">All releases <Icon/></a></div><div class="release-grid">{releases.map(release => <ReleaseCard release={release}/>)}</div></section>
-  <section class="content-section page-column mixes-section" id="mixes"><div class="section-heading"><div><p class="micro section-index">02 / IN GOOD COMPANY</p><h2>Made for listening.</h2><p class="section-description">Long-form mixes. Different moods, no particular hurry.</p></div><a href="/mixes" class="section-link">All mixes <Icon/></a></div><div class="mix-list">{mixes.map((mix,i) => <article class="mix-row"><span class="micro mix-number">0{i+1}</span><a href={`/mixes/${mix.slug}`} class="mix-title">{mix.title}<span class="mix-category micro">{mix.subtitle}</span></a><span class="micro mix-year">c. {mix.year}</span><span class="micro mix-duration">{mix.duration}</span><a href={`/mixes/${mix.slug}`} class="circle-link" aria-label={`Explore ${mix.title}`}><Icon name="arrow"/></a></article>)}</div></section>
-  <section class="content-section page-column work-intro"><p class="micro section-index">03 / ELSEWHERE</p><div class="work-row"><h2>Different work.<br/>Same curiosity.</h2><div><p>For my professional work,<br/>you’ll find me at rdelune.</p><a href="https://rdelune.dev" target="_blank" rel="noreferrer" class="section-link">Visit rdelune <Icon name="external"/></a></div></div></section>
 </Shell>

@@ -14,6 +14,8 @@ export default function Player() {
   const track = currentTrack();
   const ref = useRef<HTMLDivElement>(null);
   const [preview, setPreview] = useState<number | null>(null);
+  const [volumeOpen, setVolumeOpen] = useState(false);
+  useEffect(() => setPreview(null), [state.id]);
   useEffect(() => {
     if (!ref.current) {
       document.documentElement.style.setProperty("--player-h", "0px");
@@ -30,9 +32,9 @@ export default function Player() {
   }, [!!track]);
   if (!track) return null;
   return (
-    <div class="player" ref={ref} aria-label="Audio player">
+    <div class="player" data-stage-exclude ref={ref} aria-label="Audio player">
       <div class="player-meta">
-        <img src={track.artwork} alt="" width="37" height="37" />
+        {track.artwork && <img src={track.artwork} alt="" width="37" height="37" />}
         <a href={track.href}>
           <span class="player-title">{track.title}</span>
           <span class="player-artist">{track.artist}</span>
@@ -45,7 +47,13 @@ export default function Player() {
         <button
           class="play-toggle"
           onClick={toggle}
-          aria-label={state.playing ? "Pause" : "Play"}
+          aria-label={
+            state.pending
+              ? "Cancel playback"
+              : state.playing
+                ? "Pause"
+                : "Play"
+          }
         >
           {state.playing ? "Ⅱ" : "▶"}
         </button>
@@ -63,6 +71,7 @@ export default function Player() {
           step="1"
           value={preview ?? state.time}
           onInput={(e) => setPreview(Number(e.currentTarget.value))}
+          onPointerCancel={() => setPreview(null)}
           onChange={(e) => {
             seek(Number(e.currentTarget.value));
             setPreview(null);
@@ -70,16 +79,50 @@ export default function Player() {
         />
         <span>{time(state.duration || track.duration)}</span>
       </div>
-      <input
-        class="player-volume"
-        aria-label="Volume"
-        type="range"
-        min="0"
-        max="1"
-        step=".01"
-        defaultValue="1"
-        onInput={(e) => volume(Number(e.currentTarget.value))}
-      />
+      <div
+        class={`volume-control ${volumeOpen ? "is-open" : ""}`}
+        onMouseEnter={() => setVolumeOpen(true)}
+        onMouseLeave={(e) => {
+          if (!e.currentTarget.contains(document.activeElement))
+            setVolumeOpen(false);
+        }}
+        onFocus={() => setVolumeOpen(true)}
+        onBlur={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node))
+            setVolumeOpen(false);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") setVolumeOpen(false);
+        }}
+      >
+        <button
+          aria-label="Volume"
+          aria-expanded={volumeOpen}
+          onClick={() => setVolumeOpen(true)}
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.4"
+            aria-hidden="true"
+          >
+            <path d="M4 9h4l5-4v14l-5-4H4zM17 8a6 6 0 0 1 0 8" />
+          </svg>
+        </button>
+        <input
+          class="player-volume"
+          aria-label="Volume level"
+          type="range"
+          min="0"
+          max="1"
+          step=".01"
+          value={state.volume}
+          onInput={(e) => volume(Number(e.currentTarget.value))}
+        />
+      </div>
       {state.error && (
         <div class="player-message" aria-live="polite">
           {state.error}

@@ -3,6 +3,7 @@ import initialTracks from "../fixtures/playable-tracks.json";
 import { bindStageBridge, stageWriter } from "./stage-bridge";
 export interface MediaItem {
   peaksUrl?: string | null;
+  scoreUrl?: string | null;
   boundariesSec?: number[];
   bpm?: number | null;
   beatStartAtSec?: number | null;
@@ -29,21 +30,20 @@ export const $player = atom({
   volume: 1,
   muted: false,
 });
-let audio: HTMLAudioElement | undefined,
-  context: AudioContext | undefined,
-  analyser: AnalyserNode | undefined;
-let samples: Float32Array<ArrayBuffer> | undefined;
+let audio: HTMLAudioElement | undefined;
 let generation = 0,
   operation = 0,
   intent = false,
   confirmed = false,
   pendingSeek: number | null = null;
 let listeners: AbortController | undefined,
-  bound = false,
-  analysisAttempted = false;
+  bound = false;
 let lastSaved = 0;
 export const currentTrack = () => media.get($player.get().id);
 export const getMedia = (id: string) => media.get(id);
+export function registerDevMedia(item: MediaItem) {
+  if (import.meta.env.DEV) media.set(item.id, item);
+}
 function clock() {
   return audio?.currentTime || 0;
 }
@@ -75,52 +75,12 @@ function saveMix() {
     );
   } catch {}
 }
-function readEnergy() {
-  if (!analyser || !samples) return 0;
-  analyser.getFloatTimeDomainData(samples);
-  let sum = 0;
-  for (let i = 0; i < samples.length; i++) sum += samples[i] * samples[i];
-  return Math.sqrt(sum / samples.length);
-}
 function ensureAudio() {
   if (audio) return audio;
   audio = new Audio();
-  audio.crossOrigin = "anonymous";
   audio.preload = "metadata";
   stageWriter.position(clock);
   return audio;
-}
-function setupAnalysis() {
-  if (analysisAttempted) return;
-  analysisAttempted = true;
-  const ios =
-    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  const forced =
-    import.meta.env.DEV &&
-    new URLSearchParams(location.search).has("noanalysis");
-  if (ios || forced) {
-    stageWriter.analysis(false, () => 0);
-    return;
-  }
-  try {
-    context = new AudioContext();
-    const source = context.createMediaElementSource(ensureAudio());
-    analyser = context.createAnalyser();
-    analyser.fftSize = 2048;
-    samples = new Float32Array(analyser.fftSize);
-    source.connect(analyser);
-    analyser.connect(context.destination);
-    stageWriter.analysis(true, readEnergy);
-    context.addEventListener("statechange", () => {
-      if (!intent) return;
-      if (context?.state !== "running")
-        publish("interrupted", "Playback interrupted. Select Resume.");
-      else if (confirmed && audio && !audio.paused) publish("playing");
-    });
-  } catch {
-    stageWriter.analysis(false, () => 0);
-  }
 }
 function valid(token: number, item: MediaItem) {
   return (
@@ -157,7 +117,7 @@ function installMediaEvents(item: MediaItem, token: number) {
       return;
     }
     confirmed = true;
-    publish(context && context.state !== "running" ? "interrupted" : "playing");
+    publish("playing");
   });
   on("waiting", () => {
     if (intent) publish(confirmed ? "buffering" : "loading");
@@ -168,9 +128,11 @@ function installMediaEvents(item: MediaItem, token: number) {
   });
   on("pause", () => {
     if (!a.ended) {
-      if (!intent) publish("paused");
-      else if (confirmed)
-        publish("interrupted", "Playback interrupted. Select Resume.");
+      // Native pauses (including OS/lock-screen controls) cancel pending plays.
+      intent = false;
+      operation++;
+      publish("paused");
+      saveMix();
     }
   });
   on("timeupdate", () => {
@@ -199,7 +161,7 @@ export async function playTrack(id: string, position?: number) {
   if (
     $player.get().id === id &&
     (intent || $player.get().playing) &&
-    !["interrupted", "error"].includes($player.get().phase) &&
+    $player.get().phase !== "error" &&
     position === undefined
   ) {
     pause();
@@ -227,6 +189,7 @@ export async function playTrack(id: string, position?: number) {
       itemKind: item.kind,
       durationSec: item.duration || null,
       peaksUrl: item.peaksUrl || null,
+      scoreUrl: item.scoreUrl || null,
       boundariesSec: item.boundariesSec || [],
       bpm: item.bpm ?? null,
       beatStartAtSec: item.beatStartAtSec ?? null,
@@ -250,13 +213,14 @@ export async function playTrack(id: string, position?: number) {
   intent = true;
   publish("loading");
   const session = navigator as Navigator & { audioSession?: { type: string } };
-  if (session.audioSession) session.audioSession.type = "playback";
-  setupAnalysis();
-  // Both resume and play are issued synchronously from the gesture, before await.
-  const resume = context?.state !== "running" ? context?.resume() : undefined;
-  const playback = a.play();
   try {
-    await Promise.all([resume, playback]);
+    if (session.audioSession) session.audioSession.type = "playback";
+  } catch {
+    // This optional platform hint must never prevent native playback.
+  }
+  try {
+    // Issue play synchronously from the gesture, before the first await.
+    await a.play();
     if (token === generation && request === operation) {
       if (!intent) a.pause();
       else if (confirmed && !a.paused && a.readyState >= 3) publish("playing");
@@ -266,8 +230,8 @@ export async function playTrack(id: string, position?: number) {
       intent = false;
       a.pause();
       publish(
-        context && context.state !== "running" ? "interrupted" : "error",
-        "Playback could not start. Select Resume or Retry.",
+        "error",
+        "Playback could not start. Retry.",
       );
     }
   }

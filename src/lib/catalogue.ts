@@ -1,4 +1,7 @@
 import feed from "../fixtures/showcase.sample.json";
+import mixData from "../content/mixes.json";
+import { isPreview } from "./content";
+export { time } from "./format";
 export const slugify = (s: string) =>
   s
     .normalize("NFD")
@@ -11,7 +14,7 @@ export const releases = feed.albums
   .map((a) => ({
     slug: slugify(a.name),
     title: a.name,
-    artist: a.artist_name || "Brian Diolún",
+    artist: a.artist_name || "",
     year: a.release_date || "",
     artwork: `/artwork/${slugify(a.name)}.jpg`,
     tracks: a.tracks
@@ -21,40 +24,34 @@ export const releases = feed.albums
         title: t.title,
         src: t.r2_url!,
         duration: t.duration_seconds || 0,
-        artist: a.artist_name || "Brian Diolún",
+        artist: a.artist_name || "",
         artwork: `/artwork/${slugify(a.name)}.jpg`,
         href: `/music/${slugify(a.name)}`,
       })),
   }))
   .filter((a) => a.tracks.length);
 export const tracks = releases.flatMap((a) => a.tracks);
-export const mixes = [
-  {
-    slug: "long-distance-runaround",
-    title: "Long Distance Runaround",
-    subtitle: "Running tunes",
-    duration: "2:25:06",
-    year: "2025",
-    description: "A long mix for the long way around.",
-  },
-  {
-    slug: "year-24",
-    title: "’24",
-    subtitle: "Year mixes",
-    duration: "1:00:00",
-    year: "2025",
-    description: "",
-  },
-  {
-    slug: "year-23",
-    title: "’23",
-    subtitle: "Year mixes",
-    duration: "57:36",
-    year: "2024",
-    description: "",
-  },
-];
-export const time = (s: number) => {
-  const n = Math.max(0, Math.floor(s || 0));
-  return `${Math.floor(n / 60)}:${String(n % 60).padStart(2, "0")}`;
+const mediaBase =
+  import.meta.env.PUBLIC_MIX_MEDIA_BASE?.replace(/\/$/, "") || "";
+export const mixes = mixData
+  .map((mix) => ({
+    ...mix,
+    src:
+      mix.filename && mediaBase && (isPreview || /^https:\/\//.test(mediaBase))
+        ? `${mediaBase}/${mix.filename}`
+        : "",
+    scoreUrl: mix.score ?? null,
+    kind: "mix" as const,
+    artist: "Roam",
+    artwork: "",
+    href: `/mixes/${mix.slug}`,
+  }))
+  .filter(
+    (mix) => isPreview || (mix.src && !mix.title.includes("TODO(") && mix.year),
+  );
+export const visibleYearRange = (items: { year: string | null }[]) => {
+  const years = items.flatMap((i) =>
+    i.year && /^\d{4}$/.test(i.year) ? [Number(i.year)] : [],
+  );
+  return years.length ? `${Math.min(...years)}–${Math.max(...years)}` : "";
 };

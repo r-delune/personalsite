@@ -1,0 +1,39 @@
+---
+import Shell from "../../layouts/Shell.astro";
+import { render } from "astro:content";
+import { workContent } from "../../lib/content";
+export async function getStaticPaths() {
+  const { projects, cv } = await workContent();
+  return projects.map((project) => ({
+    params: { slug: project.data.slug },
+    props: {
+      project,
+      roles: cv.roles.filter((r) => r.caseStudies.includes(project.data.slug)),
+    },
+  }));
+}
+const { project, roles } = Astro.props;
+const { Content } = await render(project);
+---
+
+<Shell title={`${project.data.title} — Brian Dillon`} section="work">
+  <article class="page-column inner-page post-page">
+    <a href="/work" class="back-link micro">
+      ← WORK
+    </a>
+    <header class="page-header">
+      <h1 data-stage-exclude class="page-title">{project.data.title}</h1>
+      <p data-stage-exclude class="micro route-body">
+        {project.data.role} · {project.data.year}
+      </p>
+    </header>
+    <div data-stage-exclude class="prose route-body">
+      <Content />
+    </div>
+    {roles.length > 0 && (
+      <a class="text-control" href="/work#cv">
+        CV: {roles.map((r) => r.title).join(" · ")} →
+      </a>
+    )}
+  </article>
+</Shell>

@@ -1,0 +1,44 @@
+---
+import Shell from "../../layouts/Shell.astro";
+import { render } from "astro:content";
+import { visiblePosts, dateLabel, readingMinutes } from "../../lib/content";
+export async function getStaticPaths() {
+  const posts = await visiblePosts();
+  return posts.map((post, index) => ({
+    params: { slug: post.data.slug },
+    props: { post, previous: posts[index + 1], next: posts[index - 1] },
+  }));
+}
+const { post, previous, next } = Astro.props;
+const { Content } = await render(post);
+---
+
+<Shell title={`${post.data.title} — Brian Dillon`} section="writing">
+  <article class="page-column inner-page post-page">
+    <a href="/writing" class="back-link micro">
+      ← WRITING
+    </a>
+    <header class="page-header">
+      <h1 data-stage-exclude class="page-title">{post.data.title}</h1>
+      <p data-stage-exclude class="micro route-body">
+        {dateLabel(post.data.date)} · {readingMinutes(post.body)} MIN READ
+        {post.data.sample && " · SAMPLE CONTENT"}
+      </p>
+    </header>
+    <div data-stage-exclude class="prose route-body">
+      <Content />
+    </div>
+    <nav class="post-pagination" aria-label="Articles">
+      {previous ? (
+        <a href={`/writing/${previous.data.slug}`}>← {previous.data.title}</a>
+      ) : (
+        <span aria-disabled="true">← Previous</span>
+      )}
+      {next ? (
+        <a href={`/writing/${next.data.slug}`}>{next.data.title} →</a>
+      ) : (
+        <span aria-disabled="true">Next →</span>
+      )}
+    </nav>
+  </article>
+</Shell>

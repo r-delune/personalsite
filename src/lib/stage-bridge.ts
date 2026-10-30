@@ -5,7 +5,6 @@ export type PlaybackPhase =
   | "buffering"
   | "paused"
   | "ended"
-  | "interrupted"
   | "error";
 export type RoutePose =
   | "home"
@@ -44,6 +43,7 @@ export interface StageItemMeta {
   itemId: string;
   durationSec: number | null;
   peaksUrl: string | null;
+  scoreUrl: string | null;
   boundariesSec: number[];
   bpm: number | null;
   beatStartAtSec: number | null;
@@ -80,9 +80,7 @@ export function createStageBridge(
   let itemMeta: StageItemMeta | null = null;
   const listeners = new Map<StageEvent, Set<(s: StageSnapshot) => void>>();
   let readPosition: () => number = () => snapshot.positionSec;
-  let readEnergy: () => number = () => 0;
-  let lastTime = started,
-    runningMax = 0.0001;
+  let lastTime = started;
   const emit = (event: StageEvent) => {
     for (const cb of listeners.get(event) || []) cb(snapshot);
   };
@@ -103,17 +101,7 @@ export function createStageBridge(
       features.playing +=
         (target - features.playing) *
         (1 - Math.exp(-dt / (target ? 1.5 : 2.5)));
-      let value = snapshot.analysisAvailable && target ? readEnergy() : 0;
-      if (!Number.isFinite(value)) value = 0;
-      runningMax = Math.max(
-        0.0001,
-        value,
-        runningMax * Math.exp((-dt * Math.LN2) / 20),
-      );
-      value = Math.min(1, Math.max(0, value / runningMax));
-      features.energy +=
-        (value - features.energy) *
-        (1 - Math.exp(-dt / (value > features.energy ? 0.08 : 0.6)));
+      features.energy = 0; // Compatibility field; the visual reads its score.
       return features;
     },
     subscribe(event, cb) {
@@ -149,6 +137,7 @@ export function createStageBridge(
         itemId: id,
         durationSec: duration,
         peaksUrl: null,
+        scoreUrl: null,
         boundariesSec: [],
         bpm: null,
         beatStartAtSec: null,
@@ -178,10 +167,6 @@ export function createStageBridge(
       snapshot.reducedMotion = reduced;
       snapshot.userPausedAnimation = paused;
       emit("motionprefs");
-    },
-    analysis(available: boolean, reader: () => number) {
-      snapshot.analysisAvailable = available;
-      readEnergy = reader;
     },
     position(reader: () => number) {
       readPosition = reader;

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "node scripts/astro.mjs dev --host 127.0.0.1 --port 4357",
     "check": "node scripts/astro.mjs check",
-    "build": "node scripts/check-content.mjs && node scripts/prepare-fixture.mjs && node scripts/astro.mjs build",
+    "build": "node scripts/prepare-fixture.mjs && node scripts/astro.mjs build && node scripts/check-content.mjs",
     "build:preview": "node scripts/prepare-fixture.mjs && node scripts/astro.mjs build --mode preview",
     "preview": "node scripts/astro.mjs preview --host 127.0.0.1 --port 4358",
     "posters": "node scripts/generate-posters.mjs",

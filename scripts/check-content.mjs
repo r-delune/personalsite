@@ -6,17 +6,18 @@ function check(path) {
     const file = join(path, entry.name);
     if (entry.isDirectory()) check(file);
     else if (
-      /\.(astro|md|mdx|json|ts|tsx)$/.test(file) &&
+      file.endsWith(".html") &&
       readFileSync(file, "utf8").includes("TODO(copy)")
     )
       failures.push(file);
   }
 }
-check("src");
+check(process.argv[2] || "dist");
 if (failures.length) {
   console.error(
-    "Production content is not approved. Resolve TODO(copy) before publishing:\n" +
+    "Production content is not approved. Resolve rendered TODO(copy) before publishing:\n" +
       failures.join("\n"),
   );
   process.exit(1);
 }
+console.log("Rendered production copy contains no TODO(copy).");

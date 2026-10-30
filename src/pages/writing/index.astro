@@ -1,0 +1,37 @@
+---
+import Shell from "../../layouts/Shell.astro";
+import { visiblePosts, dateLabel } from "../../lib/content";
+const posts = await visiblePosts();
+---
+
+<Shell title="Writing — Brian Dillon" section="writing">
+  <div class="page-column inner-page">
+    <header class="page-header">
+      <h1 data-stage-exclude class="page-title">Writing</h1>
+      <p data-stage-exclude class="micro route-body">
+        {posts.filter((p) => !p.data.sample).length} POSTS
+        {posts.some((p) => p.data.sample) && " · SAMPLE TEMPLATE"}
+      </p>
+    </header>
+    <div data-stage-exclude class="writing-list">
+      {posts.map((post) => (
+        <article class="writing-row" data-row>
+          <span class="micro">{dateLabel(post.data.date)}</span>
+          <div>
+            <a href={`/writing/${post.data.slug}`}>
+              {post.data.title}
+              {post.data.sample && <span class="sample-tag micro">SAMPLE</span>}
+            </a>
+            <p>{post.data.description}</p>
+          </div>
+          <a
+            href={`/writing/${post.data.slug}`}
+            aria-label={`Open ${post.data.title}`}
+          >
+            →
+          </a>
+        </article>
+      ))}
+    </div>
+  </div>
+</Shell>
