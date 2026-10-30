@@ -4,6 +4,7 @@ import { siteOrigin } from "./scripts/site-config.mjs";
 import preact from "@astrojs/preact";
 import mdx from '@astrojs/mdx';
 import { localMixPlugin } from './scripts/local-mix-plugin.mjs';
+import { stageLab } from './src/lab/integration.mjs';
 
 // Astro takes a config object, not a function: read the mode from the CLI so
 // `--mode preview` and `.env.<mode>` files keep working.
@@ -25,7 +26,7 @@ export default defineConfig({
     ] },
   } },
   output: "static",
-  integrations: [preact(), mdx()],
+  integrations: [preact(), mdx(), stageLab()],
   markdown: { shikiConfig: { theme: 'github-dark' } },
   vite: { plugins: [localMixPlugin()] },
   devToolbar: { enabled: false },

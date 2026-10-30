@@ -315,6 +315,15 @@ No colour shifts, no strobing, no camera shake, and no page-brightness change. *
 - A small dev-only tuning panel may help compare framing/density/motion if config editing becomes a bottleneck. Exclude imports and UI from production; a query-string switch alone is insufficient. No production tuning dependency is required.
 - Worker rendering, a mobile sheet, recurring scroll choreography and pointer parallax are not prerequisites for this prototype. Further enhancements belong in `ROADMAP.md` with evidence-based triggers.
 
+### 8.7 Scene as shipped in phase V (D-051–D-056; supersedes §8.2's motif)
+- **Scene:** a lit particle moon (surface 52k desktop / 16k phone, thinning inwards from the limb), a terminator from a fixed upper-right sun, an opaque body that occludes far dust, a thin atmosphere (view-angle glow inside the limb, short shell outside), dust in three parallax depths, and a debris ring used only by variant B. Rendered to a half-float target, then one composite pass: exposure, vignette, grain, ACES tone mapping, sRGB, dither. Code: `src/components/stage/{scene,runtime,coupling,params}.ts`.
+- **Playback state** (`coupling.ts › PhaseEnvelopes`): idle near-monochrome; loading inhales for ≤3 s; playing blooms colour (τ 1 s) and coupling (τ 0.8 s); buffering holds; paused exhales to 0.93 brightness and recedes colour (τ 1.6 s); ended/idle/error settle. Seeks ease position-mapped values over ~1.3 s and add one soft dust disturbance; item changes reseed gently (hash of the item id).
+- **Music:** §8.3 score only. Breath → drift +≤20%, rim +≤15% (shared with arc and `low`); `playing` and `high` → sparkle +≤10%; macro arc → limb density (≤12% of buffer) and atmosphere thickness (≤+15%; C ≤+20%, pending approval). One ripple per boundary; ripple brightness never exceeds the rim cap.
+- **Composition:** poses per route group and breakpoint (`poseFor`), glide 0.9 s; exclusion falloff per D-055. Posters `public/poster/{home,listen,mixes,read}{,-mobile}.avif`, made by `pnpm posters`.
+- **Performance:** active tier renders every frame (playing, camera moves, settling, ripples); idle renders at 20 fps; reduced motion renders one still per route; the animation pause freezes. Governor: EMA 0.08, samples clamped at 250 ms, drops with τ ≈ 0.6 s, recovers over ~10 s only below 80% of budget, floor 0.55; it scales draw count and DPR (0.25 steps) only.
+- **Variants:** `?visual=b|c` in dev; the lab switches live. A is the default everywhere.
+- **Extras (D-057, D-058):** the lit fraction follows the real lunar phase (eased in after the poster swap); a subtle pointer parallax on desktop. Neither affects posters, reduced motion or the animation pause.
+
 ---
 
 ## 9. Future storyboard: required separation only

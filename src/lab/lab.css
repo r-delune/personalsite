@@ -1,0 +1,18 @@
+:root { color-scheme: dark; --bg: #0b0c0e; --fg: #eae9e5; --muted: #989da8; --accent: #a9c5e5; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 12px/1.4 ui-monospace, "Geist Mono", monospace; }
+.stage { position: fixed; inset: 0; z-index: 0; }
+.stage canvas { width: 100%; height: 100%; display: block; }
+.lab-panel { position: fixed; z-index: 3; top: 12px; right: 12px; width: 300px; max-height: calc(100vh - 110px); overflow: auto; padding: 12px; background: rgba(11, 12, 14, 0.82); border: 1px solid #262a31; border-radius: 6px; backdrop-filter: blur(6px); }
+.lab-panel h1, .lab-panel h2 { font-size: 12px; margin: 0 0 8px; color: var(--accent); font-weight: 500; }
+.lab-panel h2 { margin-top: 12px; }
+.lab-panel label { display: flex; gap: 6px; align-items: center; justify-content: space-between; margin: 4px 0; color: var(--muted); }
+.lab-panel select, .lab-panel input[type="number"] { background: #15181e; color: var(--fg); border: 1px solid #2b3038; }
+.lab-panel button { width: 100%; padding: 6px; background: #15181e; color: var(--fg); border: 1px solid #2b3038; cursor: pointer; }
+.lab-sliders label { display: grid; grid-template-columns: 1fr 110px 44px; }
+.lab-sliders output { text-align: right; color: var(--fg); }
+.lab-pitch { color: var(--muted); margin: 6px 0; }
+.lab-hud { white-space: pre-wrap; color: var(--fg); background: #0f1114; padding: 6px; margin: 8px 0; }
+.lab-strip { position: fixed; z-index: 3; left: 0; right: 0; bottom: 0; width: 100%; height: 72px; cursor: ew-resize; }
+.lab-mock { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+.lab-mock-box { position: absolute; border: 1px dashed rgba(234, 233, 229, 0.22); color: rgba(234, 233, 229, 0.4); padding: 4px 6px; box-sizing: border-box; }
+.is-poster .lab-mock, .is-poster .lab-panel, .is-poster .lab-strip { display: none; }

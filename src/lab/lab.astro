@@ -1,0 +1,21 @@
+---
+// Dev-only stage lab. Injected at /lab by ./integration.mjs during `astro dev`
+// only; it is not under src/pages, so production builds never contain it.
+import "./lab.css";
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Stage lab</title>
+  </head>
+  <body>
+    <div id="stage" class="stage"><canvas></canvas></div>
+    <div id="lab"></div>
+    <script>
+      import "./lab.ts";
+    </script>
+  </body>
+</html>

@@ -13,6 +13,7 @@ const result = spawnSync(
     "--test",
     "tests/stage-bridge.test.ts",
     "tests/phase2b.test.ts",
+    "tests/visual.test.ts",
   ],
   { stdio: "inherit" },
 );

@@ -8,7 +8,7 @@
     "build": "node scripts/prepare-fixture.mjs && node scripts/astro.mjs build && node scripts/check-content.mjs",
     "build:preview": "node scripts/prepare-fixture.mjs && node scripts/astro.mjs build --mode preview",
     "preview": "node scripts/astro.mjs preview --host 127.0.0.1 --port 4358",
-    "posters": "node scripts/generate-posters.mjs",
+    "posters": "node scripts/render-posters.mjs",
     "predev": "node scripts/prepare-fixture.mjs",
     "precheck": "node scripts/prepare-fixture.mjs",
     "test": "node scripts/test.mjs"
