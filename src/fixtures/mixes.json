@@ -1,0 +1,469 @@
+[
+  {
+    "id": "mix:roam-mix-2026",
+    "slug": "roam-mix-2026",
+    "title": "TODO(copy)",
+    "year": null,
+    "dateApprox": false,
+    "series": "TODO(copy)",
+    "duration": 3626.74,
+    "filename": "ROAM_MIX_2026.mp3",
+    "peaks": "/data/roam-mix-2026.peaks.json",
+    "score": "/data/roam-mix-2026.score.json",
+    "cover": "/artwork/mixes/roam-mix-2026.svg",
+    "coverSmall": "/artwork/mixes/roam-mix-2026.svg",
+    "coverAlt": "Roam mix placeholder artwork",
+    "tracklist": []
+  },
+  {
+    "id": "mix:long-distance-runaround",
+    "slug": "long-distance-runaround",
+    "title": "Long Distance Runaround // Running Tunes",
+    "year": "2025",
+    "dateApprox": false,
+    "series": "Running",
+    "duration": 8706,
+    "filename": null,
+    "peaks": null,
+    "date": "2025-10-02",
+    "tags": [
+      "Techno",
+      "House"
+    ],
+    "mixcloudUrl": "https://www.mixcloud.com/brian-diolun/long-distance-runaround-running-tunesss/",
+    "cover": "/artwork/mixes/long-distance-runaround.jpg",
+    "coverSmall": "/artwork/mixes/long-distance-runaround-300.jpg",
+    "coverAlt": "Long Distance Runaround // Running Tunes cover artwork",
+    "coverSource": "https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/c/7/3/3/8b02-a9e6-42f3-a674-845d0d4b9d3d",
+    "tracklist": []
+  },
+  {
+    "id": "mix:year-24",
+    "slug": "year-24",
+    "title": "'24",
+    "year": "2025",
+    "dateApprox": false,
+    "series": "Year mixes",
+    "duration": 3600,
+    "filename": null,
+    "peaks": null,
+    "date": "2025-03-06",
+    "tags": [
+      "Electronica",
+      "Ambient",
+      "Acoustic",
+      "Jazz",
+      "Chillout"
+    ],
+    "mixcloudUrl": "https://www.mixcloud.com/brian-diolun/24/",
+    "cover": "/artwork/mixes/year-24.jpg",
+    "coverSmall": "/artwork/mixes/year-24-300.jpg",
+    "coverAlt": "'24 cover artwork",
+    "coverSource": "https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/1/d/a/5/42bf-b346-4286-b9e7-950de8b37370",
+    "tracklist": []
+  },
+  {
+    "id": "mix:year-23",
+    "slug": "year-23",
+    "title": "'23",
+    "year": "2023",
+    "dateApprox": false,
+    "series": "Year mixes",
+    "duration": 3456,
+    "filename": null,
+    "peaks": null,
+    "date": "2023-12-31",
+    "tags": [
+      "Space",
+      "Ambient",
+      "Sleep"
+    ],
+    "mixcloudUrl": "https://www.mixcloud.com/brian-diolun/023/",
+    "cover": "/artwork/mixes/year-23.png",
+    "coverSmall": "/artwork/mixes/year-23-300.png",
+    "coverAlt": "'23 cover artwork",
+    "coverSource": "https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/6/1/1/5/3398-ae35-4ce7-b004-894a2b6abcc4",
+    "tracklist": []
+  },
+  {
+    "id": "mix:year-22",
+    "slug": "year-22",
+    "title": "'22",
+    "year": "2022",
+    "dateApprox": false,
+    "series": "Year mixes",
+    "duration": 3600,
+    "filename": null,
+    "peaks": null,
+    "date": "2022-09-19",
+    "tags": [
+      "Chillout",
+      "Ambient"
+    ],
+    "description": "melancholy meltables",
+    "mixcloudUrl": "https://www.mixcloud.com/brian-diolun/22/",
+    "cover": "/artwork/mixes/year-22.jpg",
+    "coverSmall": "/artwork/mixes/year-22-300.jpg",
+    "coverAlt": "'22 cover artwork",
+    "coverSource": "https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/5/f/6/e/ed4e-ae27-47d8-abf7-936b89a55c9a",
+    "tracklist": []
+  },
+  {
+    "id": "mix:holiday-fizzler",
+    "slug": "holiday-fizzler",
+    "title": "Holiday Fizzler (Ambient)",
+    "year": "2019",
+    "dateApprox": false,
+    "series": "",
+    "duration": 4764,
+    "filename": null,
+    "peaks": null,
+    "date": "2019-12-25",
+    "tags": [
+      "Ambient"
+    ],
+    "description": "For the wind down",
+    "mixcloudUrl": "https://www.mixcloud.com/brian-diolun/holiday-fizzler/",
+    "cover": "/artwork/mixes/holiday-fizzler.jpg",
+    "coverSmall": "/artwork/mixes/holiday-fizzler-300.jpg",
+    "coverAlt": "Holiday Fizzler (Ambient) cover artwork",
+    "coverSource": "https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/8/b/b/7/8715-f5e0-4c05-abcd-c57934651807",
+    "tracklist": []
+  },
+  {
+    "id": "mix:autnote-6",
+    "slug": "autnote-6",
+    "title": "Skirmish Blog AUTNOTE series #6 (Jazz, Lo-fi, Eastern)",
+    "year": "2017",
+    "dateApprox": false,
+    "series": "AUTNOTE",
+    "duration": 3905,
+    "filename": null,
+    "peaks": null,
+    "date": "2017-06-14",
+    "tags": [
+      "Jazz",
+      "World",
+      "70s",
+      "60s",
+      "Lo-fi"
+    ],
+    "description": "Delighted to do another mix for Skirmish's AUTNOTE series, featuring popular world music from the 60's and 70's along with some jazzy bits old and new.",
+    "mixcloudUrl": "https://www.mixcloud.com/brian-diolun/brian-diol%C3%BAn-autnote-6/",
+    "cover": "/artwork/mixes/autnote-6.jpg",
+    "coverSmall": "/artwork/mixes/autnote-6-300.jpg",
+    "coverAlt": "Skirmish Blog AUTNOTE series #6 (Jazz, Lo-fi, Eastern) cover artwork",
+    "coverSource": "https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/c/2/b/7/0dc7-368c-445e-8b57-484ff828d5af",
+    "tracklist": [
+      {
+        "at": 0,
+        "artist": "Buari",
+        "title": "Advice From Father"
+      },
+      {
+        "at": 334,
+        "artist": "Ros Sereysothea",
+        "title": "Cry Loving Me"
+      },
+      {
+        "at": 526,
+        "artist": "Sivuca",
+        "title": "Ain't No Sunshine"
+      },
+      {
+        "at": 733,
+        "artist": "The Lyman Woodard Quartet",
+        "title": "On Your Mind"
+      },
+      {
+        "at": 1027,
+        "artist": "Fadhili William & The Black Shadows",
+        "title": "Malaika"
+      },
+      {
+        "at": 1173,
+        "artist": "Les Baxter",
+        "title": "African Jazz"
+      },
+      {
+        "at": 1370,
+        "artist": "Yusef Lateef",
+        "title": "The Plum Blossom"
+      },
+      {
+        "at": 1666,
+        "artist": "Woo",
+        "title": "The Frog's Fandango"
+      },
+      {
+        "at": 1845,
+        "artist": "Joyce",
+        "title": "Jardim Dos Deuses"
+      },
+      {
+        "at": 2046,
+        "artist": "Tino Rossi",
+        "title": "J'attendrai"
+      },
+      {
+        "at": 2248,
+        "artist": "Woo",
+        "title": "Into The Heart Of Love"
+      },
+      {
+        "at": 2408,
+        "artist": "Ennio Morricone",
+        "title": "Veruschka"
+      },
+      {
+        "at": 2561,
+        "artist": "Boards of Canada",
+        "title": "Davie Adisson"
+      },
+      {
+        "at": 2674,
+        "artist": "The Advisory Circle",
+        "title": "Sundial"
+      },
+      {
+        "at": 2832,
+        "artist": "Mulatu Astatke",
+        "title": "Motherland"
+      },
+      {
+        "at": 2982,
+        "artist": "Serge Gainsbourg",
+        "title": "Ballade de Melody Nelson"
+      },
+      {
+        "at": 3105,
+        "artist": "Takuya Kuroda",
+        "title": "In the Sunshine"
+      },
+      {
+        "at": 3633,
+        "artist": "Le Mystère des Voix Bulgares",
+        "title": "Kalimankou Denkou (The Evening Gathering)"
+      }
+    ]
+  },
+  {
+    "id": "mix:roam-mix-1",
+    "slug": "roam-mix-1",
+    "title": "Roam mix 1",
+    "year": "2017",
+    "dateApprox": false,
+    "series": "Roam",
+    "duration": 5435,
+    "filename": null,
+    "peaks": null,
+    "date": "2017-04-07",
+    "tags": [
+      "Instrumental hip hop",
+      "Downtempo",
+      "Ambient"
+    ],
+    "description": "Complete with dodgy bits :)",
+    "mixcloudUrl": "https://www.mixcloud.com/brian-diolun/bits-and-bobs-2/",
+    "cover": "/artwork/mixes/roam-mix-1.jpg",
+    "coverSmall": "/artwork/mixes/roam-mix-1-300.jpg",
+    "coverAlt": "Roam mix 1 cover artwork",
+    "coverSource": "https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/2/a/5/9/e376-4efc-4d67-b4af-7df32a70987f",
+    "tracklist": []
+  },
+  {
+    "id": "mix:autnote-1",
+    "slug": "autnote-1",
+    "title": "Skirmish Blog AUTNOTE series #1",
+    "year": "2015",
+    "dateApprox": false,
+    "series": "AUTNOTE",
+    "duration": 3632,
+    "filename": null,
+    "peaks": null,
+    "date": "2015-04-19",
+    "tags": [
+      "Jazz",
+      "Rock",
+      "70s",
+      "60s"
+    ],
+    "description": "Mix for Skirmish's AUTNOTE series, featuring bits and pieces of music mostly from around the 60's and 70's.",
+    "mixcloudUrl": "https://www.mixcloud.com/brian-diolun/brian-diol%C3%BAn-skirmish-autnote-mix/",
+    "cover": "/artwork/mixes/autnote-1.jpg",
+    "coverSmall": "/artwork/mixes/autnote-1-300.jpg",
+    "coverAlt": "Skirmish Blog AUTNOTE series #1 cover artwork",
+    "coverSource": "https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/4/2/d/8/ddd9-3a21-4580-b356-580615dd54f8",
+    "tracklist": []
+  },
+  {
+    "id": "mix:bank-holiday-chillout",
+    "slug": "bank-holiday-chillout",
+    "title": "Bank Holiday Chillout",
+    "year": "2014",
+    "dateApprox": false,
+    "series": "",
+    "duration": 3593,
+    "filename": null,
+    "peaks": null,
+    "date": "2014-10-27",
+    "tags": [
+      "70s",
+      "60s",
+      "Chillout"
+    ],
+    "description": "Something for after the long weekend.",
+    "mixcloudUrl": "https://www.mixcloud.com/brian-diolun/mix01-bank-holiday-chillout/",
+    "cover": "/artwork/mixes/bank-holiday-chillout.jpg",
+    "coverSmall": "/artwork/mixes/bank-holiday-chillout-300.jpg",
+    "coverAlt": "Bank Holiday Chillout cover artwork",
+    "coverSource": "https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/0/a/4/a/be58-e73b-446b-9c68-fb2eeb66f427.jpg",
+    "tracklist": [
+      {
+        "at": 0,
+        "artist": "Eden Ahbez",
+        "title": "Eden's Island"
+      },
+      {
+        "at": 137,
+        "artist": "Les Baxter",
+        "title": "Quiet Village"
+      },
+      {
+        "at": 308,
+        "artist": "Stéphane Wrembel",
+        "title": "Bistro Fada"
+      },
+      {
+        "at": 447,
+        "artist": "Stan Getz",
+        "title": "The Girl from Ipanema"
+      },
+      {
+        "at": 814,
+        "artist": "Mort Garson",
+        "title": "Plantasia"
+      },
+      {
+        "at": 1043,
+        "artist": "Stringtonics",
+        "title": "Dawn Mists"
+      },
+      {
+        "at": 1228,
+        "artist": "Julee Cruise",
+        "title": "Twin Peaks Theme"
+      },
+      {
+        "at": 1502,
+        "artist": "Barry Forgie",
+        "title": "Fino All'Orizzonte"
+      },
+      {
+        "at": 1633,
+        "artist": "The Fleetwoods",
+        "title": "Come Softly"
+      },
+      {
+        "at": 1772,
+        "artist": "The Ink Spots",
+        "title": "Maybe"
+      },
+      {
+        "at": 1923,
+        "artist": "Miriam Makeba",
+        "title": "House of the Rising Sun"
+      },
+      {
+        "at": 2064,
+        "artist": "Nick Drake",
+        "title": "All My Trials"
+      },
+      {
+        "at": 2181,
+        "artist": "Irma Thomas",
+        "title": "Anyone Who Knows What Love Is"
+      },
+      {
+        "at": 2341,
+        "artist": "Fleetwood Mac",
+        "title": "Albatross"
+      },
+      {
+        "at": 2570,
+        "artist": "Jefferson Airplane",
+        "title": "Embryonic Journey"
+      },
+      {
+        "at": 2652,
+        "artist": "Esperanza Spalding",
+        "title": "Little Fly"
+      },
+      {
+        "at": 2844,
+        "artist": "Sly & The Family Stone",
+        "title": "Time"
+      },
+      {
+        "at": 3087,
+        "artist": "Peggy Lee",
+        "title": "Fever"
+      },
+      {
+        "at": 3209,
+        "artist": "Dusty Springfield",
+        "title": "Spooky"
+      },
+      {
+        "at": 3401,
+        "artist": "Nina Simone",
+        "title": "My Baby Just Cares for Me"
+      }
+    ]
+  },
+  {
+    "id": "mix:dream-gathering-african-vibes",
+    "slug": "dream-gathering-african-vibes",
+    "title": "Dream Gathering DJ set (African Vibes)",
+    "year": "2014",
+    "dateApprox": false,
+    "series": "",
+    "duration": 5019,
+    "filename": null,
+    "peaks": null,
+    "date": "2014-07-17",
+    "tags": [
+      "African",
+      "Afrobeat",
+      "70s"
+    ],
+    "description": "My DJ set for Dream Gathering festival, West Cork, 2014.",
+    "mixcloudUrl": "https://www.mixcloud.com/brian-diolun/dream-gathering-dj-set-african-vibes/",
+    "cover": "/artwork/mixes/dream-gathering-african-vibes.jpg",
+    "coverSmall": "/artwork/mixes/dream-gathering-african-vibes-300.jpg",
+    "coverAlt": "Dream Gathering DJ set (African Vibes) cover artwork",
+    "coverSource": "https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/8/e/9/f/4c46-0c8e-4a6b-95df-3549415c54e1.jpg",
+    "tracklist": [
+      {
+        "at": 0,
+        "artist": "Prince Nico Mbarga",
+        "title": "Sweet Mother"
+      },
+      {
+        "at": 2220,
+        "artist": "Antibalas",
+        "title": "Che Che Cole / Makossa (feat. Mayra Vega)"
+      },
+      {
+        "at": 2853,
+        "artist": "Antibalas",
+        "title": "Battle of the Species"
+      },
+      {
+        "at": 3243,
+        "artist": "Fela Ransome Kuti",
+        "title": "Water No Get Enemy"
+      }
+    ]
+  }
+]

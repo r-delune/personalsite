@@ -9,116 +9,246 @@
     "duration": 3626.74,
     "filename": "ROAM_MIX_2026.mp3",
     "peaks": "/data/roam-mix-2026.peaks.json",
-    "score": "/data/roam-mix-2026.score.json"
+    "score": "/data/roam-mix-2026.score.json",
+    "tracklistFile": "inputs/mixes/roam-mix-2026/tracklist.txt",
+    "cover": "/artwork/mixes/roam-mix-2026.svg",
+    "coverSmall": "/artwork/mixes/roam-mix-2026.svg",
+    "coverAlt": "Roam mix placeholder artwork"
   },
   {
     "id": "mix:long-distance-runaround",
     "slug": "long-distance-runaround",
     "title": "Long Distance Runaround // Running Tunes",
     "year": "2025",
-    "dateApprox": true,
+    "dateApprox": false,
     "series": "Running",
     "duration": 8706,
     "filename": null,
-    "peaks": null
+    "peaks": null,
+    "date": "2025-10-02",
+    "tags": [
+      "Techno",
+      "House"
+    ],
+    "mixcloudUrl": "https://www.mixcloud.com/brian-diolun/long-distance-runaround-running-tunesss/",
+    "cover": "/artwork/mixes/long-distance-runaround.jpg",
+    "coverSmall": "/artwork/mixes/long-distance-runaround-300.jpg",
+    "coverAlt": "Long Distance Runaround // Running Tunes cover artwork",
+    "coverSource": "https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/c/7/3/3/8b02-a9e6-42f3-a674-845d0d4b9d3d"
   },
   {
     "id": "mix:year-24",
     "slug": "year-24",
     "title": "'24",
     "year": "2025",
-    "dateApprox": true,
+    "dateApprox": false,
     "series": "Year mixes",
     "duration": 3600,
     "filename": null,
-    "peaks": null
+    "peaks": null,
+    "date": "2025-03-06",
+    "tags": [
+      "Electronica",
+      "Ambient",
+      "Acoustic",
+      "Jazz",
+      "Chillout"
+    ],
+    "mixcloudUrl": "https://www.mixcloud.com/brian-diolun/24/",
+    "tracklistFile": "inputs/mixes/year-24/tracklist.txt",
+    "cover": "/artwork/mixes/year-24.jpg",
+    "coverSmall": "/artwork/mixes/year-24-300.jpg",
+    "coverAlt": "'24 cover artwork",
+    "coverSource": "https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/1/d/a/5/42bf-b346-4286-b9e7-950de8b37370"
   },
   {
     "id": "mix:year-23",
     "slug": "year-23",
     "title": "'23",
-    "year": "2024",
-    "dateApprox": true,
+    "year": "2023",
+    "dateApprox": false,
     "series": "Year mixes",
     "duration": 3456,
     "filename": null,
-    "peaks": null
+    "peaks": null,
+    "date": "2023-12-31",
+    "tags": [
+      "Space",
+      "Ambient",
+      "Sleep"
+    ],
+    "mixcloudUrl": "https://www.mixcloud.com/brian-diolun/023/",
+    "tracklistFile": "inputs/mixes/year-23/tracklist.txt",
+    "cover": "/artwork/mixes/year-23.png",
+    "coverSmall": "/artwork/mixes/year-23-300.png",
+    "coverAlt": "'23 cover artwork",
+    "coverSource": "https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/6/1/1/5/3398-ae35-4ce7-b004-894a2b6abcc4"
   },
   {
     "id": "mix:year-22",
     "slug": "year-22",
     "title": "'22",
     "year": "2022",
-    "dateApprox": true,
+    "dateApprox": false,
     "series": "Year mixes",
     "duration": 3600,
     "filename": null,
-    "peaks": null
+    "peaks": null,
+    "date": "2022-09-19",
+    "tags": [
+      "Chillout",
+      "Ambient"
+    ],
+    "description": "melancholy meltables",
+    "mixcloudUrl": "https://www.mixcloud.com/brian-diolun/22/",
+    "tracklistFile": "inputs/mixes/year-22/tracklist.txt",
+    "cover": "/artwork/mixes/year-22.jpg",
+    "coverSmall": "/artwork/mixes/year-22-300.jpg",
+    "coverAlt": "'22 cover artwork",
+    "coverSource": "https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/5/f/6/e/ed4e-ae27-47d8-abf7-936b89a55c9a"
   },
   {
     "id": "mix:holiday-fizzler",
     "slug": "holiday-fizzler",
     "title": "Holiday Fizzler (Ambient)",
-    "year": "2020",
-    "dateApprox": true,
+    "year": "2019",
+    "dateApprox": false,
     "series": "",
     "duration": 4764,
     "filename": null,
-    "peaks": null
+    "peaks": null,
+    "date": "2019-12-25",
+    "tags": [
+      "Ambient"
+    ],
+    "description": "For the wind down",
+    "mixcloudUrl": "https://www.mixcloud.com/brian-diolun/holiday-fizzler/",
+    "tracklistFile": "inputs/mixes/holiday-fizzler/tracklist.txt",
+    "cover": "/artwork/mixes/holiday-fizzler.jpg",
+    "coverSmall": "/artwork/mixes/holiday-fizzler-300.jpg",
+    "coverAlt": "Holiday Fizzler (Ambient) cover artwork",
+    "coverSource": "https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/8/b/b/7/8715-f5e0-4c05-abcd-c57934651807"
   },
   {
     "id": "mix:autnote-6",
     "slug": "autnote-6",
     "title": "Skirmish Blog AUTNOTE series #6 (Jazz, Lo-fi, Eastern)",
     "year": "2017",
-    "dateApprox": true,
+    "dateApprox": false,
     "series": "AUTNOTE",
     "duration": 3905,
     "filename": null,
-    "peaks": null
+    "peaks": null,
+    "date": "2017-06-14",
+    "tags": [
+      "Jazz",
+      "World",
+      "70s",
+      "60s",
+      "Lo-fi"
+    ],
+    "description": "Delighted to do another mix for Skirmish's AUTNOTE series, featuring popular world music from the 60's and 70's along with some jazzy bits old and new.",
+    "mixcloudUrl": "https://www.mixcloud.com/brian-diolun/brian-diol%C3%BAn-autnote-6/",
+    "tracklistFile": "inputs/mixes/autnote-6/tracklist.txt",
+    "cover": "/artwork/mixes/autnote-6.jpg",
+    "coverSmall": "/artwork/mixes/autnote-6-300.jpg",
+    "coverAlt": "Skirmish Blog AUTNOTE series #6 (Jazz, Lo-fi, Eastern) cover artwork",
+    "coverSource": "https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/c/2/b/7/0dc7-368c-445e-8b57-484ff828d5af"
   },
   {
     "id": "mix:roam-mix-1",
     "slug": "roam-mix-1",
     "title": "Roam mix 1",
     "year": "2017",
-    "dateApprox": true,
+    "dateApprox": false,
     "series": "Roam",
     "duration": 5435,
     "filename": null,
-    "peaks": null
+    "peaks": null,
+    "date": "2017-04-07",
+    "tags": [
+      "Instrumental hip hop",
+      "Downtempo",
+      "Ambient"
+    ],
+    "description": "Complete with dodgy bits :)",
+    "mixcloudUrl": "https://www.mixcloud.com/brian-diolun/bits-and-bobs-2/",
+    "cover": "/artwork/mixes/roam-mix-1.jpg",
+    "coverSmall": "/artwork/mixes/roam-mix-1-300.jpg",
+    "coverAlt": "Roam mix 1 cover artwork",
+    "coverSource": "https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/2/a/5/9/e376-4efc-4d67-b4af-7df32a70987f"
   },
   {
     "id": "mix:autnote-1",
     "slug": "autnote-1",
     "title": "Skirmish Blog AUTNOTE series #1",
     "year": "2015",
-    "dateApprox": true,
+    "dateApprox": false,
     "series": "AUTNOTE",
     "duration": 3632,
     "filename": null,
-    "peaks": null
+    "peaks": null,
+    "date": "2015-04-19",
+    "tags": [
+      "Jazz",
+      "Rock",
+      "70s",
+      "60s"
+    ],
+    "description": "Mix for Skirmish's AUTNOTE series, featuring bits and pieces of music mostly from around the 60's and 70's.",
+    "mixcloudUrl": "https://www.mixcloud.com/brian-diolun/brian-diol%C3%BAn-skirmish-autnote-mix/",
+    "tracklistFile": "inputs/mixes/autnote-1/tracklist.txt",
+    "cover": "/artwork/mixes/autnote-1.jpg",
+    "coverSmall": "/artwork/mixes/autnote-1-300.jpg",
+    "coverAlt": "Skirmish Blog AUTNOTE series #1 cover artwork",
+    "coverSource": "https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/4/2/d/8/ddd9-3a21-4580-b356-580615dd54f8"
   },
   {
     "id": "mix:bank-holiday-chillout",
     "slug": "bank-holiday-chillout",
     "title": "Bank Holiday Chillout",
     "year": "2014",
-    "dateApprox": true,
+    "dateApprox": false,
     "series": "",
     "duration": 3593,
     "filename": null,
-    "peaks": null
+    "peaks": null,
+    "date": "2014-10-27",
+    "tags": [
+      "70s",
+      "60s",
+      "Chillout"
+    ],
+    "description": "Something for after the long weekend.",
+    "mixcloudUrl": "https://www.mixcloud.com/brian-diolun/mix01-bank-holiday-chillout/",
+    "tracklistFile": "inputs/mixes/bank-holiday-chillout/tracklist.txt",
+    "cover": "/artwork/mixes/bank-holiday-chillout.jpg",
+    "coverSmall": "/artwork/mixes/bank-holiday-chillout-300.jpg",
+    "coverAlt": "Bank Holiday Chillout cover artwork",
+    "coverSource": "https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/0/a/4/a/be58-e73b-446b-9c68-fb2eeb66f427.jpg"
   },
   {
     "id": "mix:dream-gathering-african-vibes",
     "slug": "dream-gathering-african-vibes",
     "title": "Dream Gathering DJ set (African Vibes)",
     "year": "2014",
-    "dateApprox": true,
+    "dateApprox": false,
     "series": "",
     "duration": 5019,
     "filename": null,
-    "peaks": null
+    "peaks": null,
+    "date": "2014-07-17",
+    "tags": [
+      "African",
+      "Afrobeat",
+      "70s"
+    ],
+    "description": "My DJ set for Dream Gathering festival, West Cork, 2014.",
+    "mixcloudUrl": "https://www.mixcloud.com/brian-diolun/dream-gathering-dj-set-african-vibes/",
+    "tracklistFile": "inputs/mixes/dream-gathering-african-vibes/tracklist.txt",
+    "cover": "/artwork/mixes/dream-gathering-african-vibes.jpg",
+    "coverSmall": "/artwork/mixes/dream-gathering-african-vibes-300.jpg",
+    "coverAlt": "Dream Gathering DJ set (African Vibes) cover artwork",
+    "coverSource": "https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/8/e/9/f/4c46-0c8e-4a6b-95df-3549415c54e1.jpg"
   }
 ]

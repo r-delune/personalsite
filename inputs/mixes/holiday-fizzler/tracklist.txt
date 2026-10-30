@@ -1,0 +1,15 @@
+# Tracklist for Holiday Fizzler (Ambient) — imported from Mixcloud (https://www.mixcloud.com/brian-diolun/holiday-fizzler/) on 2026-10-30.
+# Format (SPEC §10.4): mm:ss Artist - Title [Label]   or   h:mm:ss Artist - Title
+# Lines containing TODO are dropped before publication.
+# No usable cue times on Mixcloud. Replace each TODO with the track's start time (mm:ss) to publish it.
+
+TODO Midori Takada - Mr. Henri Rousseau's Dream
+TODO Brian Eno - Thursday Afternoon (edit)
+TODO Alice Coltrane - Krishna Krishna
+TODO The Caretaker - Mental Caverns Without Sunshine
+TODO Aphex Twin - Rhubarb
+TODO Loscil - Endless Falls
+TODO Huerco S / Penchant - NMQ-HYT
+TODO Kara-Lis Coverdale - Grafts (excerpt)
+TODO William Basinski - dlp 1.1
+TODO Global Communication - 12:18

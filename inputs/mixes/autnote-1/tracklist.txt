@@ -1,0 +1,23 @@
+# Tracklist for Skirmish Blog AUTNOTE series #1 — imported from Mixcloud (https://www.mixcloud.com/brian-diolun/brian-diol%C3%BAn-skirmish-autnote-mix/) on 2026-10-30.
+# Format (SPEC §10.4): mm:ss Artist - Title [Label]   or   h:mm:ss Artist - Title
+# Lines containing TODO are dropped before publication.
+# No usable cue times on Mixcloud. Replace each TODO with the track's start time (mm:ss) to publish it.
+# Note: Mixcloud cue times were evenly spaced every 227 s (placeholders), not real cues.
+
+TODO Nina Simone - Funkier Than a Mosquito's Tweeter
+TODO Placebo - Humpty Dumpty
+TODO Cici Kizlar - Gencim
+TODO David T. Walker - Lay Lady Lay
+TODO Flying Lotus - Unexpected Delight
+TODO Bonobo - The Plug (Live)
+TODO Little People - Moon
+TODO DJ Krush - Song 2
+TODO Barry Forgie - Mediterranée
+TODO Chet Baker - My Funny Valentine
+TODO Louis Armstrong - I'm in the Mood for Love
+TODO Erroll Garner - Misty
+TODO King Crimson - I Talk To The Wind
+TODO Esbjörn Svensson Trio - Serenade for The Renegade
+TODO Pharoah Sanders - Heart Is A Melody
+TODO Slum Village - Fall in Love
+TODO ELO - Dark City

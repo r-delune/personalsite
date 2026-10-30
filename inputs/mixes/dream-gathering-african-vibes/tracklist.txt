@@ -1,0 +1,13 @@
+# Tracklist for Dream Gathering DJ set (African Vibes) — imported from Mixcloud (https://www.mixcloud.com/brian-diolun/dream-gathering-dj-set-african-vibes/) on 2026-10-30.
+# Format (SPEC §10.4): mm:ss Artist - Title [Label]   or   h:mm:ss Artist - Title
+# Lines containing TODO are dropped before publication.
+# Cue times are Brian's own Mixcloud cues.
+# Note: Three tracks are unidentified on Mixcloud.
+
+00:00 Prince Nico Mbarga - Sweet Mother
+09:45 TODO - unidentified track
+37:00 Antibalas - Che Che Cole / Makossa (feat. Mayra Vega)
+40:39 TODO - unidentified track
+47:33 Antibalas - Battle of the Species
+54:03 Fela Ransome Kuti - Water No Get Enemy
+1:04:57 TODO - unidentified track

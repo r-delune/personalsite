@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600" role="img" aria-label="Roam mix placeholder artwork">
+  <rect width="600" height="600" fill="#15181e"/>
+  <rect x="28" y="28" width="544" height="544" fill="none" stroke="#30343b"/>
+  <path d="M72 385h456" stroke="#30343b"/>
+  <text x="68" y="350" fill="#eae9e5" font-family="Helvetica,Arial,sans-serif" font-size="88" letter-spacing="8">ROAM</text>
+  <text x="74" y="430" fill="#989da8" font-family="Helvetica,Arial,sans-serif" font-size="20" letter-spacing="6">MIX</text>
+</svg>
