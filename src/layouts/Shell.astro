@@ -5,6 +5,7 @@ import Player from "../components/player/Player";
 import Icon from "../components/Icon.astro";
 import { visiblePosts, realPosts, isPreview } from "../lib/content";
 import { mixes } from "../lib/catalogue";
+import { siteOrigin } from "../../scripts/site-config.mjs";
 import "@fontsource-variable/geist";
 import "@fontsource-variable/geist-mono";
 import "../styles/global.css";
@@ -27,12 +28,15 @@ const descriptions: Record<string, string> = {
   about: "About Brían Diolún: musician, DJ as Roam, and software consultant at rdelune.",
 };
 const { title = "Brían Diolún — Music, mixes & software", section = "home", description = descriptions[section] || descriptions.home, image = "/social/default.png", noindex = false, article } = Astro.props;
-const canonical = new URL(Astro.url.pathname.replace(/\/$/, "") || "/", Astro.site);
-const socialImage = new URL(image, Astro.site);
+// Astro.site can come through empty (e.g. a dev server started before the
+// config changed); fall back to the same production origin the config uses.
+const siteBase = Astro.site ?? new URL(siteOrigin(import.meta.env.PUBLIC_SITE_URL || undefined));
+const canonical = new URL(Astro.url.pathname.replace(/\/$/, "") || "/", siteBase);
+const socialImage = new URL(image, siteBase);
 const preventIndexing = isPreview || noindex;
 const person = {
-  "@type": "Person", "@id": new URL("/about#person", Astro.site).href,
-  name: "Brían Diolún", alternateName: "Roam", url: new URL("/about", Astro.site).href,
+  "@type": "Person", "@id": new URL("/about#person", siteBase).href,
+  name: "Brían Diolún", alternateName: "Roam", url: new URL("/about", siteBase).href,
   sameAs: ["https://www.mixcloud.com/brian-diolun/", "https://soundcloud.com/brian-d", "https://rdelune.dev"],
 };
 const structuredData = article ? {
