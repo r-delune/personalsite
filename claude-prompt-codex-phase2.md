@@ -107,9 +107,20 @@ export interface StageSnapshot {
   analysisAvailable: boolean;   // false on iOS by D-032 or on analysis failure
 }
 
+export interface StageItemMeta {
+  itemKind: 'track' | 'mix';
+  itemId: string;
+  durationSec: number | null;
+  peaksUrl: string | null;     // peaks v2 (D-035) for mixes; null for releases until release peaks exist
+  boundariesSec: number[];     // mix tracklist `at` values, or release `section_times` (sanitised per productions' rules)
+  bpm: number | null;          // release feed metadata only; null for mixes
+  beatStartAtSec: number | null;
+}
+
 export interface StageBridge {
   getSnapshot(): StageSnapshot;                       // cheap, call every frame
   getFeatures(): { energy: number; playing: number }; // existing time-based envelopes (SPEC §8.3)
+  getItemMeta(): StageItemMeta | null;                // active item's static metadata; changes only on itemchange
   subscribe(event: 'phase' | 'route' | 'seek' | 'itemchange' | 'motionprefs',
             cb: (s: StageSnapshot) => void): () => void; // unsubscribe
 }
@@ -119,6 +130,7 @@ Requirements:
 - `seek` fires once per committed seek on the **active** item, never for D-026 page-only staging. `itemchange` fires when the active item changes.
 - `route` updates on Astro navigation (`astro:after-swap`), including back/forward. Query or hash changes alone do not change it.
 - No per-frame data in nanostores. `getSnapshot()`/`getFeatures()` allocate nothing per call (reuse objects).
+- `getItemMeta()` carries only data that already exists: mix peaks URL and tracklist times, and feed `section_times`/`bpm`/`beat_start_at` for releases. Pass the release fields through the fixture normaliser if they're currently dropped. Don't fetch or parse peaks for the visual; it loads `peaksUrl` itself.
 - Expose it as a module singleton. The existing stage keeps working: if it currently reads engine features directly, add the bridge alongside without changing stage files.
 - Add `src/lib/stage-bridge.md` documenting the semantics above, plus a **dev-only overlay** (`?bridge`, excluded from the production bundle) showing phase, route, position and energy live, so the visual can be tuned against it later.
 
