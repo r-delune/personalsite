@@ -1,5 +1,8 @@
 ---
 import Shell from "../layouts/Shell.astro";
+import { workContent } from "../lib/content";
+const { cv } = await workContent();
+const external = { target: "_blank", rel: "noreferrer" };
 ---
 
 <Shell title="About — Brían Diolún" section="about">
@@ -9,22 +12,54 @@ import Shell from "../layouts/Shell.astro";
       <p data-stage-exclude class="fact-line route-body">
         Music as Brían Diolún. Mixes as Roam.
         <br />
-        Software at <a href="https://rdelune.dev">rdelune ↗</a>
+        Software at <a href="https://rdelune.dev" {...external}>rdelune ↗</a>
       </p>
     </header>
-    <section data-stage-exclude class="about-copy" data-row>
-      <h2>Bio</h2>
-      <p>TODO(copy)</p>
+    <section data-stage-exclude class="about-copy about-intro" data-row>
+      <img
+        class="about-portrait"
+        src="/images/brian.jpg"
+        width="256"
+        height="256"
+        alt="Brían Diolún"
+      />
+      <div>
+        <h2>Bio</h2>
+        <p>
+          I'm Brían, Brian Dillon on paper. I make music as Brían Diolún, play
+          mixes as Roam, and build software for a living.
+        </p>
+        <p>
+          I did an MA in Music Technology in Cork, put out a few records, then
+          moved into software in 2015. Since then I've built web, mobile and
+          audio products, assistive technology, and two health-tech platforms at
+          University College Cork. These days I run rdelune, a small
+          engineering and privacy practice.
+        </p>
+        <p>
+          This site is where the two halves meet: the releases, an archive of
+          mixes you can scrub through, my <a href="/work">work</a>, and the
+          occasional piece of writing.
+        </p>
+      </div>
     </section>
     <section data-stage-exclude class="about-copy" data-row>
       <h2>Running</h2>
-      <p>TODO(copy)</p>
-      <span class="micro">ITRA · TODO(copy)</span>
+      <p>
+        Away from the desk I run trails and long distances, up to 100 km so
+        far.
+      </p>
+      <a
+        class="micro"
+        href="https://itra.run/RunnerSpace/dillon.brian.4195938"
+        {...external}>Race history on ITRA ↗</a
+      >
     </section>
     <div data-stage-exclude class="profile-links" data-row>
-      <a href="https://www.mixcloud.com/brian-diolun/">Mixcloud ↗</a>
-      <a href="https://soundcloud.com/brian-d">SoundCloud ↗</a>
-      <a href="https://rdelune.dev">rdelune ↗</a>
+      <a href={`mailto:${cv.contact.email}`}>{cv.contact.email}</a>
+      <a href={cv.contact.linkedin} {...external}>LinkedIn ↗</a>
+      <a href="https://www.mixcloud.com/brian-diolun/" {...external}>Mixcloud ↗</a>
+      <a href="https://soundcloud.com/brian-d" {...external}>SoundCloud ↗</a>
     </div>
   </div>
 </Shell>

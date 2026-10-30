@@ -1,5 +1,206 @@
 {
-  "roles": [{"id":"role-to-supply","years":"TODO(copy)","title":"TODO(copy)","organisation":"TODO(copy)","summary":"TODO(copy)","caseStudies":[]}],
-  "skills": [{"group":"TODO(copy)","items":["TODO(copy)"]}],
-  "education": [{"years":"TODO(copy)","title":"TODO(copy)","institution":"TODO(copy)"}]
+  "headline": "Software engineer and lead architect — health-tech, AI and privacy.",
+  "intro": [
+    "I've spent eleven years taking products from a first idea to something people rely on, most recently as founding engineer on two health-tech platforms at University College Cork.",
+    "I treat privacy and governance as part of the engineering, not paperwork afterwards. That matters more as AI moves into places where people are vulnerable. I now do this work independently, through rdelune."
+  ],
+  "contact": {
+    "email": "brian@rdelune.dev",
+    "linkedin": "https://www.linkedin.com/in/brian-dillon-08015b64/",
+    "github": "https://github.com/r-delune",
+    "consultancy": "https://rdelune.dev",
+    "pdf": "/cv/brian-dillon-cv.pdf"
+  },
+  "roles": [
+    {
+      "id": "rdelune",
+      "years": "2026 – now",
+      "title": "Founder",
+      "organisation": "rdelune",
+      "context": "Engineering, privacy and AI-governance consultancy",
+      "summary": "I help founders and product teams get their architecture, privacy and EU AI Act readiness right before they launch, scale or raise.",
+      "highlights": [
+        "Technical consultancy to Karenua, the CommPAL spin-out, through its infrastructure and platform handover."
+      ],
+      "links": [{ "label": "rdelune.dev", "href": "https://rdelune.dev" }],
+      "caseStudies": []
+    },
+    {
+      "id": "commpal",
+      "years": "2022 – 2026",
+      "title": "Founding engineer & technical lead",
+      "organisation": "CommPAL · University College Cork",
+      "context": "AI decision support for palliative-care triage and nurse caseload planning. Spun out as Karenua in 2026.",
+      "summary": "I designed the architecture and led delivery across the clinical web app, the data platform, model integration and the AWS infrastructure.",
+      "highlights": [
+        "A regional data lake fed by automated hospital pipelines, with validation built in and patient identifiers hashed one-way.",
+        "Partner data processed inside Australia on temporary infrastructure, torn down after each run, with only anonymised findings coming back.",
+        "Agreeing data specifications with hospitals, clinicians, ethics and procurement before any patient data moved."
+      ],
+      "links": [
+        { "label": "Case study", "href": "https://rdelune.dev/portfolio/commpal/" }
+      ],
+      "caseStudies": []
+    },
+    {
+      "id": "myuse",
+      "years": "2019 – 2026",
+      "title": "Founding engineer & technical lead",
+      "organisation": "MyUSE · University College Cork",
+      "context": "A digital harm-reduction service for university students.",
+      "summary": "I took it from research outlines to a live service with more than 10,000 registered students, working alongside psychologists and researchers.",
+      "highlights": [
+        "Anonymous by design: returning students recover their session with a code only they hold, so nothing links them to a name or student record.",
+        "A content system that lets the research team change the intervention without a developer.",
+        "Chosen in 2025 as the digital tool for a Department of Health-funded programme bringing it to six Irish higher-education institutions."
+      ],
+      "links": [
+        { "label": "Case study", "href": "https://rdelune.dev/portfolio/myuse/" }
+      ],
+      "caseStudies": []
+    },
+    {
+      "id": "ucc-lecturer",
+      "years": "2021 – 2025",
+      "title": "Lecturer (contract)",
+      "organisation": "University College Cork",
+      "summary": "Taught Programming for Web Applications and Services 1 & 2 on the MSc in Design and Development of Digital Business.",
+      "highlights": [],
+      "links": [],
+      "caseStudies": []
+    },
+    {
+      "id": "techsquad",
+      "years": "2018 – 2019",
+      "title": "Full-stack developer",
+      "organisation": "Techsquad",
+      "summary": "Helped rebuild QuickMinutes, a commercial SaaS product, and built a Python oracle node for the Wagerr blockchain.",
+      "highlights": [],
+      "links": [],
+      "caseStudies": [],
+      "earlier": true
+    },
+    {
+      "id": "audiorhoon",
+      "years": "2017 – 2018",
+      "title": "Lead iOS developer",
+      "organisation": "AudioRhoon",
+      "summary": "Led more than ten iOS apps for assistive technology used by people with severe disabilities.",
+      "highlights": [],
+      "links": [
+        { "label": "Case study", "href": "https://rdelune.dev/portfolio/audiorhoon/" }
+      ],
+      "caseStudies": [],
+      "earlier": true
+    },
+    {
+      "id": "rocudo",
+      "years": "2015 – 2017",
+      "title": "Software developer",
+      "organisation": "Rocudo",
+      "summary": "Built client products combining web, mobile and Web Audio, and the device integrations behind them.",
+      "highlights": [],
+      "links": [],
+      "caseStudies": [],
+      "earlier": true
+    }
+  ],
+  "skills": [
+    {
+      "group": "Building",
+      "items": [
+        "Concept to production",
+        "Architecture",
+        "Technical direction",
+        "Working with clinicians and researchers"
+      ]
+    },
+    {
+      "group": "Privacy",
+      "items": [
+        "Privacy by design",
+        "GDPR & DPIAs",
+        "EU AI Act readiness",
+        "Health and other regulated data"
+      ]
+    },
+    {
+      "group": "Stack",
+      "items": [
+        "Python",
+        "Laravel / PHP",
+        "Vue / Nuxt",
+        "React / Next.js",
+        "AWS",
+        "HL7 FHIR"
+      ]
+    }
+  ],
+  "talks": [
+    {
+      "title": "Ship Fast Without Creating a Compliance Time Bomb",
+      "detail": "Workshop for founders, developers and product teams · Da Nang and Chiang Mai",
+      "year": "2026"
+    }
+  ],
+  "publications": [
+    {
+      "year": "2024",
+      "title": "Enhancing palliative care triage: decision support system for patient prioritisation",
+      "authors": "Lotfivand, Dillon, Lynch, Heavin",
+      "venue": "Journal of Decision Systems",
+      "href": "https://doi.org/10.1080/12460125.2024.2355389"
+    },
+    {
+      "title": "Implementing website accessibility standards in higher education: lessons learnt",
+      "authors": "Daly, Byrne, Dillon, Heavin, Northridge",
+      "venue": "The AHEAD Journal, issue 15",
+      "href": "https://www.ahead.ie/journal/Implementing-Website-Accessibility-Standards-in-Higher-Education-Lessons-Learnt-"
+    },
+    {
+      "year": "2021",
+      "title": "Reducing the individual, institutional and societal harms from student drug use",
+      "authors": "Dick, Dillon, Vasiliou et al.",
+      "venue": "HEAd'21",
+      "href": "https://archive.headconf.org/head21/wp-content/uploads/pdfs/13060.pdf"
+    },
+    {
+      "year": "2020",
+      "title": "Changing the wheels on a moving car: leveraging a content management system to develop an extensible digital intervention",
+      "authors": "Dillon, Vasiliou, Dick et al.",
+      "venue": "Pre-ICIS SIGDSA Symposium",
+      "href": "https://aisel.aisnet.org/sigdsa2020/2/"
+    },
+    {
+      "year": "2020",
+      "title": "A new clinical algorithm embedded in a contextual behavior change intervention for higher education student drug use",
+      "authors": "Vasiliou, Dillon, Dick et al.",
+      "venue": "Pre-ICIS SIGDSA Symposium",
+      "href": "https://aisel.aisnet.org/sigdsa2020/1/"
+    }
+  ],
+  "certifications": [
+    {
+      "title": "Artificial Intelligence Governance Professional (AIGP)",
+      "issuer": "IAPP",
+      "year": "2026"
+    }
+  ],
+  "education": [
+    {
+      "years": "2014 – 2015",
+      "title": "Higher Diploma, Software Development and Design",
+      "institution": "National University of Ireland, Galway"
+    },
+    {
+      "years": "2011 – 2012",
+      "title": "MA, Music Technology",
+      "institution": "Cork Institute of Technology"
+    },
+    {
+      "years": "2008 – 2011",
+      "title": "BA, Economics and Politics",
+      "institution": "University College Cork"
+    }
+  ]
 }

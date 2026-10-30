@@ -143,36 +143,25 @@ Breakpoints stay as they are (≤767, 768–1100, >1100, ≥1800), plus a check 
   and without the player open, checked into `review/`. (I couldn't shrink your Chrome window from
   here, so the phone layout is assessed from the CSS for now.)
 
-## 7. CV and about content from the two PDFs
+## 7. CV and about content from the two PDFs — DONE (draft, 31 Oct)
 
-Source: the "Senior Software Engineer / Lead Architect" CV as the base (this is a personal site, so the
-broader engineering version fits), with the privacy CV's distinctive lines where they add something.
-The consultancy positioning stays on rdelune.dev; the site links there.
+Decision (Brian, 30 Oct): include photo, email and LinkedIn, but keep the tone of a personal site rather
+than a job application; full detail lives in the downloadable PDF.
 
-**Schema change** (`content.config.ts`, `cv.json`):
-- roles: add `location`, `highlights: string[]` (3–5 bullets) and keep `summary` as the one-liner;
-- new top-level `headline`, `profile`, `certifications`, `training`, `memberships`, `publications`
-  (`authors, year, title, venue, url`), and a separate `teaching` entry for the UCC lectureship.
-
-**Content to bring in**:
-- Headline: "Senior software engineer and lead architect · health-tech, AI and privacy (IAPP AIGP)".
-- Profile: the engineering CV's profile paragraph.
-- Roles: rdelune (2026–, Founder / Independent Consultant), CommPAL (2022–2026), MyUSE (2019–2026),
-  UCC lecturer (Sep 2021 – Oct 2025), Techsquad (Sep 2018 – Nov 2019), AudioRhoon (Apr 2017 –
-  Sep 2018), Rocudo (Jun 2015 – Nov 2017). Highlights per role from the engineering CV, plus from the
-  privacy CV: CommPAL's data-residency design and hashed identifiers; MyUSE's anonymous session
-  recovery, DPIA and consent-only analytics; AudioRhoon's medical-device qualification catch.
-- Skills: the engineering CV's five groups.
-- Certifications (AIGP 2026, AWS Cloud Practitioner), training, memberships, education (three entries),
-  publications (five, with links).
-- Speaking: "Ship Fast Without Creating a Compliance Time Bomb", Da Nang and Chiang Mai, 2026.
-- Case studies: CommPAL and MyUSE as the first two `projects` entries, linked from their roles.
-  Drafted from the CV bullets, then you add screenshots and anything you can show publicly.
-- About bio: a short paragraph that joins the two halves — MA in Music Technology, music as Brían
-  Diolún, mixes as Roam, software at rdelune — drawn from the CV, for you to edit.
-- Print: `Print / save PDF` produces a one-page-ish layout close to the PDF CVs.
-
-**Left out on purpose**: the photo, email and LinkedIn URL unless you want them public on this site.
+- **Work page**: headline, two-paragraph first-person intro, then links to rdelune ↗ · Full CV (PDF) ↓ · Print.
+  Experience: rdelune, CommPAL, MyUSE, UCC lectureship (CommPAL and MyUSE get 3 highlights each and
+  link to their rdelune case studies). "Earlier": Techsquad, AudioRhoon, Rocudo, one line each.
+  Then What I bring (3 plain groups), Speaking, Publications (5, linked), Education (with AIGP),
+  and a Get in touch row (email, LinkedIn, GitHub).
+- **About page**: 256 px portrait from the CV (soft greyscale, full colour on hover), a three-paragraph
+  bio bridging music and software, a one-line running note linking to ITRA, and contact links.
+- **Left out on purpose**: standards and acronym lists, the AWS service inventory, AWS Cloud Practitioner,
+  training, memberships, and the programme name "ESHEILD" (spelling unconfirmed; described instead).
+- `public/cv/brian-dillon-cv.pdf` is the Senior Engineer PDF. `codex-public-cv.draft.json` is superseded
+  by `src/content/cv.json`.
+- **To check**: every sentence (it's first-person copy written for you), the MyUSE "10,000+" figure,
+  and that the rdelune case-study URLs resolve. A higher-resolution portrait would look sharper on
+  retina screens.
 
 ## 8. Order of work
 

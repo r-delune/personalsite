@@ -2,60 +2,164 @@
 import Shell from "../layouts/Shell.astro";
 import { workContent } from "../lib/content";
 const { cv, projects } = await workContent();
+const main = cv.roles.filter((role) => !role.earlier);
+const earlier = cv.roles.filter((role) => role.earlier);
+const external = { target: "_blank", rel: "noreferrer" };
 ---
 
-<Shell title="Work — Brían Diolún" section="work">
+<Shell
+  title="Work — Brían Diolún"
+  section="work"
+  description={cv.headline}
+>
   <div class="page-column inner-page reading-page work-page">
     <header class="page-header">
       <h1 data-stage-exclude class="page-title">Work</h1>
-      <p data-stage-exclude class="fact-line route-body">
-        Software consultancy: <a href="https://rdelune.dev">rdelune ↗</a>
-      </p>
+      <p data-stage-exclude class="fact-line route-body">{cv.headline}</p>
     </header>
+    <div data-stage-exclude class="work-intro route-body">
+      {cv.intro.map((paragraph) => <p>{paragraph}</p>)}
+      <div class="work-actions">
+        <a href={cv.contact.consultancy} {...external}>rdelune ↗</a>
+        {cv.contact.pdf && (
+          <a href={cv.contact.pdf} download>
+            Full CV (PDF) ↓
+          </a>
+        )}
+        <button class="text-control" data-print>Print</button>
+      </div>
+    </div>
+
     <section id="cv" data-stage-exclude>
       <div class="subsection-heading">
-        <h2>CV</h2>
-        <button class="text-control" data-print>
-          Print / save PDF ↗
-        </button>
+        <h2>Experience</h2>
       </div>
       <div class="cv-roles">
-        {cv.roles.map((role) => (
+        {main.map((role) => (
           <article class="cv-role" data-row>
             <span class="micro">{role.years}</span>
             <div>
               <h3>{role.title}</h3>
               <p class="cv-org">{role.organisation}</p>
+              {role.context && <p class="cv-context">{role.context}</p>}
               <p>{role.summary}</p>
-              <div class="case-chips">
-                {role.caseStudies.map((slug) => (
-                  <a href={`/work/${slug}`}>
-                    {projects.find((p) => p.data.slug === slug)?.data.title} →
-                  </a>
-                ))}
-              </div>
+              {role.highlights.length > 0 && (
+                <ul class="cv-highlights">
+                  {role.highlights.map((item) => <li>{item}</li>)}
+                </ul>
+              )}
+              {(role.links.length > 0 || role.caseStudies.length > 0) && (
+                <div class="case-chips">
+                  {role.caseStudies.map((slug) => (
+                    <a href={`/work/${slug}`}>
+                      {projects.find((p) => p.data.slug === slug)?.data.title} →
+                    </a>
+                  ))}
+                  {role.links.map((link) => (
+                    <a href={link.href} {...external}>{link.label} ↗</a>
+                  ))}
+                </div>
+              )}
             </div>
           </article>
         ))}
       </div>
-      <h3 class="cv-label">Skills</h3>
+
+      <h3 class="cv-label">Earlier</h3>
+      {earlier.map((role) => (
+        <div class="cv-skill cv-earlier" data-row>
+          <span class="micro">{role.years}</span>
+          <div>
+            <span class="cv-earlier-title">
+              {role.title}, {role.organisation}
+            </span>
+            <span class="cv-earlier-summary">
+              {role.summary}
+              {role.links.map((link) => (
+                <>
+                  {" "}
+                  <a href={link.href} {...external}>{link.label} ↗</a>
+                </>
+              ))}
+            </span>
+          </div>
+        </div>
+      ))}
+
+      <h3 class="cv-label">What I bring</h3>
       {cv.skills.map((skill) => (
         <div class="cv-skill" data-row>
           <span class="micro">{skill.group}</span>
           <span>{skill.items.join(" · ")}</span>
         </div>
       ))}
+
+      {cv.talks.length > 0 && (
+        <>
+          <h3 class="cv-label">Speaking</h3>
+          {cv.talks.map((talk) => (
+            <div class="cv-skill" data-row>
+              <span class="micro">{talk.year}</span>
+              <div>
+                <span class="cv-earlier-title">“{talk.title}”</span>
+                <span class="cv-earlier-summary">{talk.detail}</span>
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+
+      {cv.publications.length > 0 && (
+        <>
+          <h3 class="cv-label">Publications</h3>
+          {cv.publications.map((pub) => (
+            <div class="cv-skill cv-publication" data-row>
+              <span class="micro">{pub.year ?? ""}</span>
+              <div>
+                <a class="cv-earlier-title" href={pub.href} {...external}>
+                  {pub.title} ↗
+                </a>
+                <span class="cv-earlier-summary">
+                  {pub.venue} · {pub.authors}
+                </span>
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+
       <h3 class="cv-label">Education</h3>
-      {cv.education.map((education) => (
-        <div class="cv-role" data-row>
-          <span class="micro">{education.years}</span>
+      {cv.certifications.map((cert) => (
+        <div class="cv-skill" data-row>
+          <span class="micro">{cert.year}</span>
           <div>
-            <h3>{education.title}</h3>
-            <p>{education.institution}</p>
+            <span class="cv-earlier-title">{cert.title}</span>
+            <span class="cv-earlier-summary">{cert.issuer}</span>
           </div>
         </div>
       ))}
+      {cv.education.map((education) => (
+        <div class="cv-skill" data-row>
+          <span class="micro">{education.years}</span>
+          <div>
+            <span class="cv-earlier-title">{education.title}</span>
+            <span class="cv-earlier-summary">{education.institution}</span>
+          </div>
+        </div>
+      ))}
+
+      <div class="cv-contact" data-row>
+        <span class="micro">Get in touch</span>
+        <div>
+          <a href={`mailto:${cv.contact.email}`}>{cv.contact.email}</a>
+          <a href={cv.contact.linkedin} {...external}>LinkedIn ↗</a>
+          {cv.contact.github && (
+            <a href={cv.contact.github} {...external}>GitHub ↗</a>
+          )}
+        </div>
+      </div>
     </section>
+
     {projects.length > 0 && (
       <section data-stage-exclude class="case-studies">
         <h2>Case studies</h2>
