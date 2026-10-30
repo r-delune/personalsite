@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   PhaseEnvelopes, QualityGovernor, activeBoundaries, crossedBoundary, macroEnvelope,
   musicalGains, lunarPhase, moonLightZ, poseFor, rippleBudget, sampleEnvelope, sectionEaseSeconds, seeded, hashString,
+  sectionMood, sectionMoodTau, SECTION_LIGHT_SWING, SECTION_HUE_SWING,
 } from "../src/components/stage/coupling.ts";
 import { CAPS, VARIANTS } from "../src/components/stage/params.ts";
 
@@ -97,4 +98,38 @@ test("lunar phase matches known dates and stays in a readable light range", () =
     const z = moonLightZ(p);
     assert.ok(z >= -0.25 - 1e-9 && z <= 0.55 + 1e-9);
   }
+});
+
+test("section moods: home at section 0, bounded, deterministic, neighbours differ", () => {
+  const m = { light: 0, hue: 0, sat: 0 };
+  assert.deepEqual(sectionMood(42, 0, m), { light: 0, hue: 0, sat: 0 });
+  for (const seed of [1, 42, hashString("188598993")]) {
+    let previous = { ...sectionMood(seed, 0, m) };
+    for (let i = 1; i < 14; i++) {
+      const a = { ...sectionMood(seed, i, m) };
+      assert.deepEqual(a, { ...sectionMood(seed, i, m) });
+      assert.ok(Math.abs(a.light) <= SECTION_LIGHT_SWING + 1e-9);
+      assert.ok(Math.abs(a.hue) <= SECTION_HUE_SWING + 1e-9);
+      // golden-ratio walk: consecutive sections are never near-identical
+      const lightGap = Math.abs(a.light - previous.light) / SECTION_LIGHT_SWING;
+      if (i > 1) assert.ok(lightGap > 0.2, `seed ${seed} section ${i} gap ${lightGap}`);
+      previous = a;
+    }
+  }
+});
+
+test("section dissolves are never cuts and settle slowly at the ends", () => {
+  for (const len of [3, 8, 20, 60, 400])
+    for (let i = 0; i < 6; i++) assert.ok(sectionMoodTau(i, 6, len) * 3 >= 2.5);
+  assert.equal(sectionMoodTau(0, 6, 30), 2);
+  assert.equal(sectionMoodTau(5, 6, 30), 2.5);
+});
+
+test("governor treats a browser 30 Hz cap as the cadence, not as overload", () => {
+  const g = new QualityGovernor();
+  for (let i = 0; i < 200; i++) g.observeCadence(33.3);
+  for (let i = 0; i < 120; i++) g.sample(33.4, 1 / 30);
+  assert.equal(g.quality, 1);
+  for (let i = 0; i < 90; i++) g.sample(66, 1 / 15); // real misses at the cap still drop
+  assert.ok(g.quality < 0.8);
 });

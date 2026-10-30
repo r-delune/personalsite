@@ -117,6 +117,9 @@ uniform vec3 uLightDir, uSeedPhase, uAccent, uAccent2, uMoon, uMoonDark;
 uniform vec4 uRipple;
 varying float vAlpha;
 varying vec3 vColor;
+// Point footprint in device px: core radius, edge softness, glow share.
+varying vec3 vShape;
+varying float vHalf;
 void hide(){ gl_Position = vec4(2., 2., 2., 1.); gl_PointSize = 0.; vAlpha = 0.; }
 float ripple(float ang){
   if (uRipple.x < 0.) return 0.;
@@ -131,6 +134,8 @@ void main(){
   float alpha;
   vec3 col;
   float size;
+  float soft = 0.; // extra edge softness (device px): depth of field
+  float glow = 0.; // share of light in a wide halo
   if (kind < .5) {
     // ---- surface: a lit body, dense at the limb and thinning inwards
     vec3 p = position;
@@ -143,8 +148,14 @@ void main(){
     float lit = dot(p, uLightDir);
     float day = smoothstep(-.14, .4, lit);
     vec3 q = position * 2.1 + uSeedPhase;
-    float terr = .5 + .5 * sin(q.x * 1.9 + sin(q.y * 2.4 + q.z * 1.3)) * sin(q.y * 1.4 + sin(q.z * 2.2 + q.x * .8));
+    float low = .5 + .5 * sin(q.x * 1.9 + sin(q.y * 2.4 + q.z * 1.3)) * sin(q.y * 1.4 + sin(q.z * 2.2 + q.x * .8));
+    // second octave: fine relief inside the broad maria
+    vec3 q2 = position * 6.7 + uSeedPhase.zxy;
+    float hi = .5 + .5 * sin(q2.x + sin(q2.y * 1.7 + q2.z * .6)) * sin(q2.y * 1.3 + sin(q2.z * 1.9 + q2.x));
+    float terr = clamp(low * .72 + hi * .42 - .08, 0., 1.);
     float keep = mix(.34, 1., pow(limb, .55));
+    // points cluster on the bright ground and thin out over the dark maria
+    keep *= mix(.55, 1., terr);
     keep *= mix(1., uDensity, smoothstep(.55, .96, limb));
     pos = uCenter + p.xy * uRadius + uParallax * .25;
     float rip = ripple(atan(p.y, p.x)) * smoothstep(.7, 1., limb);
@@ -164,7 +175,8 @@ void main(){
     // calm behind UI: alpha and contrast
     alpha = mix(alpha, .5 * (body + .12), excl * .28);
     alpha *= mix(1., .58, excl);
-    size = .85 + aSeed.z * .9 + limb * .7;
+    // long-tailed sizes: mostly fine grain, a few larger grains
+    size = .7 + aSeed.z * aSeed.z * 1.3 + limb * .6;
   } else if (kind < 3.5) {
     // ---- dust in three parallax depths, orbiting the moon
     float k = kind < 1.5 ? .55 : kind < 2.5 ? 1. : 1.28;
@@ -184,7 +196,18 @@ void main(){
     alpha *= mix(1., .58, excl);
     if (aSeed.x > mix(1., .68, excl)) { hide(); return; }
     col = mix(uMoon * .9, mix(uAccent, uAccent2, aSeed.y), uColour * .35 * aSeed.z);
-    size = (kind < 1.5 ? .7 : kind < 2.5 ? .9 : 1.25) + aSeed.z * .7;
+    if (kind < 1.5) {
+      size = .6 + aSeed.z * aSeed.z * .6; // far: fine, crisp
+    } else if (kind < 2.5) {
+      size = .8 + aSeed.z * aSeed.z * 1.;
+      soft = .3;
+    } else {
+      // near: larger, out of focus, a faint halo; dimmer so it stays quiet
+      size = 1.1 + pow(aSeed.z, 1.6) * 2.2;
+      soft = (.8 + aSeed.y * 1.2) * uDpr;
+      glow = .14;
+      alpha *= .7;
+    }
   } else {
     // ---- variant B: tilted debris ring whose orbit follows the mix
     if (uRingAlpha <= 0.) { hide(); return; }
@@ -209,16 +232,29 @@ void main(){
   vAlpha = alpha;
   vColor = col;
   gl_Position = vec4(pos.x / uAspect, pos.y, 0., 1.);
-  gl_PointSize = size * uDpr;
+  // Draw every point as an anti-aliased disc at its true sub-pixel position.
+  // Points smaller than ~1.6 device px are widened to that and dimmed by the
+  // area ratio, so they keep their light but never render as square pixels.
+  float r = .5 * size * uDpr;
+  float rr = max(r, .8);
+  vAlpha *= (r * r) / (rr * rr);
+  vShape = vec3(rr, .75 + soft, glow);
+  float reach = rr + .75 + soft + (glow > 0. ? rr * 2.5 : 0.);
+  gl_PointSize = 2. * reach + 1.;
+  vHalf = .5 * gl_PointSize;
 }
 `;
 
 const POINTS_FRAGMENT = /* glsl */ `
 varying float vAlpha;
 varying vec3 vColor;
+varying vec3 vShape;
+varying float vHalf;
 void main(){
-  float d = length(gl_PointCoord - .5);
-  float a = smoothstep(.5, .1, d) * vAlpha;
+  float dpx = length(gl_PointCoord - .5) * 2. * vHalf; // distance in device px
+  float core = 1. - smoothstep(vShape.x - vShape.y, vShape.x + vShape.y, dpx);
+  float halo = vShape.z > 0. ? exp(-dpx * dpx / (vShape.x * vShape.x * 4.)) : 0.;
+  float a = (core * (1. - vShape.z) + halo * vShape.z) * vAlpha;
   if (a < .002) discard;
   gl_FragColor = vec4(vColor, a);
 }

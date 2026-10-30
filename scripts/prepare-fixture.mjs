@@ -12,9 +12,21 @@ const slug = (s) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
+// Section times come from the feed. Manual ones are hand-placed; detected ones
+// come from the upstream analysis and are what rdelune-productions ships
+// (TRUST_DETECTED_SECTION_TIMES). Fallback/unknown sources are guesses: skip.
+const TRUSTED_SECTION_SOURCES = new Set(["manual", "detected"]);
+// Detected boundaries closer than this are merged; a visual section shorter
+// than a few seconds reads as a glitch, not a section.
+const MIN_DETECTED_SECTION_SEC = 6;
 function boundaries(t) {
-  if (t.section_times_source !== "manual" || !Array.isArray(t.section_times))
+  if (
+    !TRUSTED_SECTION_SOURCES.has(t.section_times_source) ||
+    !Array.isArray(t.section_times)
+  )
     return [];
+  const minGap =
+    t.section_times_source === "detected" ? MIN_DETECTED_SECTION_SEC : 0.75;
   const duration = t.duration_seconds,
     hasDuration = Number.isFinite(duration) && duration > 0;
   const cleaned = [];
@@ -26,7 +38,7 @@ function boundaries(t) {
         n <= (hasDuration ? Math.max(8, duration - 8) : Infinity),
     )
     .sort((a, b) => a - b))
-    if (!cleaned.length || n - cleaned[cleaned.length - 1] >= 0.75)
+    if (!cleaned.length || n - cleaned[cleaned.length - 1] >= minGap)
       cleaned.push(n);
   return hasDuration &&
     cleaned.length === 1 &&
@@ -58,6 +70,9 @@ for (const album of feed.albums) {
     tracks.push({
       peaksUrl: null,
       boundariesSec: boundaries(track),
+      boundariesSource: boundaries(track).length
+        ? track.section_times_source
+        : null,
       bpm: Number.isFinite(track.bpm) ? track.bpm : null,
       beatStartAtSec: Number.isFinite(track.beat_start_at)
         ? track.beat_start_at

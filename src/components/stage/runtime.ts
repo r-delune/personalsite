@@ -23,7 +23,9 @@ import {
   rippleBudget,
   sampleEnvelope,
   sectionAt,
-  sectionEaseSeconds,
+  sectionMood,
+  sectionMoodTau,
+  type SectionMood,
   seeded,
   type Phase,
   type Pose,
@@ -142,6 +144,12 @@ async function start(options: StageOptions): Promise<StageController | null> {
   const seedTarget = { x: 0, y: 0, z: 0 };
   let lightJitter = 0,
     lightTarget = 0;
+  // Section mood: accent hue/saturation drift around the palette per section.
+  const mood: SectionMood = { light: 0, hue: 0, sat: 0 };
+  let hueShift = 0,
+    satShift = 0;
+  const baseAccent = u.uAccent.value.clone();
+  const baseAccent2 = u.uAccent2.value.clone();
   let sectionIndex = -1,
     sectionTau = 2;
   const poseFrom: Pose = { cx: 0, cy: 0, r: 1, calm: 1 };
@@ -291,8 +299,9 @@ async function start(options: StageOptions): Promise<StageController | null> {
       const section = sectionAt(boundaries, pos, snap.durationSec ?? 0);
       if (section.index !== sectionIndex) {
         sectionIndex = section.index;
-        sectionTau = Math.max(0.3, sectionEaseSeconds(section.length) / 3);
-        lightTarget = (seeded(rippleSeed, 100 + section.index) - 0.5) * 0.3;
+        sectionTau = sectionMoodTau(section.index, boundaries.length + 1, section.length);
+        sectionMood(rippleSeed, section.index, mood);
+        lightTarget = mood.light;
       }
       // variant B: ring orbit follows progress through the item
       const progress = snap.durationSec ? Math.min(1, pos / snap.durationSec) : 0;
@@ -301,6 +310,8 @@ async function start(options: StageOptions): Promise<StageController | null> {
     }
     seekBoost = Math.max(0, seekBoost - dt);
     lightJitter = approach(lightJitter, lightTarget, sim, sectionTau);
+    hueShift = approach(hueShift, mood.hue, sim, sectionTau);
+    satShift = approach(satShift, mood.sat, sim, sectionTau);
 
     const c = env.coupling;
     const gains = musicalGains(
@@ -346,6 +357,9 @@ async function start(options: StageOptions): Promise<StageController | null> {
     u.uAtmoThick.value = params.atmoThickness * gains.atmosphere;
     u.uEdge.value = gains.edge;
     u.uColour.value = env.colour;
+    // Accent colours only show as colour blooms in, so this rides on playback.
+    u.uAccent.value.copy(baseAccent).offsetHSL(hueShift, satShift, 0);
+    u.uAccent2.value.copy(baseAccent2).offsetHSL(hueShift, satShift, 0);
     u.uDim.value = env.dim;
     u.uOrbit.value = orbit;
     u.uRipple.value.x = rippleAge;
@@ -378,6 +392,8 @@ async function start(options: StageOptions): Promise<StageController | null> {
       rippleAge >= 0 ||
       disturb > 0.01 ||
       Math.abs(lightZ - moonTarget) > 0.002 ||
+      Math.abs(lightJitter - lightTarget) > 0.002 ||
+      Math.abs(hueShift - mood.hue) > 0.001 ||
       Math.abs(parallax.x - parallax.tx) + Math.abs(parallax.y - parallax.ty) > 0.004 ||
       env.settling(phase) ||
       seekBoost > 0
@@ -436,7 +452,11 @@ async function start(options: StageOptions): Promise<StageController | null> {
     const dt = previous ? Math.min((now - previous) / 1000, 0.1) : 0;
     previous = now;
     const isActive = step(now, dt) || !!options.onFrame;
-    const due = isActive || now - lastRender >= 1000 / 20 - 2;
+    // Active: at most 60 fps (no 120 Hz burn on ProMotion; the UI shares the
+    // GPU). Idle: 20 fps. Frames that skip rendering teach the governor the
+    // browser's real frame cadence.
+    const due = now - lastRender >= (isActive ? 1000 / 60 : 1000 / 20) - 2;
+    if (!due && dt > 0) governor.observeCadence(dt * 1000);
     if (due) {
       const frameMs = lastRender ? now - lastRender : 16.7;
       lastRender = now;

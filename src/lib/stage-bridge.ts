@@ -265,6 +265,14 @@ export function createStageBridge(
 export const stageWriter = createStageBridge();
 export const stageBridge: StageBridge = stageWriter.bridge;
 let bound = false;
+let refreshMotion = () => {};
+/** Sets the persisted "pause animation" preference and applies it now. */
+export function setAnimationPaused(paused: boolean) {
+  try {
+    localStorage.setItem("scene-paused", String(paused));
+  } catch {}
+  refreshMotion();
+}
 export function bindStageBridge() {
   if (bound) return;
   bound = true;
@@ -334,6 +342,7 @@ export function bindStageBridge() {
     stageWriter.motion(reduced.matches, paused);
   };
   const route = () => stageWriter.route(routePose(location.pathname));
+  refreshMotion = motion;
   motion();
   route();
   document.addEventListener("astro:after-swap", () => {

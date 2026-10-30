@@ -8,6 +8,8 @@ export interface MediaItem {
   peaksUrl?: string | null;
   scoreUrl?: string | null;
   boundariesSec?: number[];
+  /** Where boundariesSec came from in the feed ("manual" | "detected"). */
+  boundariesSource?: string | null;
   bpm?: number | null;
   beatStartAtSec?: number | null;
   id: string;

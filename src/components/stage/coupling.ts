@@ -218,6 +218,52 @@ export function sectionAt(boundaries: readonly number[], position: number, durat
 export const sectionEaseSeconds = (sectionLength: number) =>
   Math.min(0.35 * Math.max(0, sectionLength), 6);
 
+/**
+ * Section mood: what changes when the music moves into a new section.
+ * Productions learned that changing *scene* per section reads as channel-
+ * flipping; changing light and colour temperature inside one world reads as
+ * the music moving. Section 0 is the track's home look. Later sections walk
+ * a golden-ratio sequence from the item seed, so neighbours always differ
+ * noticeably and the same section always looks the same.
+ */
+export const SECTION_LIGHT_SWING = 0.35; // radians either side of home
+export const SECTION_HUE_SWING = 0.06; // HSL hue units (~±22°)
+export const SECTION_SAT_SWING = 0.08;
+export interface SectionMood {
+  /** Light-angle offset, radians. */
+  light: number;
+  /** Accent hue offset, HSL units. */
+  hue: number;
+  /** Accent saturation offset, HSL units. */
+  sat: number;
+}
+export function sectionMood(seed: number, index: number, out: SectionMood): SectionMood {
+  if (index <= 0) {
+    out.light = out.hue = out.sat = 0;
+    return out;
+  }
+  const walk = (offset: number) => {
+    const v = (seeded(seed, offset) + index * 0.618034) % 1;
+    return v * 2 - 1; // -1..1
+  };
+  out.light = walk(100) * SECTION_LIGHT_SWING;
+  out.hue = walk(200) * SECTION_HUE_SWING;
+  out.sat = walk(300) * SECTION_SAT_SWING;
+  return out;
+}
+
+/**
+ * Time constant (s) for easing into a section's mood. Role-aware like
+ * productions' section-easing: the opening and the final section move
+ * slowly (establish / settle); middle sections follow their length.
+ * Never a cut: the shortest dissolve is ~2.5 s (3 tau).
+ */
+export function sectionMoodTau(index: number, count: number, sectionLength: number) {
+  if (index <= 0) return 2;
+  if (count > 1 && index >= count - 1) return 2.5;
+  return Math.min(2, Math.max(0.85, sectionEaseSeconds(sectionLength) / 3));
+}
+
 // ---------------------------------------------------------------------------
 // Determinism
 
@@ -362,14 +408,26 @@ export class QualityGovernor {
     this.budgetMs = budgetMs;
     this.floor = floor;
   }
+  /**
+   * The browser's own frame interval, learned from frames where the scene
+   * did no work. Chrome's Energy Saver (and Low Power Mode, background
+   * windows) caps rAF at 30 Hz; a 33 ms frame there is the cap, not an
+   * overloaded GPU, so it must not cost resolution or particles.
+   */
+  cadenceMs = 1000 / 60;
   reset() {
     this.ema = 0;
+  }
+  /** Feed the rAF interval of a frame that skipped rendering. */
+  observeCadence(intervalMs: number) {
+    if (!(intervalMs > 4 && intervalMs < 120)) return;
+    this.cadenceMs += (intervalMs - this.cadenceMs) * 0.05;
   }
   /** Feed one frame time while in the playing tier. */
   sample(frameMs: number, dt: number) {
     const ms = Math.min(250, Math.max(0, frameMs));
     this.ema = this.ema ? this.ema + (ms - this.ema) * 0.08 : ms;
-    const over = this.ema / this.budgetMs;
+    const over = this.ema / Math.max(this.budgetMs, this.cadenceMs * 1.12);
     if (over > 1.08) {
       // Drop fast.
       const target = Math.max(this.floor, this.quality / over);

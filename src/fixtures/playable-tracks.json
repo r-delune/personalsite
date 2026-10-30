@@ -4,6 +4,7 @@
     "boundariesSec": [
       48
     ],
+    "boundariesSource": "manual",
     "bpm": 160,
     "beatStartAtSec": null,
     "id": "188598993",
@@ -16,7 +17,13 @@
   },
   {
     "peaksUrl": null,
-    "boundariesSec": [],
+    "boundariesSec": [
+      11,
+      24,
+      55,
+      87
+    ],
+    "boundariesSource": "detected",
     "bpm": 80,
     "beatStartAtSec": null,
     "id": "188666105",
@@ -29,7 +36,18 @@
   },
   {
     "peaksUrl": null,
-    "boundariesSec": [],
+    "boundariesSec": [
+      36,
+      50,
+      78,
+      107,
+      149,
+      178,
+      192,
+      206,
+      225
+    ],
+    "boundariesSource": "detected",
     "bpm": 135,
     "beatStartAtSec": null,
     "id": "188496718",
@@ -42,7 +60,15 @@
   },
   {
     "peaksUrl": null,
-    "boundariesSec": [],
+    "boundariesSec": [
+      19,
+      35,
+      67,
+      87,
+      105,
+      144
+    ],
+    "boundariesSource": "detected",
     "bpm": 100,
     "beatStartAtSec": null,
     "id": "9279",
@@ -55,7 +81,14 @@
   },
   {
     "peaksUrl": null,
-    "boundariesSec": [],
+    "boundariesSec": [
+      30,
+      45,
+      64,
+      82,
+      101
+    ],
+    "boundariesSource": "detected",
     "bpm": 128,
     "beatStartAtSec": null,
     "id": "188496408",
@@ -68,7 +101,17 @@
   },
   {
     "peaksUrl": null,
-    "boundariesSec": [],
+    "boundariesSec": [
+      35,
+      52,
+      79,
+      97,
+      122,
+      149,
+      162,
+      184
+    ],
+    "boundariesSource": "detected",
     "bpm": 110,
     "beatStartAtSec": null,
     "id": "447",
@@ -81,7 +124,11 @@
   },
   {
     "peaksUrl": null,
-    "boundariesSec": [],
+    "boundariesSec": [
+      18,
+      41
+    ],
+    "boundariesSource": "detected",
     "bpm": 129,
     "beatStartAtSec": null,
     "id": "188459743",
@@ -94,7 +141,22 @@
   },
   {
     "peaksUrl": null,
-    "boundariesSec": [],
+    "boundariesSec": [
+      35,
+      50,
+      67,
+      90,
+      105,
+      118,
+      132,
+      157,
+      187,
+      221,
+      240,
+      277,
+      293
+    ],
+    "boundariesSource": "detected",
     "bpm": 128,
     "beatStartAtSec": null,
     "id": "493",
@@ -107,7 +169,15 @@
   },
   {
     "peaksUrl": null,
-    "boundariesSec": [],
+    "boundariesSec": [
+      15,
+      46,
+      59,
+      75,
+      105,
+      122
+    ],
+    "boundariesSource": "detected",
     "bpm": 103,
     "beatStartAtSec": null,
     "id": "16572",
@@ -120,7 +190,13 @@
   },
   {
     "peaksUrl": null,
-    "boundariesSec": [],
+    "boundariesSec": [
+      52,
+      69,
+      86,
+      104
+    ],
+    "boundariesSource": "detected",
     "bpm": 111,
     "beatStartAtSec": null,
     "id": "188754100",
@@ -134,6 +210,7 @@
   {
     "peaksUrl": null,
     "boundariesSec": [],
+    "boundariesSource": null,
     "bpm": 140,
     "beatStartAtSec": null,
     "id": "188482496",
@@ -146,7 +223,11 @@
   },
   {
     "peaksUrl": null,
-    "boundariesSec": [],
+    "boundariesSec": [
+      10,
+      29
+    ],
+    "boundariesSource": "detected",
     "bpm": 98,
     "beatStartAtSec": null,
     "id": "188754097",
@@ -159,7 +240,17 @@
   },
   {
     "peaksUrl": null,
-    "boundariesSec": [],
+    "boundariesSec": [
+      37,
+      53,
+      75,
+      96,
+      132,
+      171,
+      197,
+      216
+    ],
+    "boundariesSource": "detected",
     "bpm": 180,
     "beatStartAtSec": null,
     "id": "188736474",
@@ -172,7 +263,13 @@
   },
   {
     "peaksUrl": null,
-    "boundariesSec": [],
+    "boundariesSec": [
+      19,
+      38,
+      58,
+      86
+    ],
+    "boundariesSource": "detected",
     "bpm": 100,
     "beatStartAtSec": null,
     "id": "188754099",
@@ -185,7 +282,13 @@
   },
   {
     "peaksUrl": null,
-    "boundariesSec": [],
+    "boundariesSec": [
+      36,
+      63,
+      83,
+      111
+    ],
+    "boundariesSource": "detected",
     "bpm": 121,
     "beatStartAtSec": null,
     "id": "188754098",
@@ -198,7 +301,13 @@
   },
   {
     "peaksUrl": null,
-    "boundariesSec": [],
+    "boundariesSec": [
+      36,
+      90,
+      117,
+      137
+    ],
+    "boundariesSource": "detected",
     "bpm": 88,
     "beatStartAtSec": null,
     "id": "366",
@@ -211,7 +320,14 @@
   },
   {
     "peaksUrl": null,
-    "boundariesSec": [],
+    "boundariesSec": [
+      45,
+      75,
+      90,
+      116,
+      133
+    ],
+    "boundariesSource": "detected",
     "bpm": 85,
     "beatStartAtSec": null,
     "id": "188666103",
@@ -224,7 +340,20 @@
   },
   {
     "peaksUrl": null,
-    "boundariesSec": [],
+    "boundariesSec": [
+      21,
+      32,
+      48,
+      67,
+      90,
+      118,
+      160,
+      187,
+      213,
+      235,
+      256
+    ],
+    "boundariesSource": "detected",
     "bpm": 90,
     "beatStartAtSec": null,
     "id": "188648381",
@@ -237,7 +366,19 @@
   },
   {
     "peaksUrl": null,
-    "boundariesSec": [],
+    "boundariesSec": [
+      85,
+      118,
+      161,
+      173,
+      206,
+      227,
+      249,
+      271,
+      293,
+      310
+    ],
+    "boundariesSource": "detected",
     "bpm": 175,
     "beatStartAtSec": null,
     "id": "364",

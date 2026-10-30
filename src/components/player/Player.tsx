@@ -10,6 +10,7 @@ import {
   volume,
 } from "../../lib/player";
 import { time } from "../../lib/format";
+import { setAnimationPaused, stageBridge } from "../../lib/stage-bridge";
 export default function Player() {
   const state = useStore($player);
   const track = currentTrack();
@@ -18,6 +19,19 @@ export default function Player() {
   const ref = useRef<HTMLDivElement>(null);
   const [preview, setPreview] = useState<number | null>(null);
   const [volumeOpen, setVolumeOpen] = useState(false);
+  // The background stays still while the visitor's "pause animation"
+  // preference is on. Say so while something plays, so a still scene never
+  // reads as broken. Not shown for OS reduced motion (expected stillness).
+  const [visualsPaused, setVisualsPaused] = useState(false);
+  const [noticeDismissed, setNoticeDismissed] = useState(false);
+  useEffect(() => {
+    const sync = () => {
+      const s = stageBridge.getSnapshot();
+      setVisualsPaused(s.userPausedAnimation && !s.reducedMotion);
+    };
+    sync();
+    return stageBridge.subscribe("motionprefs", sync);
+  }, []);
   useEffect(() => setPreview(null), [state.id]);
   useEffect(() => {
     if (!ref.current) {
@@ -132,6 +146,19 @@ export default function Player() {
         <div class="player-message" aria-live="polite">
           {state.error}
           <button onClick={toggle}>Retry</button>
+        </div>
+      )}
+      {state.playing && visualsPaused && !noticeDismissed && (
+        <div class="player-message player-notice" role="status">
+          Visuals are paused.
+          <button onClick={() => setAnimationPaused(false)}>Resume</button>
+          <button
+            class="player-notice-close"
+            aria-label="Dismiss"
+            onClick={() => setNoticeDismissed(true)}
+          >
+            ×
+          </button>
         </div>
       )}
       {state.pending && !state.error && (
