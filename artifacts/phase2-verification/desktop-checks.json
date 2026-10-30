@@ -1,0 +1,57 @@
+[
+  {
+    "page": "home",
+    "heading": "Brían Diolún",
+    "homeContentBottom": 682.9453125,
+    "overflow": false,
+    "visibleMixRows": 0
+  },
+  {
+    "page": "mixes",
+    "heading": "Mixes",
+    "overflow": false,
+    "visibleMixRows": 9
+  },
+  {
+    "page": "mix",
+    "heading": "TODO(copy)",
+    "overflow": false,
+    "visibleMixRows": 0
+  },
+  {
+    "page": "music",
+    "heading": "Music",
+    "overflow": false,
+    "visibleMixRows": 0
+  },
+  {
+    "page": "release",
+    "heading": "Anna Doni",
+    "overflow": false,
+    "visibleMixRows": 0
+  },
+  {
+    "page": "work",
+    "heading": "Work",
+    "overflow": false,
+    "visibleMixRows": 0
+  },
+  {
+    "page": "writing",
+    "heading": "Writing",
+    "overflow": false,
+    "visibleMixRows": 0
+  },
+  {
+    "page": "post",
+    "heading": "Writing template",
+    "overflow": false,
+    "visibleMixRows": 0
+  },
+  {
+    "page": "about",
+    "heading": "Brían Diolún.",
+    "overflow": false,
+    "visibleMixRows": 0
+  }
+]

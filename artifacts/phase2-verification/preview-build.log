@@ -1,0 +1,57 @@
+
+> brian-personal-site@ build:preview /Users/briandillon/Desktop/Code/rdelune/personalsite
+> node scripts/prepare-fixture.mjs && node scripts/astro.mjs build --mode preview
+
+roam-mix-2026: dropped 20 TODO tracklist lines (6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25)
+Prepared 19 eligible tracks for the preview player.
+18:21:29 [content] Syncing content
+18:21:29 [WARN] [glob-loader] No files found matching "**/*.{md,mdx}" in directory "src/content/projects"
+18:21:29 [content] Synced content
+18:21:29 [types] Generated 444ms
+18:21:29 [build] output: "static"
+18:21:29 [build] mode: "static"
+18:21:29 [build] directory: /Users/briandillon/Desktop/Code/rdelune/personalsite/dist/
+18:21:29 [build] Collecting build info...
+18:21:29 [build] ✓ Completed in 476ms.
+18:21:29 [build] Building static entrypoints...
+18:21:29 [vite] vite v8.3.5 building prerender environment for preview...
+18:21:31 [vite] ✓ built in 1.58s
+18:21:31 [vite] vite v8.3.5 building client environment for preview...
+18:21:31 [WARN] [vite] [plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+18:21:31 [vite] ✓ built in 448ms
+18:21:31 [build] Rearranging server assets...
+
+ generating static routes 
+18:21:31 [WARN] [content] The collection "projects" does not exist or is empty. Please check your content config file for errors.
+18:21:31   ├─ /404.html (+20ms) 
+18:21:31   ├─ /about/index.html (+28ms) 
+18:21:31   ├─ /mixes/roam-mix-2026/index.html (+9ms) 
+18:21:31   ├─ /mixes/long-distance-runaround/index.html (+5ms) 
+18:21:31   ├─ /mixes/year-24/index.html (+4ms) 
+18:21:31   ├─ /mixes/year-23/index.html (+2ms) 
+18:21:31   ├─ /mixes/year-22/index.html (+2ms) 
+18:21:31   ├─ /mixes/holiday-fizzler/index.html (+2ms) 
+18:21:31   ├─ /mixes/autnote-6/index.html (+4ms) 
+18:21:31   ├─ /mixes/roam-mix-1/index.html (+4ms) 
+18:21:31   ├─ /mixes/autnote-1/index.html (+3ms) 
+18:21:31   ├─ /mixes/bank-holiday-chillout/index.html (+2ms) 
+18:21:31   ├─ /mixes/dream-gathering-african-vibes/index.html (+1ms) 
+18:21:31   ├─ /mixes/index.html (+2ms) 
+18:21:31   ├─ /music/anna-doni/index.html (+3ms) 
+18:21:31   ├─ /music/back-to-sleep/index.html (+3ms) 
+18:21:31   ├─ /music/banana-bread/index.html (+4ms) 
+18:21:31   ├─ /music/index.html (+5ms) 
+18:21:31   ├─ /work/index.html18:21:31 [WARN] [content] The collection "projects" does not exist or is empty. Please check your content config file for errors.
+ (+4ms) 
+18:21:31   ├─ /writing/sample-template/index.html (+18ms) 
+18:21:31   ├─ /writing/index.html (+3ms) 
+18:21:31   ├─ /index.html (+3ms) 
+18:21:31 ✓ Completed in 203ms.
+
+18:21:31 [build] ✓ Completed in 2.27s.
+18:21:31 [build] 22 page(s) built in 2.76s
+18:21:31 [build] Complete!

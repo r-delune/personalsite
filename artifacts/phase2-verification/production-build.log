@@ -1,0 +1,47 @@
+
+> brian-personal-site@ build /Users/briandillon/Desktop/Code/rdelune/personalsite
+> node scripts/prepare-fixture.mjs && node scripts/astro.mjs build && node scripts/check-content.mjs
+
+roam-mix-2026: dropped 20 TODO tracklist lines (6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25)
+Prepared 19 eligible tracks for the preview player.
+18:21:40 [content] Syncing content
+18:21:40 [WARN] [glob-loader] No files found matching "**/*.{md,mdx}" in directory "src/content/projects"
+18:21:40 [content] Synced content
+18:21:40 [types] Generated 421ms
+18:21:40 [build] output: "static"
+18:21:40 [build] mode: "static"
+18:21:40 [build] directory: /Users/briandillon/Desktop/Code/rdelune/personalsite/dist/
+18:21:40 [build] Collecting build info...
+18:21:40 [build] ✓ Completed in 453ms.
+18:21:40 [build] Building static entrypoints...
+18:21:41 [vite] ✓ built in 502ms
+18:21:41 [WARN] [vite] [plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+18:21:41 [vite] ✓ built in 193ms
+18:21:41 [build] Rearranging server assets...
+
+ generating static routes 
+18:21:41 [WARN] [content] The collection "projects" does not exist or is empty. Please check your content config file for errors.
+18:21:41   ├─ /404.html (+8ms) 
+18:21:41   ├─ /about/index.html (+2ms) 
+18:21:41   ├─ /mixes/index.html (+2ms) 
+18:21:41   ├─ /music/anna-doni/index.html (+3ms) 
+18:21:41   ├─ /music/back-to-sleep/index.html (+2ms) 
+18:21:41   ├─ /music/banana-bread/index.html (+1ms) 
+18:21:41   ├─ /music/index.html (+2ms) 
+18:21:41   ├─ /work/index.html18:21:41 [WARN] [content] The collection "projects" does not exist or is empty. Please check your content config file for errors.
+ (+2ms) 
+18:21:41   ├─ /writing/index.html (+1ms) 
+18:21:41   ├─ /index.html (+1ms) 
+18:21:41 ✓ Completed in 51ms.
+
+18:21:41 [build] ✓ Completed in 771ms.
+18:21:41 [build] 10 page(s) built in 1.23s
+18:21:41 [build] Complete!
+Production content is not approved. Resolve rendered TODO(copy) before publishing:
+dist/about/index.html
+dist/work/index.html
+ ELIFECYCLE  Command failed with exit code 1.

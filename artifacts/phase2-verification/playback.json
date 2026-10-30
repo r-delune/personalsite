@@ -1,0 +1,9 @@
+[
+  "BRIDGE / DEVELOPMENT\nphase  playing\nroute  mix\nitem   mix / mix:roam-mix-2026\ntime   8.2\nenergy 0.786\nplay   0.997\nscore true\nlow/mid/high 0.87 / 0.62 / 0.12\ntext zones 6\nmotion on\nlog loading → playing\nTest buffering\nSeek near end\nTest media error",
+  "BRIDGE / DEVELOPMENT\nphase  playing\nroute  work\nitem   mix / mix:roam-mix-2026\ntime   8.5\nenergy 0.630\nplay   0.997\nscore true\nlow/mid/high 0.69 / 0.59 / 0.12\ntext zones 6\nmotion on\nlog loading → playing\nTest buffering\nSeek near end\nTest media error",
+  {
+    "url": "http://127.0.0.1:4357/writing",
+    "bridge": "BRIDGE / DEVELOPMENT\nphase  playing\nroute  writing\nitem   mix / mix:roam-mix-2026\ntime   8.9\nenergy 0.503\nplay   0.998\nscore true\nlow/mid/high 0.53 / 0.56 / 0.08\ntext zones 5\nmotion on\nlog loading → playing\nTest buffering\nSeek near end\nTest media error"
+  },
+  "BRIDGE / DEVELOPMENT\nphase  paused\nroute  writing\nitem   mix / mix:roam-mix-2026\ntime   9.0\nenergy 0.467\nplay   0.849\nscore true\nlow/mid/high 0.44 / 0.60 / 0.04\ntext zones 5\nmotion on\nlog loading → playing → paused\nTest buffering\nSeek near end\nTest media error"
+]

@@ -1,0 +1,87 @@
+{
+  "roles": [
+    {
+      "id": "rdelune",
+      "years": "2026–present",
+      "title": "Founder / Fractional CTO",
+      "organisation": "rdelune",
+      "summary": "Independent engineering consultancy supporting early-stage and research-led teams with architecture, technical leadership, privacy and product readiness.",
+      "caseStudies": []
+    },
+    {
+      "id": "commpal",
+      "years": "2022–2026",
+      "title": "Founding Engineer / Technical Lead",
+      "organisation": "CommPAL",
+      "summary": "Led engineering for a palliative-care platform, covering product delivery, application architecture, cloud infrastructure, healthcare data pipelines and ML integration.",
+      "caseStudies": []
+    },
+    {
+      "id": "myuse",
+      "years": "2019–2026",
+      "title": "Founding Engineer / Technical Lead",
+      "organisation": "MyUSE",
+      "summary": "Built and operated a university harm-reduction platform, including product design, web and mobile delivery, an editable content system, accessibility and privacy documentation.",
+      "caseStudies": []
+    },
+    {
+      "id": "techsquad-quickminutes",
+      "years": "2018–2019",
+      "title": "Full-Stack Developer",
+      "organisation": "Techsquad / QuickMinutes",
+      "summary": "Developed commercial SaaS products using Vue, Laravel and MySQL, contributing to product design and implementation.",
+      "caseStudies": []
+    },
+    {
+      "id": "audiorhoon",
+      "years": "Date to confirm",
+      "title": "Lead iOS Developer",
+      "organisation": "AudioRhoon",
+      "summary": "Developed and maintained iOS applications for connected assistive devices, covering device integration, deployment and ongoing releases.",
+      "caseStudies": []
+    },
+    {
+      "id": "rocudo",
+      "years": "2015–2017",
+      "title": "Software Developer",
+      "organisation": "Rocudo",
+      "summary": "Built web applications and services, supported mobile releases, and contributed to audio and device products.",
+      "caseStudies": []
+    }
+  ],
+  "skills": [
+    {
+      "group": "Product & leadership",
+      "items": ["Product design", "Technical direction", "Architecture", "Prototype-to-production delivery"]
+    },
+    {
+      "group": "Engineering",
+      "items": ["React", "Vue / Nuxt", "Laravel", "Python", "iOS / Objective-C", "APIs"]
+    },
+    {
+      "group": "Platform",
+      "items": ["AWS", "Infrastructure as code", "Docker", "CI/CD", "Data pipelines", "Production operations"]
+    },
+    {
+      "group": "Privacy & access",
+      "items": ["Privacy by design", "Data protection impact assessments", "Data governance", "Accessibility"]
+    }
+  ],
+  "education": [
+    {
+      "years": "2014–2015",
+      "title": "Higher Diploma, Software Development and Design",
+      "institution": "National University of Ireland, Galway"
+    },
+    {
+      "years": "2011–2012",
+      "title": "MA, Music Technology",
+      "institution": "Cork Institute of Technology"
+    },
+    {
+      "years": "2008–2011",
+      "title": "BA, Economics and Politics",
+      "institution": "University College Cork"
+    }
+  ]
+}

@@ -205,11 +205,11 @@ scripts/ingest-mix.ts            ← single-mix ingest (§10)
 ### 6.3 App → visual bridge (D-042)
 `src/lib/stage-bridge.ts` is the only app interface the separate visual may read. Codex does not modify src/components/stage/**, shaders, posters or framing code. Existing visuals continue working until their owner integrates the bridge.
 
-The module singleton exposes getSnapshot(), getFeatures(), getItemMeta(), and subscribe(event,callback) with unsubscribe. Snapshot includes phase/phaseSince, positionSec, durationSec|null, itemKind/itemId, route/routeSince, reducedMotion, userPausedAnimation and analysisAvailable. Phases: idle, loading, playing, buffering, paused, ended, error. Routes: home, music, release, mixes, mix, work, writing, post, about, other. Phase is confirmed transport state, not button intent. Position uses the active audio clock. Query/hash changes do not change route; use astro:after-swap and history navigation.
+The module singleton exposes getSnapshot(), getFeatures(), getItemMeta(), and subscribe(event,callback) with unsubscribe. Snapshot includes phase/phaseSince, positionSec, durationSec|null, itemKind/itemId, route/routeSince, reducedMotion, userPausedAnimation and scoreAvailable. Phases: idle, loading, playing, buffering, paused, ended, error. Routes: home, music, release, mixes, mix, work, writing, post, about, other. Phase is confirmed transport state, not button intent. Position uses the active audio clock. Query/hash changes do not change route; use astro:after-swap and history navigation.
 
-Events: phase, route, seek, itemchange, motionprefs. One seek event per committed seek on the active item, never for page-only staging. Snapshot/features objects are reused and allocate nothing per read; no per-frame nanostore updates. Static item metadata changes only with item identity: itemKind, itemId, durationSec, peaksUrl|null, scoreUrl|null, boundariesSec[], bpm|null, beatStartAtSec|null. Pass only existing, sanitized confirmed/manual release sections or mix tracklist times. Do not invent timing data, promote detected boundaries or fetch visual peaks/scores in the bridge.
+Events: phase, route, seek, itemchange, motionprefs, exclusions. One seek event per committed seek on the active item, never for page-only staging. Snapshot/features objects are reused and allocate nothing per read; no per-frame nanostore updates. Static item metadata changes only with item identity: itemKind, itemId, durationSec, peaksUrl|null, scoreUrl|null, boundariesSec[], bpm|null, beatStartAtSec|null. Pass only existing, sanitized confirmed/manual release sections or mix tracklist times. Do not invent timing data or promote detected boundaries. The bridge fetches score JSON once per URL on itemchange; it never fetches audio or waveform peaks.
 
-Document semantics in src/lib/stage-bridge.md. A dev-only ?bridge overlay shows actual phase, route, time and energy; it must be absent from production bundles. Native output is used on every platform; analysisAvailable is always false and getFeatures() retains energy: 0 for compatibility. These controls implement no scene behaviour.
+Document semantics in src/lib/stage-bridge.md. A dev-only ?bridge overlay shows actual phase, route, time and energy; it must be absent from production bundles. Native output is used on every platform. scoreAvailable reflects validated score readiness; getFeatures() returns energy/low/mid/high/playing. The overlay draws a score timeline with detected boundaries and playhead. These controls implement no scene behaviour.
 
 ---
 
@@ -286,13 +286,13 @@ The runtime hosts exactly **one** scene in v1. There is no crossfade machinery, 
 - Reset/clamp render delta after tab restoration and integrate audio-driven phase (`phase += dt * speed`) rather than multiplying total elapsed time by a changing speed. Smooth audio parameters alone cannot prevent that phase jump.
 - Start with main-thread rendering and stable downward quality steps when measured frame times remain poor. No repeated quality oscillation. Respect motion settings before loading graphics where practical. Shader dithering is an optional remedy for observed gradient banding; sparse point fragments cannot replace grain across untouched background pixels.
 
-### 8.3 Precomputed visual score (D-043)
-- Native audio provides the clock. `StageItemMeta.scoreUrl` is a URL or null. The visual, not the bridge, loads and validates the score and samples at `positionSec`, with 2–8s lookahead where needed. Missing/invalid scores fall back to playing plus authored section/BPM metadata and never block playback.
+### 8.3 Precomputed visual score (D-047 supersedes score ownership in D-043)
+- Native audio provides the clock. `StageItemMeta.scoreUrl` is a URL or null. The bridge loads and validates score JSON once per URL, asynchronously on itemchange, and samples at the native audio clock. `getScoreWindow(fromSec, toSec)` provides a reused window descriptor over the cached arrays (startIndex inclusive, endIndex exclusive) for visual lookahead; never mutate these arrays. Missing/invalid scores fall back to playing plus authored section/BPM metadata and never block playback.
 - Score v1: `version: 1`, `rateHz: 4`, `duration` in seconds, `bands: [energy, low, mid, high]`, `data` arrays of byte values 0–255, and detected `boundaries`. Initially use energy/boundaries only; spectral styling is deferred.
 - Boundary priority: confirmed tracklist `at` → manual release `section_times` → detected score boundaries → none. Detected boundaries remain in the score, never promoted to confirmed tracklist metadata.
 - Score sampling and seeded target motion are deterministic for item + position; transient easing after a seek may depend on the previous frame. Ease section changes over `min(0.35 × section length, 6s)`; hold/smooth visual envelopes across seek/item changes to avoid flashes. Use elapsed-time easing, not frame counts.
-- Bridge `getFeatures()` retains compatibility `energy: 0`; `analysisAvailable` stays false. `playing` eases toward 1 with tau 1.5s while confirmed playing, toward 0 with tau 2.5s otherwise. Releases have `scoreUrl: null` until scores are available.
-- D-044: mark page titles, main text groups, list containers and player with `data-stage-exclude`. No rectangle API yet. First verify route poses/contrast; only add bounded, throttled rectangle handling if measurements require it. The proposed +20% atmosphere-height cap remains unapproved; §8.4 is unchanged.
+- Bridge `getFeatures()` linearly interpolates byte bands to 0–1 and smooths with attack tau 80ms/release tau 600ms. Bands are not multiplied by playing; missing/invalid scores return zero bands and scoreAvailable=false. Stale loads cannot replace the active item’s score. `playing` eases toward 1 with tau 1.5s while confirmed playing, toward 0 with tau 2.5s otherwise. Releases have `scoreUrl: null` until scores are available.
+- D-048 supersedes D-044 deferral: mark titles, text/list groups, scrubber/tracklist, rail and player with `data-stage-exclude`. `getExclusionRects()` reuses its CSS-pixel array; recompute on route/resize/scroll/player visibility or layout changes in a single rAF-throttled pass, not every frame. Nested marks are covered by their outer marked group. Emit exclusions on recompute. Visual response belongs to the visual owner. The proposed +20% atmosphere-height cap remains unapproved; §8.4 is unchanged.
 
 ### 8.4 Caps **[LOCKED]**
 | Uniform | Drives | Max change vs. idle |
@@ -334,7 +334,7 @@ mixes: {
   series?: string, tags: string[] = [], description?: string,
   cover?: image, coverAlt?: string,
   media: { src: url, duration: number, bytes: number, peaks: url, lufs?: number, sha: string },
-  tracklist: { at: number, artist: string, title: string }[] = [],   // validated: ascending, < duration
+  tracklist: { at: number, artist: string, title: string, label?: string }[] = [],   // validated: ascending, < duration
   mixcloudUrl?: url, featured: boolean = false, scene?: string, draft: boolean = false,
 }
 
@@ -377,7 +377,9 @@ cv (json): { roles: { id, org, title, start, end?, summary, bullets: string[], c
 3. `audiowaveform` → raw peaks, converted to the §7.3 format. Generate score v1 (§8.3) aligned with the delivered audio; record generator/recipe version. Existing unscored items remain playable.
 4. `sha` = hash of (master bytes + recipe string + ffmpeg version + audiowaveform version + score generator version). A changed recipe or tool produces a new derivative.
 5. Upload audio, peaks and any generated score. **Write or update mix metadata only after every referenced upload succeeds.** A missing score uses null; never publish a guessed URL. Local development currently serves the supplied ROAM score from `/data/roam-mix-2026.score.json`; hashed R2 publication and the score generator are separate visual-owner work.
-6. Optional `--tracklist file.txt` parses lines like `00:00 Artist - Title` / `1:02:30 Artist - Title`.
+6. Tracklist ingest: `node scripts/ingest-tracklist.mjs <mix-slug> <tracklist.txt>` parses `mm:ss Artist - Title [Label]` or `h:mm:ss Artist - Title`. Comments are ignored; any TODO line is reported and dropped before publication. Reject duplicate/descending times and entries at/after duration. Build-time `prepare-mixes.mjs` refreshes the sanitized chapter projection from the configured source file; source text never enters client bundles.
+7. Mix chapters (D-046): numbered rows and waveform ticks use D-026 (active mix seeks; inactive mix stages and shows Play from time). Highlight only the active chapter without auto-scrolling. Player sub-line announces now: Artist — Title only on chapter changes. Media Session title/artist/album reflect chapter title, artist and mix title. Catalogue shows N TRACKS only for nonempty named lists.
+8. Artwork (D-049): release tiles and mix rows preload on pointer/focus intent; selecting a track preloads its artwork and the next track’s artwork. Cache image objects by URL with decoding=async; failed decodes do not block playback/navigation.
 
 ---
 
@@ -519,3 +521,7 @@ All dates are approximate (Mixcloud shows relative dates only), so set `dateAppr
 | dream-gathering-african-vibes | Dream Gathering DJ set (African Vibes) | 2014 | 1:23:39 | — |
 
 Profiles: Mixcloud https://www.mixcloud.com/brian-diolun/ · SoundCloud https://soundcloud.com/brian-d · rdelune https://rdelune.dev
+
+
+### Mix artwork update (D-050 · 2026-10-30)
+Every mix has `cover`, `coverSmall` and `coverAlt`. Published Mixcloud shows also retain `mixcloudUrl` and `coverSource`. Use local 300px catalogue and 600px detail/player originals from Mixcloud; catalogue images are decorative beside their named title, detail images have descriptive alt text and all reserve dimensions. The local ROAM_MIX_2026 item uses an explicitly approved neutral placeholder until its cover is supplied. Artwork propagates through the shared catalogue to intent preloads and Media Session; no live third-party image request is required.

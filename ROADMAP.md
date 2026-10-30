@@ -42,8 +42,8 @@ Repeated scroll reveals, navigation-label scrambling, cover fly-ins and waveform
 - [ ] **Authored cues for mixes.** Optional `cues: [{ at, kind: 'veil' | 'swell' | 'hush', intensity }]` in front-matter, a tiny version of productions' `visual_events`. *Trigger:* scores + tracklists live and Brian wants to mark a moment.
 - [ ] **Per-release tint (lab experiment).** Nudge `--accent-2` ≤ ±15° hue towards the album `base_color` on item change. Off by default. *Trigger:* visual direction chosen.
 - [ ] **Visual ledger.** `claude-visual-ledger.md`: one tuning dimension per round with a before/after log (productions' `VISUAL_LEDGER.md` pattern). *Trigger:* visual direction chosen.
-- [ ] **Audio analysis on iOS/iPadOS.** Bind Web Audio on iOS once silent-switch, screen-lock and background playback are proven on a real device (D-032). *Trigger:* M2 device test passes.
-- [ ] **Richer analysis:** bass/mid/high bands, spectral-flux beat impulse. *Trigger:* a visual test shows energy alone is not enough.
+- [ ] **Optional live analysis.** v1 uses native audio plus precomputed scores (D-047). Revisit Web Audio only if a chosen direction demonstrates a need for sub-250ms immediacy, with real-device silent-switch, screen-lock and background proof before any binding.
+- [ ] **Richer score features:** spectral-flux beat impulse or denser scores. Low/mid/high already ship at 4 Hz. *Trigger:* a chosen visual direction demonstrates that the current score resolution is insufficient.
 - [ ] **Per-scene beat pulse** within the caps. *Trigger:* richer analysis.
 
 ### Mixes

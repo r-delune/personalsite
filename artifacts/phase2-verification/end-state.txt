@@ -1,0 +1,15 @@
+BRIDGE / DEVELOPMENT
+phase  ended
+route  mix
+item   mix / mix:roam-mix-2026
+time   3626.7
+energy 0.000
+play   0.106
+score true
+low/mid/high 0.00 / 0.00 / 0.00
+text zones 6
+motion on
+log loading → error → loading → playing → buffering → playing → ended
+Test buffering
+Seek near end
+Test media error
