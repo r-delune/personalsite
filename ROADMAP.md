@@ -38,17 +38,25 @@ Repeated scroll reveals, navigation-label scrambling, cover fly-ins and waveform
 - [ ] **Productions visual runtime as a scene.** Mount the rdelune-productions explorer (section times, recipes, `bpm`/`beat_start_at`) inside the Stage. *Trigger:* timelines + live feed.
 
 ### Audio & visuals
+- [ ] **Visual scores for releases.** Generate `.score.json` for published feed MP3s, cached on R2 by track `id` + audio sha. Long term, Roam Studio publishes scores alongside renders. *Trigger:* score pipeline stable for mixes (Claude).
+- [ ] **Authored cues for mixes.** Optional `cues: [{ at, kind: 'veil' | 'swell' | 'hush', intensity }]` in front-matter, a tiny version of productions' `visual_events`. *Trigger:* scores + tracklists live and Brian wants to mark a moment.
+- [ ] **Per-release tint (lab experiment).** Nudge `--accent-2` ≤ ±15° hue towards the album `base_color` on item change. Off by default. *Trigger:* visual direction chosen.
+- [ ] **Visual ledger.** `claude-visual-ledger.md`: one tuning dimension per round with a before/after log (productions' `VISUAL_LEDGER.md` pattern). *Trigger:* visual direction chosen.
 - [ ] **Audio analysis on iOS/iPadOS.** Bind Web Audio on iOS once silent-switch, screen-lock and background playback are proven on a real device (D-032). *Trigger:* M2 device test passes.
 - [ ] **Richer analysis:** bass/mid/high bands, spectral-flux beat impulse. *Trigger:* a visual test shows energy alone is not enough.
 - [ ] **Per-scene beat pulse** within the caps. *Trigger:* richer analysis.
 
 ### Mixes
+- [ ] **Tracklist template from the score.** The ingest step writes `tracklist.txt` pre-filled with detected boundary times for Brian to name (done by hand for roam-mix-2026). *Trigger:* ingest script.
+- [ ] **Import older tracklists** from Mixcloud pages or Brian's notes for the seed mixes. *Trigger:* those mixes ingested.
 - [ ] **Batch ingest:** a folder of masters → derivatives, peaks, front-matter; idempotent. *Trigger:* single-mix ingest stable through M2.
 - [ ] **Podcast-style RSS for mixes** (iTunes namespace, enclosures). *Trigger:* ≥5 mixes ingested.
 - [ ] **Mix filters/sort** by series, tag and year. *Trigger:* the catalogue becomes hard to scan (≈15+ mixes).
 - [ ] **Loudness policy:** decide whether to normalise mixes and/or releases. *Trigger:* listening feedback on level jumps.
 
 ### Site
+- [ ] **Privacy-light play analytics on our own stack.** Cloudflare Pages Functions + D1 (productions' pattern): plays and listening time per mix and release, with no user agent, no referrer, and daily rollups. Preferred over third-party analytics. *Trigger:* Brian wants listening numbers.
+- [ ] **Contact sheet + visual verify scripts** (productions' `contact-sheet.mts` / `verify-visual.mjs` pattern): routes × playback phases × viewports in one image, saved to timestamped review folders (Claude). *Trigger:* first Codex QA round.
 - [ ] **Command palette** (⌘K) to jump and play. *Trigger:* ≥20 playable items or many posts.
 - [ ] **Generated OG images** per page (Satori). *Trigger:* writing or mixes are being shared.
 - [ ] **/now page.** *Trigger:* Brian wants to update it regularly.
