@@ -5,3 +5,10 @@ dist/
 .env.*
 !.env.example
 .DS_Store
+
+# Audio is delivered externally; never version master/streaming media.
+*.mp3
+*.m4a
+*.wav
+*.flac
+*.aiff

@@ -1,7 +1,7 @@
 # Personal Site — v1 Spec (merged)
 
 > Owner: Brian Dillon · music: **Brian Diolún** (DJ alias **Roam**)
-> Status: **v1.3 — M1 local layout/background preview built; Brian/Claude visual review pending** · 2026-10-30
+> Status: **v1.4 — phase-2 app implementation; visual implementation separately owned** · 2026-10-30
 > Supersedes `SPEC.claude.md` and `SPEC-CODEX.md` (kept for history). Incorporates `REVIEW.md`.
 > Resolves `REVIEW-CURRENT.md`; fixes approved by Brian (“ok fix it”). See D-020–D-025.
 > Consolidates `claude-ux-plan.md`, `CODEX-UI-UX-PLAN.md` and `CODEX-UX-COMPARISON.md` into this single review reference. UX synthesis: D-026–D-031. Source proposals remain historical context, not additional build requirements.
@@ -47,30 +47,34 @@ No CMS, accounts, comments, newsletter, contact backend or analytics. No storybo
 ## 3. Information architecture
 
 ### 3.1 Navigation
-Primary: **Music · Mixes · Work · About**, plus **Writing**, which appears only once at least one non-draft post exists.
+Primary: **Music · Mixes · Work · About**, plus **Writing** when a real non-draft post exists; dev/explicit preview also exposes the marked writing sample (D-040).
 
 | Route | Purpose |
 |---|---|
 | `/` | Introduction and curated entry points |
 | `/music`, `/music/[slug]` | Releases, and a release with its tracklist |
 | `/mixes`, `/mixes/[slug]` | Mix catalogue, and a mix with its scrubber and tracklist |
-| `/work`, `/work/[slug]` | Selected projects and case studies, plus a link to rdelune.dev |
-| `/about` | Bio, CV (roles → case studies), a short running section, profiles and contact |
+| `/work`, `/work/[slug]` | CV, selected case studies, and a link to rdelune.dev |
+| `/about` | Bio, a short running section, profiles and contact; CV is on Work |
 | `/writing`, `/writing/[slug]` | Blog (hidden from nav while empty) |
 | `/404` | |
 
 **Public builds hide sections that have no real content.** Templates may exist, but navigation and the homepage list only what has content.
 
-### 3.2 Homepage (normal scrolling, no scroll hijacking, no autoplay)
-1. **Intro.** `min-height: 100svh` (never a fixed height), a three-tone headline, a two-line blurb, then a named **▶ Play [featured title]** action (starts the selected eligible track/mix only on click), a small **Browse music** link and a secondary **rdelune ↗** link. Show a quiet title/type/duration line if space permits. Content and the action are visible at first paint; graphics initialization never gates them.
-2. **Music.** One featured release plus a small row of others.
-3. **Mixes.** 3–5 editorial rows: title, year, duration, ▶.
-4. **Selected work.** 2–3 projects, only when they exist.
-5. **Writing.** The latest 3, only when they exist.
-6. **Footer.** © Brian Dillon, rdelune.dev, Mixcloud, SoundCloud, GitHub, LinkedIn, and RSS (when writing exists).
+### 3.2 Homepage (D-037; supersedes scrolling home D-011)
+One desktop screen, footer excepted, at 1440×900 and 1280×720. At 375×667 it may scroll but stays under about 1.5 screens. Left content: **Brian Dillon**, “Music as Brian Diolún. Mixes as Roam. Software at rdelune ↗”, a featured text Play action with data-derived year/duration, and Latest rows for newest eligible release, newest playable mix and newest visible post. Each has separate Play (where available) and detail link. No home catalogue sections, large tiles, scroll cue, slogans or numbered section labels. Leave the desktop lower-right 40% × bottom 50% clear of app content.
 
-### 3.3 About
-Expanded bio, then a **CV** section (roles with dates and bullets, each linking to the case studies that back it up), then a short **running** section (a few selected results, and an ITRA link if Brian supplies one), then profiles and contact. Includes a **"Print / save PDF"** button (`window.print()`) with a print stylesheet that hides the shell and uses A4 margins.
+### 3.3 Work and About (D-039)
+Work: title, software-consultancy link to rdelune, CV anchored at #cv, then non-draft case studies when supplied. CV comes from zod-validated src/content/cv.json: roles (years, title, organisation, one-line summary, case-study chips), grouped skills, education. Validate every case-study reference. Seed unknown facts with TODO(copy), never invented experience. Print / save PDF opens the browser print dialog; use A4, dark text on white, hidden shell/player/canvas, and avoid breaks inside roles.
+
+About: **Brian Dillon.**, the three-fact line, bio TODO(copy), running TODO(copy), an unfilled ITRA slot, and supplied profiles. The CV belongs to Work.
+
+### 3.4 Density, copy and Writing (D-038, D-040)
+Page H1 is the section name, approximately clamp(2rem,3.5vw,2.75rem). Supporting text is factual and at most one line per screen. Mono metadata uses computed counts/date ranges/durations. Remove all marketing headlines and rail footer taglines. Mix rows are 64–80px, with separate title, series, year, duration, Play, detail link and current-item marker; at least eight are visible on the 1440×900 catalogue. Unavailable seed mixes are dev/preview only. Include the real roam-mix-2026 metadata/peaks; its unconfirmed title/date remain TODO(copy). Configure actual audio externally using PUBLIC_MIX_MEDIA_BASE; never commit audio.
+
+Release artwork is 160–220px, 4–6 grid slots on wide desktop, with mono caption and accessible separate Play control. Credit artist_name exactly as published (D-041); absent credit is omitted rather than guessed.
+
+Writing: list rows show date, title and description. Posts use a 62ch reading measure, date/reading-time metadata, styled headings, links, images/captions, Shiki code, quotations, footnotes and previous/next. A clearly marked sample:true MDX post exercises the template only in dev or mode=preview/PREVIEW=1. Production filters it out of routes, navigation and home. RSS is emitted only for real non-draft posts. Real unfinished copy still fails the production approval guard.
 
 ---
 
@@ -115,18 +119,18 @@ The player and background are one stable environment; page content changes insid
 | Interaction | Initial timing | Implementation |
 |---|---|---|
 | Hover/focus/press | Immediate acknowledgement; optional 100–160ms styling | CSS, visible focus, no animation that delays the action |
-| Page content change | Compare 160–220ms against 260ms in M1 | Short fade with at most 6–8px movement; animate content only |
+| Page content change | Outgoing 120ms; title 280ms; body +60ms; first six rows stagger 30ms with 140ms animation | Total ≤350ms, DOM content only, interruptible; D-038 supersedes earlier ≤220ms content limit |
 | Player first appearance | 180–220ms | Transform/opacity after layout reservation; no cover fly-in |
 | Mobile menu | 160–220ms | Simple, interruptible entrance/exit |
 | Poster → live canvas | 300–450ms starting point | Matched composition; retain poster until a successful warmed frame |
 | Audio response | 1.5s rise / 2.5s fall | Existing time-based envelopes and influence caps |
 
 - Never fade, freeze or ghost the entire player/canvas as part of a route snapshot. Do not serialize an exit/entrance sequence that blocks new input. Cancel or retarget interrupted motion.
-- **View Transition mechanics (D-033).** Give the Stage and Player their own `view-transition-name`s and suppress their *old* snapshots (`::view-transition-old(stage), ::view-transition-old(player) { display: none }`; `::view-transition-new(stage), ::view-transition-new(player) { animation: none }`). The old snapshot is a static image, while the new one renders live, so this keeps the canvas and progress live. Only `<main>` gets the content animation. While a transition runs, its pseudo-element overlay sits above the page, so verify in M1 that a player control pressed mid-transition still works (e.g. `:root::view-transition { pointer-events: none }`, verified per browser). Keep content transitions ≤220ms. Browsers without View Transitions get Astro's instant-swap fallback; persistence must never depend on View Transition support.
-- Keep essential text visible on initial load. No staged CTA appearance, character reveals, repeated scroll reveals, label decoding, pointer-following controls or scroll interception.
+- **View Transition mechanics (D-033).** Give the Stage and Player their own `view-transition-name`s and suppress their *old* snapshots (`::view-transition-old(stage), ::view-transition-old(player) { display: none }`; `::view-transition-new(stage), ::view-transition-new(player) { animation: none }`). The old snapshot is a static image, while the new one renders live, so this keeps the canvas and progress live. Only `<main>` gets the content animation. While a transition runs, its pseudo-element overlay sits above the page, so verify in M1 that a player control pressed mid-transition still works (e.g. `:root::view-transition { pointer-events: none }`, verified per browser). Keep the outgoing snapshot fade at 120ms; the separate DOM title/body/row reveal completes within 350ms (D-038 supersedes the earlier 220ms content cap). Browsers without View Transitions get Astro's instant-swap fallback; persistence must never depend on View Transition support.
+- Keep essential text visible on initial load. No staged CTA appearance, character-by-character reveals, repeated scroll reveals, label decoding, pointer-following controls or scroll interception. Incoming route titles may use the approved 8px line-mask reveal; initial page content is immediately visible.
 - A single **cover-to-release artwork transition** is an M1 experiment, not a requirement for every list/title/chip. Only the source/destination pair has matching transition names. Repeated artwork, rapid navigation and back/forward must remain correct; use a plain content fade if not.
 - Use CSS transitions/keyframes first and Web Animations API for animation that needs explicit cancellation. Default to transform/opacity for moving surfaces; profile filters/clip-path rather than assuming hardware acceleration.
-- Reduced motion removes displacement, shared-element morphs and decorative animation. Immediate state changes are valid; no animation is required for understanding or operating the interface.
+- Reduced motion uses a 120ms crossfade only: no masks, displacement, shared-element morphs or stagger. Controls remain immediate.
 
 ### 4.5 Navigation, menu and focus
 
@@ -197,6 +201,16 @@ scripts/ingest-mix.ts            ← single-mix ingest (§10)
 - UI → Engine: `load(item)`, `play()`, `pause()`, `seek(s)`, `next()`, `prev()`.
 - Scene rendering, visible transport progress and pointer preview have independent scheduling gates. Pausing/hiding graphics must not freeze an active player's seek UI. A shared scheduler may dispatch them, but never stop all UI work with the scene's pause flag. Per-frame analysis/preview stays outside UI stores; store time remains ~4Hz.
 
+
+### 6.3 App → visual bridge (D-042)
+`src/lib/stage-bridge.ts` is the only app interface the separate visual may read. Codex does not modify src/components/stage/**, shaders, posters or framing code. Existing visuals continue working until their owner integrates the bridge.
+
+The module singleton exposes getSnapshot(), getFeatures(), getItemMeta(), and subscribe(event,callback) with unsubscribe. Snapshot includes phase/phaseSince, positionSec, durationSec|null, itemKind/itemId, route/routeSince, reducedMotion, userPausedAnimation and analysisAvailable. Phases: idle, loading, playing, buffering, paused, ended, interrupted, error. Routes: home, music, release, mixes, mix, work, writing, post, about, other. Phase is confirmed transport state, not button intent. Position uses the active audio clock. Query/hash changes do not change route; use astro:after-swap and history navigation.
+
+Events: phase, route, seek, itemchange, motionprefs. One seek event per committed seek on the active item, never for page-only staging. Snapshot/features objects are reused and allocate nothing per read; no per-frame nanostore updates. Static item metadata changes only with item identity: itemKind, itemId, durationSec, peaksUrl|null, boundariesSec[], bpm|null, beatStartAtSec|null. Pass only existing, sanitized confirmed/manual release sections or mix tracklist times. Do not invent timing data, promote detected boundaries or fetch visual peaks/scores in the bridge.
+
+Document semantics in src/lib/stage-bridge.md. A dev-only ?bridge overlay shows actual phase, route, time and energy; it must be absent from production bundles. ?noanalysis=1 forces the native-output policy for dev verification before first bind. These controls implement no scene behaviour.
+
 ---
 
 ## 7. Audio engine & player
@@ -218,7 +232,7 @@ scripts/ingest-mix.ts            ← single-mix ingest (§10)
 - **Global controls target the active item (D-034).** `Space`/`J`/`L`/`M`, Media Session actions and player-bar buttons always act on the engine's active item, never on a mix that is only displayed or staged on the current page (§7.4).
 
 ### 7.2 Player bar (persistent)
-- Hidden until something has been loaded, then slides in. Desktop target height is 56px before safe-area padding; it may grow with content or zoom. `--player-h` tracks the measured outer height (§4.3).
+- Hidden until something has been loaded, then slides in. Controls use an outlined Play button and thin 1–2px seek track; thumb appears on hover/focus/drag and is always visible on touch. Desktop volume is an icon with an accessible focus/hover slider, hidden on mobile. Desktop target height is 56px before safe-area padding; it may grow with content or zoom. `--player-h` tracks the measured outer height (§4.3).
 - Shows: artwork thumb · title + artist/series (mono) · prev/play/next · seek slider · elapsed/total (mono) · volume (desktop only, since it is often read-only on iOS) · link to the item's page.
 - **Mobile layout:** two rows, with safe-area padding below. First row: linked title/artist and prev/play/next, with artwork only if space permits. Second row: elapsed time, seek slider, total time. Hide volume. Allow wrapping and increased height at large text sizes; do not squeeze all controls into a 56px row. Keep transport touch targets at least 44×44px and reserve space using the measured height.
 - For mixes, it shows the current tracklist entry ("now: Artist — Title") when a tracklist exists.
@@ -433,7 +447,7 @@ cv (json): { roles: { id, org, title, start, end?, summary, bullets: string[], c
 | Question | Default |
 |---|---|
 | Domain | `PUBLIC_SITE_URL` placeholder |
-| Display names | Site: "Brian Dillon". Music credit: "Brian Diolún". DJ/series alias: "Roam" |
+| Display names | Site: "Brian Dillon". Release credit: feed artist_name as published (D-041). DJ/series alias: "Roam" |
 | Accent colour + hero motif | Lunar blue + moon-limb horizon. Decided at the end of M1 |
 | Hero copy, bio, CV, projects, running results | `TODO(copy)` until supplied |
 | Which album is featured | First eligible album in the fixture, after filtering and overlays |

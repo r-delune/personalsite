@@ -1,5 +1,11 @@
 [
   {
+    "peaksUrl": null,
+    "boundariesSec": [
+      48
+    ],
+    "bpm": 160,
+    "beatStartAtSec": null,
     "id": "188598993",
     "title": "Ehten",
     "artist": "roam",
@@ -9,6 +15,10 @@
     "href": "/music/anna-doni"
   },
   {
+    "peaksUrl": null,
+    "boundariesSec": [],
+    "bpm": 80,
+    "beatStartAtSec": null,
     "id": "188666105",
     "title": "Enrose",
     "artist": "roam",
@@ -18,6 +28,10 @@
     "href": "/music/anna-doni"
   },
   {
+    "peaksUrl": null,
+    "boundariesSec": [],
+    "bpm": 135,
+    "beatStartAtSec": null,
     "id": "188496718",
     "title": "Left For",
     "artist": "roam",
@@ -27,6 +41,10 @@
     "href": "/music/anna-doni"
   },
   {
+    "peaksUrl": null,
+    "boundariesSec": [],
+    "bpm": 100,
+    "beatStartAtSec": null,
     "id": "9279",
     "title": "Caravaning",
     "artist": "roam",
@@ -36,6 +54,10 @@
     "href": "/music/anna-doni"
   },
   {
+    "peaksUrl": null,
+    "boundariesSec": [],
+    "bpm": 128,
+    "beatStartAtSec": null,
     "id": "188496408",
     "title": "Protome",
     "artist": "roam",
@@ -45,6 +67,10 @@
     "href": "/music/anna-doni"
   },
   {
+    "peaksUrl": null,
+    "boundariesSec": [],
+    "bpm": 110,
+    "beatStartAtSec": null,
     "id": "447",
     "title": "Halloween",
     "artist": "roam",
@@ -54,6 +80,10 @@
     "href": "/music/anna-doni"
   },
   {
+    "peaksUrl": null,
+    "boundariesSec": [],
+    "bpm": 129,
+    "beatStartAtSec": null,
     "id": "188459743",
     "title": "M4Lday",
     "artist": "Brian Diolún",
@@ -63,6 +93,10 @@
     "href": "/music/back-to-sleep"
   },
   {
+    "peaksUrl": null,
+    "boundariesSec": [],
+    "bpm": 128,
+    "beatStartAtSec": null,
     "id": "493",
     "title": "Swimming With The Fishies",
     "artist": "Brian Diolún",
@@ -72,6 +106,10 @@
     "href": "/music/back-to-sleep"
   },
   {
+    "peaksUrl": null,
+    "boundariesSec": [],
+    "bpm": 103,
+    "beatStartAtSec": null,
     "id": "16572",
     "title": "Techno15Arr Repeater",
     "artist": "Brian Diolún",
@@ -81,6 +119,10 @@
     "href": "/music/back-to-sleep"
   },
   {
+    "peaksUrl": null,
+    "boundariesSec": [],
+    "bpm": 111,
+    "beatStartAtSec": null,
     "id": "188754100",
     "title": "Pre Guys Arrive",
     "artist": "Brian Diolún",
@@ -90,6 +132,10 @@
     "href": "/music/back-to-sleep"
   },
   {
+    "peaksUrl": null,
+    "boundariesSec": [],
+    "bpm": 140,
+    "beatStartAtSec": null,
     "id": "188482496",
     "title": "Jammyjamjam",
     "artist": "Brian Diolún",
@@ -99,6 +145,10 @@
     "href": "/music/back-to-sleep"
   },
   {
+    "peaksUrl": null,
+    "boundariesSec": [],
+    "bpm": 98,
+    "beatStartAtSec": null,
     "id": "188754097",
     "title": "Robitussen",
     "artist": "Brian Diolún",
@@ -108,6 +158,10 @@
     "href": "/music/back-to-sleep"
   },
   {
+    "peaksUrl": null,
+    "boundariesSec": [],
+    "bpm": 180,
+    "beatStartAtSec": null,
     "id": "188736474",
     "title": "Damit",
     "artist": "Brian Diolún",
@@ -117,6 +171,10 @@
     "href": "/music/back-to-sleep"
   },
   {
+    "peaksUrl": null,
+    "boundariesSec": [],
+    "bpm": 100,
+    "beatStartAtSec": null,
     "id": "188754099",
     "title": "Tet",
     "artist": "Brian Diolún",
@@ -126,6 +184,10 @@
     "href": "/music/back-to-sleep"
   },
   {
+    "peaksUrl": null,
+    "boundariesSec": [],
+    "bpm": 121,
+    "beatStartAtSec": null,
     "id": "188754098",
     "title": "Said",
     "artist": "Brian Diolún",
@@ -135,6 +197,10 @@
     "href": "/music/back-to-sleep"
   },
   {
+    "peaksUrl": null,
+    "boundariesSec": [],
+    "bpm": 88,
+    "beatStartAtSec": null,
     "id": "366",
     "title": "Sepia",
     "artist": "roam",
@@ -144,6 +210,10 @@
     "href": "/music/banana-bread"
   },
   {
+    "peaksUrl": null,
+    "boundariesSec": [],
+    "bpm": 85,
+    "beatStartAtSec": null,
     "id": "188666103",
     "title": "Lckdwnr",
     "artist": "roam",
@@ -153,6 +223,10 @@
     "href": "/music/banana-bread"
   },
   {
+    "peaksUrl": null,
+    "boundariesSec": [],
+    "bpm": 90,
+    "beatStartAtSec": null,
     "id": "188648381",
     "title": "Rilibigshew",
     "artist": "roam",
@@ -162,6 +236,10 @@
     "href": "/music/banana-bread"
   },
   {
+    "peaksUrl": null,
+    "boundariesSec": [],
+    "bpm": 175,
+    "beatStartAtSec": null,
     "id": "364",
     "title": "Banana Bread",
     "artist": "roam",

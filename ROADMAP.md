@@ -3,6 +3,7 @@
 Everything deliberately left out of v1 (`SPEC.md`). Items move into the spec only through a `DECISIONS.md` entry. Each item has a **trigger**, the point at which it is worth doing.
 
 ## Now: v1 (see SPEC.md §12)
+- [ ] **Phase 2 app:** D-037–D-042: one-screen home, factual copy, dense catalogues, Work/CV, Writing sample, DOM transitions, thin controls and app-side stage bridge. Background implementation remains separately owned.
 - [x] **Before implementation:** Claude reviewed SPEC.md v1.2 (§15). Three findings applied as v1.3 (D-032–D-034). M1 implementation is now available for review.
 - [ ] **M1** Local visual prototype (first build available at http://127.0.0.1:4357/; review/acceptance pending, see CODEX-M1-HANDOFF.md): homepage, nav, one mix page, responsive player with measured safe-area spacing, `horizon` scene; curate an upstream-shaped release fixture and check one real URL early
 - [ ] **M2** Listening path proof: actual long mix + eligible album, persistence, browsing/time-link semantics, context interruption/recovery, CORS/206 on both hosts. Requires real media, host access and recorded browser/device coverage (SPEC.md §12)
@@ -19,7 +20,7 @@ M1 includes bounded comparisons of route-aware framing and a single artwork hand
 - [ ] **Gain-envelope click mitigation.** First listen for actual discontinuities. If needed, define the shortest effective ramp plus seek/buffer sequencing, cancellation and mute/volume preservation. *Trigger:* reproducible audible clicks.
 - [ ] **Idle frame-rate throttle.** Measure battery/quality benefit and keep transport updates independent. Explicitly distinguish intentional idle quality from active-rendering FPS targets. *Trigger:* measured idle rendering cost.
 
-Repeated scroll reveals, navigation-label scrambling, cover fly-ins and waveform arrival choreography are not part of the v1 plan.
+Repeated scroll reveals, navigation-label scrambling, cover fly-ins and waveform arrival choreography are not part of the v1 plan. Phase 2 adds only the approved incoming DOM title/body/first-six-row handoff (≤350ms), independently of the background.
 
 ## Next: after v1 ships
 

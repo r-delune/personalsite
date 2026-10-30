@@ -3,6 +3,13 @@ import assert from 'node:assert/strict';
 const feed = JSON.parse(readFileSync('src/fixtures/showcase.sample.json', 'utf8'));
 assert(Array.isArray(feed.albums), 'Fixture must contain upstream albums');
 const slug = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+function boundaries(t) {
+  if(t.section_times_source !== 'manual' || !Array.isArray(t.section_times)) return [];
+  const duration=t.duration_seconds, hasDuration=Number.isFinite(duration)&&duration>0;
+  const cleaned=[];
+  for(const n of [...t.section_times].filter(n=>Number.isFinite(n)&&n>(hasDuration?8:0)&&n<=(hasDuration?Math.max(8,duration-8):Infinity)).sort((a,b)=>a-b)) if(!cleaned.length||n-cleaned[cleaned.length-1]>=.75)cleaned.push(n);
+  return hasDuration&&cleaned.length===1&&(cleaned[0]<15||duration-cleaned[0]<15)?[]:cleaned;
+}
 const tracks = [];
 const seen = new Set();
 for (const album of feed.albums) {
@@ -17,7 +24,7 @@ for (const album of feed.albums) {
     assert(typeof track.r2_url === 'string' && new URL(track.r2_url).protocol === 'https:', `Published ${track.id} requires an upstream r2_url`);
     assert(!seen.has(track.id), `Duplicate track id ${track.id}`);
     seen.add(track.id);
-    tracks.push({id:String(track.id),title:track.title,artist:album.artist_name || 'Brian Diolún',src:track.r2_url,duration:track.duration_seconds || 0,artwork:`/artwork/${slug(album.name)}.jpg`,href:`/music/${slug(album.name)}`});
+    tracks.push({peaksUrl:null,boundariesSec:boundaries(track),bpm:Number.isFinite(track.bpm)?track.bpm:null,beatStartAtSec:Number.isFinite(track.beat_start_at)?track.beat_start_at:null,id:String(track.id),title:track.title,artist:album.artist_name || '',src:track.r2_url,duration:track.duration_seconds || 0,artwork:`/artwork/${slug(album.name)}.jpg`,href:`/music/${slug(album.name)}`});
   }
 }
 assert(tracks.length > 0, 'Fixture must contain playable tracks');

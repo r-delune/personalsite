@@ -1,132 +1,417 @@
 import { atom } from "nanostores";
-import tracks from "../fixtures/playable-tracks.json";
+import initialTracks from "../fixtures/playable-tracks.json";
+import { bindStageBridge, stageWriter } from "./stage-bridge";
+export interface MediaItem {
+  peaksUrl?: string | null;
+  boundariesSec?: number[];
+  bpm?: number | null;
+  beatStartAtSec?: number | null;
+  id: string;
+  kind: "track" | "mix";
+  title: string;
+  artist: string;
+  src: string;
+  duration: number;
+  artwork: string;
+  href: string;
+}
+const media = new Map<string, MediaItem>(
+  initialTracks.map((t) => [t.id, { ...t, kind: "track" }]),
+);
 export const $player = atom({
   id: "",
+  phase: "idle" as import("./stage-bridge").PlaybackPhase,
   playing: false,
   pending: false,
   time: 0,
   duration: 0,
   error: "",
+  volume: 1,
+  muted: false,
 });
-let audio: HTMLAudioElement | undefined;
-let bound = false;
-let token = 0;
-export const currentTrack = () => tracks.find((t) => t.id === $player.get().id);
-function sync() {
-  if (!audio) return;
+let audio: HTMLAudioElement | undefined,
+  context: AudioContext | undefined,
+  analyser: AnalyserNode | undefined;
+let samples: Float32Array<ArrayBuffer> | undefined;
+let generation = 0,
+  operation = 0,
+  intent = false,
+  confirmed = false,
+  pendingSeek: number | null = null;
+let listeners: AbortController | undefined,
+  bound = false,
+  analysisAttempted = false;
+let lastSaved = 0;
+export const currentTrack = () => media.get($player.get().id);
+export const getMedia = (id: string) => media.get(id);
+function clock() {
+  return audio?.currentTime || 0;
+}
+function duration() {
+  return audio && Number.isFinite(audio.duration)
+    ? audio.duration
+    : currentTrack()?.duration || 0;
+}
+function publish(phase = $player.get().phase, error = "") {
+  const d = duration();
   $player.set({
     ...$player.get(),
-    playing: !audio.paused && !audio.ended,
-    pending: audio.readyState < 3 && !audio.paused,
-    time: audio.currentTime || 0,
-    duration: Number.isFinite(audio.duration) ? audio.duration : 0,
+    phase,
+    playing: phase === "playing",
+    pending: phase === "loading" || phase === "buffering",
+    time: clock(),
+    duration: d,
+    error,
   });
+  stageWriter.transport(phase, clock(), d || null);
 }
-function engine() {
+function saveMix() {
+  const item = currentTrack();
+  if (item?.kind !== "mix") return;
+  try {
+    localStorage.setItem(
+      "mix-resume",
+      JSON.stringify({ id: item.id, position: clock() }),
+    );
+  } catch {}
+}
+function readEnergy() {
+  if (!analyser || !samples) return 0;
+  analyser.getFloatTimeDomainData(samples);
+  let sum = 0;
+  for (let i = 0; i < samples.length; i++) sum += samples[i] * samples[i];
+  return Math.sqrt(sum / samples.length);
+}
+function ensureAudio() {
   if (audio) return audio;
   audio = new Audio();
   audio.crossOrigin = "anonymous";
   audio.preload = "metadata";
-  [
-    "playing",
-    "pause",
-    "timeupdate",
-    "durationchange",
-    "ended",
-    "seeked",
-    "waiting",
-    "canplay",
-  ].forEach((event) => audio!.addEventListener(event, sync));
-  audio.addEventListener("error", () => {
-    $player.set({
-      ...$player.get(),
-      playing: false,
-      pending: false,
-      error: "This recording could not be loaded.",
-    });
-  });
+  stageWriter.position(clock);
   return audio;
 }
-export async function playTrack(id: string) {
-  const track = tracks.find((t) => t.id === id);
-  if (!track) return;
-  const a = engine();
-  const request = ++token;
-  if ($player.get().id === id && !a.paused) {
-    a.pause();
+function setupAnalysis() {
+  if (analysisAttempted) return;
+  analysisAttempted = true;
+  const ios =
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const forced =
+    import.meta.env.DEV &&
+    new URLSearchParams(location.search).has("noanalysis");
+  if (ios || forced) {
+    stageWriter.analysis(false, () => 0);
+    return;
+  }
+  try {
+    context = new AudioContext();
+    const source = context.createMediaElementSource(ensureAudio());
+    analyser = context.createAnalyser();
+    analyser.fftSize = 2048;
+    samples = new Float32Array(analyser.fftSize);
+    source.connect(analyser);
+    analyser.connect(context.destination);
+    stageWriter.analysis(true, readEnergy);
+    context.addEventListener("statechange", () => {
+      if (!intent) return;
+      if (context?.state !== "running")
+        publish("interrupted", "Playback interrupted. Select Resume.");
+      else if (confirmed && audio && !audio.paused) publish("playing");
+    });
+  } catch {
+    stageWriter.analysis(false, () => 0);
+  }
+}
+function valid(token: number, item: MediaItem) {
+  return (
+    token === generation &&
+    currentTrack()?.id === item.id &&
+    (!audio?.currentSrc ||
+      audio.currentSrc === new URL(item.src, location.href).href)
+  );
+}
+function installMediaEvents(item: MediaItem, token: number) {
+  const a = ensureAudio();
+  listeners?.abort();
+  listeners = new AbortController();
+  const on = (name: string, callback: () => void) =>
+    a.addEventListener(
+      name,
+      () => {
+        if (valid(token, item)) callback();
+      },
+      { signal: listeners!.signal },
+    );
+  on("loadedmetadata", () => {
+    if (pendingSeek !== null) {
+      const requested = pendingSeek;
+      pendingSeek = null;
+      commitSeek(requested);
+    }
+    publish();
+  });
+  on("durationchange", () => publish());
+  on("playing", () => {
+    if (!intent) {
+      a.pause();
+      return;
+    }
+    confirmed = true;
+    publish(context && context.state !== "running" ? "interrupted" : "playing");
+  });
+  on("waiting", () => {
+    if (intent) publish(confirmed ? "buffering" : "loading");
+  });
+  on("stalled", () => {
+    if (intent && a.readyState < 3)
+      publish(confirmed ? "buffering" : "loading");
+  });
+  on("pause", () => {
+    if (!a.ended) {
+      if (!intent) publish("paused");
+      else if (confirmed)
+        publish("interrupted", "Playback interrupted. Select Resume.");
+    }
+  });
+  on("timeupdate", () => {
+    publish();
+    if (performance.now() - lastSaved > 5000) {
+      saveMix();
+      lastSaved = performance.now();
+    }
+  });
+  on("seeked", () => publish());
+  on("ended", () => {
+    intent = false;
+    publish("ended");
+    saveMix();
+    if (item.kind === "track") next(1, true);
+  });
+  on("error", () => {
+    intent = false;
+    publish("error", "Media could not be loaded. Retry.");
+  });
+}
+export async function playTrack(id: string, position?: number) {
+  const item = media.get(id);
+  if (!item?.src) return;
+  const a = ensureAudio();
+  if (
+    $player.get().id === id &&
+    (intent || $player.get().playing) &&
+    !["interrupted", "error"].includes($player.get().phase) &&
+    position === undefined
+  ) {
+    pause();
     return;
   }
   if ($player.get().id !== id) {
-    a.src = track.src;
+    saveMix();
+    intent = false;
+    a.pause();
+    listeners?.abort();
+    generation++;
+    confirmed = false;
     $player.set({
+      ...$player.get(),
       id,
+      phase: "loading",
       playing: false,
       pending: true,
       time: 0,
-      duration: track.duration,
+      duration: item.duration,
       error: "",
     });
-  } else $player.set({ ...$player.get(), pending: true, error: "" });
-  try {
-    const session = navigator as Navigator & {
-      audioSession?: { type: string };
-    };
-    if (session.audioSession) session.audioSession.type = "playback";
-    await a.play();
-    if (request === token) sync();
-  } catch {
-    if (request === token)
-      $player.set({
-        ...$player.get(),
-        pending: false,
-        playing: false,
-        error: "Playback could not start. Try again.",
-      });
+    stageWriter.item(id, item.kind, item.duration || null, {
+      itemId: id,
+      itemKind: item.kind,
+      durationSec: item.duration || null,
+      peaksUrl: item.peaksUrl || null,
+      boundariesSec: item.boundariesSec || [],
+      bpm: item.bpm ?? null,
+      beatStartAtSec: item.beatStartAtSec ?? null,
+    });
+    pendingSeek = position ?? null;
+    installMediaEvents(item, generation);
+    a.src = item.src;
+    a.load();
+  } else if ($player.get().phase === "error") {
+    generation++;
+    confirmed = false;
+    pendingSeek = position ?? clock();
+    installMediaEvents(item, generation);
+    a.load();
+  } else if (position !== undefined) {
+    if (a.readyState >= 1) commitSeek(position);
+    else pendingSeek = position;
   }
+  const token = generation,
+    request = ++operation;
+  intent = true;
+  publish("loading");
+  const session = navigator as Navigator & { audioSession?: { type: string } };
+  if (session.audioSession) session.audioSession.type = "playback";
+  setupAnalysis();
+  // Both resume and play are issued synchronously from the gesture, before await.
+  const resume = context?.state !== "running" ? context?.resume() : undefined;
+  const playback = a.play();
+  try {
+    await Promise.all([resume, playback]);
+    if (token === generation && request === operation) {
+      if (!intent) a.pause();
+      else if (confirmed && !a.paused && a.readyState >= 3) publish("playing");
+    }
+  } catch {
+    if (token === generation && request === operation && intent) {
+      intent = false;
+      a.pause();
+      publish(
+        context && context.state !== "running" ? "interrupted" : "error",
+        "Playback could not start. Select Resume or Retry.",
+      );
+    }
+  }
+  if ("mediaSession" in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: item.title,
+      artist: item.artist,
+      artwork: item.artwork
+        ? [{ src: new URL(item.artwork, location.href).href }]
+        : [],
+    });
+  }
+}
+export function pause() {
+  intent = false;
+  operation++;
+  audio?.pause();
+  publish("paused");
+  saveMix();
 }
 export function toggle() {
-  const track = currentTrack();
-  if (track) void playTrack(track.id);
+  const item = currentTrack();
+  if (item) void playTrack(item.id);
 }
-export function seek(value: number) {
-  if (audio && Number.isFinite(value)) {
-    audio.currentTime = Math.max(0, Math.min(value, audio.duration || 0));
-    sync();
+function commitSeek(value: number) {
+  if (!audio || !Number.isFinite(value)) return;
+  const target = Math.max(0, Math.min(value, duration()));
+  try {
+    audio.currentTime = target;
+    stageWriter.seek(target);
+    publish();
+  } catch {
+    publish("error", "This recording cannot seek to that position.");
   }
 }
-export function next(direction: number) {
-  const index = tracks.findIndex((t) => t.id === $player.get().id);
-  const track = tracks[index + direction];
-  if (track) void playTrack(track.id);
+export function seek(value: number) {
+  if (!currentTrack() || !Number.isFinite(value)) return;
+  if (!audio || audio.readyState < 1) {
+    pendingSeek = value;
+    return;
+  }
+  commitSeek(value);
+}
+export function next(direction: number, automatic = false) {
+  const item = currentTrack();
+  if (!item || item.kind === "mix") return;
+  const album = Array.from(media.values()).filter(
+    (m) => m.kind === "track" && m.href === item.href,
+  );
+  const index = album.findIndex((m) => m.id === item.id);
+  const target = album[index + direction];
+  if (target) void playTrack(target.id);
+  else if (!automatic) pause();
 }
 export function volume(value: number) {
   if (audio) audio.volume = value;
+  $player.set({ ...$player.get(), volume: value });
+}
+export function mute() {
+  if (audio) {
+    audio.muted = !audio.muted;
+    $player.set({ ...$player.get(), muted: audio.muted });
+  }
+}
+function registerPageMedia() {
+  const element = document.getElementById("media-catalogue");
+  if (element) {
+    try {
+      for (const item of JSON.parse(element.textContent || "[]") as MediaItem[])
+        media.set(item.id, item);
+    } catch {
+      console.error("Page media catalogue is invalid");
+    }
+  }
+  syncButtons();
+}
+function syncButtons() {
+  const s = $player.get();
+  document
+    .querySelectorAll<HTMLElement>("[data-track-id]")
+    .forEach((button) => {
+      const active = button.dataset.trackId === s.id;
+      button.classList.toggle("is-playing", active && s.playing);
+      button.setAttribute("aria-pressed", String(active && s.playing));
+      const glyph = button.querySelector("[data-play-glyph]");
+      if (glyph) glyph.textContent = active && s.playing ? "Ⅱ" : "▶";
+    });
 }
 export function bindPlayback() {
   if (bound) return;
   bound = true;
+  bindStageBridge();
+  registerPageMedia();
   document.addEventListener("click", (event) => {
     const button = (event.target as Element).closest<HTMLElement>(
       "[data-track-id]",
     );
-    if (button?.dataset.trackId) void playTrack(button.dataset.trackId);
+    if (button?.dataset.trackId && !button.hasAttribute("disabled"))
+      void playTrack(button.dataset.trackId);
   });
-  $player.subscribe((state) => {
-    document.querySelectorAll<HTMLElement>("[data-track-id]").forEach((b) => {
-      const active = b.dataset.trackId === state.id;
-      b.classList.toggle("is-playing", active && state.playing);
-      b.setAttribute("aria-pressed", String(active && state.playing));
-    });
+  $player.subscribe(syncButtons);
+  document.addEventListener("astro:page-load", registerPageMedia);
+  document.addEventListener("keydown", (event) => {
+    if (
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.repeat ||
+      (event.target as Element).closest(
+        "input,textarea,select,button,a,[role=slider],[contenteditable=true]",
+      )
+    )
+      return;
+    if (!currentTrack()) return;
+    if (event.code === "Space") {
+      event.preventDefault();
+      toggle();
+    } else if (event.key.toLowerCase() === "j") seek(clock() - 15);
+    else if (event.key.toLowerCase() === "l") seek(clock() + 15);
+    else if (event.key.toLowerCase() === "m") mute();
   });
-  document.addEventListener("astro:page-load", () => {
-    const state = $player.get();
-    document
-      .querySelectorAll<HTMLElement>("[data-track-id]")
-      .forEach((b) =>
-        b.classList.toggle(
-          "is-playing",
-          b.dataset.trackId === state.id && state.playing,
-        ),
-      );
-  });
+  if ("mediaSession" in navigator) {
+    const handlers: Partial<
+      Record<MediaSessionAction, MediaSessionActionHandler>
+    > = {
+      play: () => {
+        const item = currentTrack();
+        if (item && !$player.get().playing) void playTrack(item.id);
+      },
+      pause,
+      previoustrack: () => next(-1),
+      nexttrack: () => next(1),
+      seekbackward: (d) => seek(clock() - (d.seekOffset || 15)),
+      seekforward: (d) => seek(clock() + (d.seekOffset || 15)),
+      seekto: (d) => {
+        if (d.seekTime !== undefined) seek(d.seekTime);
+      },
+    };
+    for (const [action, handler] of Object.entries(handlers))
+      try {
+        navigator.mediaSession.setActionHandler(
+          action as MediaSessionAction,
+          handler!,
+        );
+      } catch {}
+  }
 }
