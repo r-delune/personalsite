@@ -4,6 +4,7 @@ Newest first. Each entry records the decision, who made it and why. Changing a *
 
 | # | Date | Decision | Source | Why |
 |---|---|---|---|---|
+| D-062 | 2026-10-31 | Mark the site footer as a stage exclusion zone through the existing rectangle bridge; no API or player change | Codex route captures | The mobile limb otherwise crossed the animation control and footer links |
 | D-058 | 2026-10-30 | Subtle pointer parallax: desktop with a fine pointer only, ~8 px at the near dust layer and ~2 px on the moon, scaled by the route's calm; off in reduced motion, the animation pause and posters | Brían: "make it cooler" | Depth without motion near text; reverses ROADMAP's "pointer parallax not a prerequisite" into a small shipped extra |
 | D-057 | 2026-10-30 | The moon's lit fraction follows tonight's real lunar phase (mean synodic month), easing in over ~6 s after the poster swap; the sun stays upper right so the content side is never the bright one. `?moon=0..1` in the lab | Brían: "make it cooler" | A detail that rewards return visits and makes the scene a real place; deterministic and audio-independent |
 | D-056 | 2026-10-30 | Stage lab lives at `/lab`, injected by `src/lab/integration.mjs` only under `astro dev`; native sliders instead of Tweakpane (no new dependency) | Claude (visual phase V) | Absent from production by construction; no install needed |
