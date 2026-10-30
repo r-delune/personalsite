@@ -1,6 +1,6 @@
 # Personal Site — Build Spec
 
-> Owner: Brian Dillon (music alias **Roam** / **Brian Diolún**)
+> Owner: Brían Diolún (music alias **Roam** / **Brían Diolún**)
 > Status: v0.1 spec, ready to build · 2026-10-30
 > Consultancy (separate site, link out only): https://rdelune.dev
 > Visual reference: https://omp.sh
@@ -158,7 +158,7 @@ const media = z.object({
 });
 
 releases: {
-  title, slug, artist: z.string().default('Brian Diolún'),
+  title, slug, artist: z.string().default('Brían Diolún'),
   date: z.coerce.date(), type: z.enum(['album','ep','single']),
   cover: image(), blurb: z.string().max(280),
   tracks: z.array(z.object({ n: z.number(), title: z.string(), media })),
@@ -257,7 +257,7 @@ Each rail item shows a Lucide icon, a mono index (`01`–`07`), a hover tooltip 
 ### 7.8 Global
 - **Command palette** (⌘K / Ctrl-K): jump to any page, post, release or mix, or play any track or mix.
 - **Keyboard:** `Space` play/pause (unless focus is in an input), `J`/`L` ±15s, `Shift+J`/`Shift+L` previous/next track (or tracklist chapter in a mix), `M` mute.
-- Footer, kept minimal in the bottom corners as on omp: `© Brian Dillon 2026` with links to rdelune.dev, Mixcloud, SoundCloud, GitHub, LinkedIn and RSS.
+- Footer, kept minimal in the bottom corners as on omp: `© Brían Diolún 2026` with links to rdelune.dev, Mixcloud, SoundCloud, GitHub, LinkedIn and RSS.
 
 ---
 
@@ -415,7 +415,7 @@ Tracklists: support a plain-text import format (`00:00 Artist - Title`, `1:02:30
 | Question | Default |
 |---|---|
 | Domain | `<placeholder>.com`, configured via `PUBLIC_SITE_URL` |
-| Display identity on the site: "Brian Dillon" vs "Brian Diolún" vs "Roam" | Site owner "Brian Dillon"; music credited "Brian Diolún"; "Roam" used as the mix-series/DJ alias |
+| Display identity on the site: "Brían Diolún" vs "Brían Diolún" vs "Roam" | Site owner "Brían Diolún"; music credited "Brían Diolún"; "Roam" used as the mix-series/DJ alias |
 | Accent colour and hero visual motif | Cool lunar blue + moon-limb horizon (fits the rdelune name). Keep it swappable through tokens and scene params |
 | Final hero copy and blurb | Placeholder text, marked `TODO(copy)` |
 | Which releases go on the site first | Read from the masters folder at ingest |

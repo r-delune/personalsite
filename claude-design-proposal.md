@@ -16,9 +16,9 @@
 
 ## 2. What's already right (keep)
 - The overall restraint: dark space, Geist with mono micro-labels, thin dividers, the scattered dust "starfield".
-- The `b/d Brian Dillon` mark and the `rdelune ↗` link at top right.
+- The `b/d Brían Diolún` mark and the `rdelune ↗` link at top right.
 - The left rail as the main navigation (sticky, numbered).
-- **The About intro line is the best copy on the site**, and the model for all of it: *"Music as Brian Diolún. Mixes as Roam. Professional work at rdelune."* Facts, no slogans.
+- **The About intro line is the best copy on the site**, and the model for all of it: *"Music as Brían Diolún. Mixes as Roam. Professional work at rdelune."* Facts, no slogans.
 - Persistent player with real playback; even-width digits for times.
 - The plumbing for page transitions exists already (`ClientRouter`, named `stage`/`player`/`content` transitions, old snapshots suppressed per D-033).
 
@@ -40,14 +40,14 @@
 
 | Where | Now | Proposed |
 |---|---|---|
-| Home H1 + blurb | multi-line headline + "A home for my music, mixes, and things I'm working on. A few different pursuits. One ongoing exploration." | **Brian Dillon** · *Music as Brian Diolún. Mixes as Roam. Software at rdelune ↗* |
+| Home H1 + blurb | multi-line headline + "A home for my music, mixes, and things I'm working on. A few different pursuits. One ongoing exploration." | **Brían Diolún** · *Music as Brían Diolún. Mixes as Roam. Software at rdelune ↗* |
 | Home CTA | `[▶ Play Anna Doni]` filled button + "My work at rdelune ↗" | `▶ Anna Doni` (text button, mono meta "2014 · 3:12") + `rdelune ↗` |
 | Home extras | "On the record", "Scroll to explore ↓", "Sound / Space / Movement" | remove |
 | Home section heads | "01 / Original music" + "A few things I've put into the world." | mono label `MUSIC` + `All →` |
 | Mixes | "02 / Mixes & selections" · "Stay for a while." · "A collection of longer listens…" | **Mixes** · `10 MIXES · 2014–2025` |
 | Music | (similar pattern) | **Music** · `N RELEASES` |
 | Work | "Ideas into working things." · "My professional work lives at rdelune." · big button | **Work** · *Software consultancy: rdelune ↗* (see §6.4) |
-| About | "04 / A little context" · "Sound, work, and everything between." · "This is a place to collect…" | **Brian Dillon.** + the three-fact line, then the bio (TODO, Brian) |
+| About | "04 / A little context" · "Sound, work, and everything between." · "This is a place to collect…" | **Brían Diolún.** + the three-fact line, then the bio (TODO, Brian) |
 | Rail footer | "Independent by nature." | remove (or something factual Brian chooses) |
 | Section-number labels | "02 / MIXES & SELECTIONS" | remove (the rail already numbers sections) |
 
@@ -90,7 +90,7 @@
 Filled pale-blue rectangles (`Play Anna Doni`, `Explore rdelune`) feel generic and heavy next to the hairline aesthetic. Proposal: text buttons with a `▶`/`↗` glyph, a hairline underline or 1px outline, and accent colour only on hover/focus.
 
 ### 6.3 Player
-Heavy compared with the page: a large pale-blue circle, chunky slider thumbs, a full-size volume slider. Proposal: a 1–2px track with a hover-only thumb, a smaller outlined play button, and volume as an icon with a hover slider. Also decide the credit: release tracks show "roam", but the spec default is "Brian Diolún".
+Heavy compared with the page: a large pale-blue circle, chunky slider thumbs, a full-size volume slider. Proposal: a 1–2px track with a hover-only thumb, a smaller outlined play button, and volume as an icon with a hover slider. Also decide the credit: release tracks show "roam", but the spec default is "Brían Diolún".
 
 ### 6.4 Work page = CV + case studies (Brian, 2026-10-30)
 It's mostly empty now, with a big button and a large "LAYOUT PREVIEW" placeholder. **Brian wants a CV tied to Work**, so Work stays in the rail and becomes:

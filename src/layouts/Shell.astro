@@ -10,7 +10,7 @@ import "@fontsource-variable/geist-mono";
 import "../styles/global.css";
 import "../styles/phase2.css";
 import "../styles/motion.css";
-const { title = "Brian Dillon", section = "home" } = Astro.props;
+const { title = "Brían Diolún", section = "home" } = Astro.props;
 const posts = await visiblePosts(),
   published = await realPosts();
 const nav = [
@@ -50,7 +50,7 @@ const pageMedia = mixes
     <meta name="theme-color" content="#0b0c0e" />
     <meta
       name="description"
-      content="Brian Dillon. Music as Brian Diolún. Mixes as Roam. Software at rdelune."
+      content="Brían Diolún. Music as Brían Diolún. Mixes as Roam. Software at rdelune."
     />
     <title>{title}</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -62,11 +62,11 @@ const pageMedia = mixes
     </a>
     <Stage />
     <header class="topbar">
-      <a href="/" class="identity" aria-label="Brian Dillon home">
+      <a href="/" class="identity" aria-label="Brían Diolún home">
         <span class="identity-mark">
           b<span>∕</span>d
         </span>
-        <span>Brian Dillon</span>
+        <span>Brían Diolún</span>
       </a>
       <div class="topbar-right">
         <a
@@ -132,7 +132,7 @@ const pageMedia = mixes
     </main>
     <footer class="site-footer">
       <a href="/" class="footer-signature">
-        Brian Dillon <span>© {new Date().getFullYear()}</span>
+        Brían Diolún <span>© {new Date().getFullYear()}</span>
       </a>
       <div class="footer-links">
         <a

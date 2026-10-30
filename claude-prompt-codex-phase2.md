@@ -25,17 +25,17 @@ You're continuing the build of Brian's personal site in this repo (Astro 7, Prea
 - **D-038 Copy rules: "facts, not slogans"** plus the replacement table in `claude-design-proposal.md` §3.
 - **D-039 Work = CV + case studies.** The CV moves from About to Work. About keeps bio, running and profiles.
 - **D-040 Writing:** hidden from production navigation until the first non-draft post. In dev and preview builds, show it with one clearly marked sample post.
-- **D-041 Release credit** = the feed's `artist_name` as published (supersedes the "Brian Diolún" default in SPEC §13).
+- **D-041 Release credit** = the feed's `artist_name` as published (supersedes the "Brían Diolún" default in SPEC §13).
 - **D-042 Background visual is out of Codex's scope.** It's built separately against the stage bridge contract (Task 10).
 
 ## Tasks
 
 ### 1. Copy pass (D-038)
-Apply the §3 table everywhere. Remove taglines, section-number labels ("02 / MIXES & SELECTIONS"), "Scroll to explore", "On the record", "Sound / Space / Movement", and the rail footer "Independent by nature.". The page title is the section name. Mono meta labels carry data-derived facts (`10 MIXES · 2014–2025`, `N RELEASES`). Home uses the About-style fact line: *Music as Brian Diolún. Mixes as Roam. Software at rdelune ↗*.
+Apply the §3 table everywhere. Remove taglines, section-number labels ("02 / MIXES & SELECTIONS"), "Scroll to explore", "On the record", "Sound / Space / Movement", and the rail footer "Independent by nature.". The page title is the section name. Mono meta labels carry data-derived facts (`10 MIXES · 2014–2025`, `N RELEASES`). Home uses the About-style fact line: *Music as Brían Diolún. Mixes as Roam. Software at rdelune ↗*.
 
 ### 2. One-screen home (D-037)
 At 1440×900 and 1280×720, everything fits without scrolling (footer excepted). At 375×667 it may scroll, but should stay under about 1.5 screens.
-- Left: **Brian Dillon** (H1), the fact line, a featured `▶ <title>` text button with mono meta (year · duration), and `rdelune ↗`.
+- Left: **Brían Diolún** (H1), the fact line, a featured `▶ <title>` text button with mono meta (year · duration), and `rdelune ↗`.
 - Below or beside it: **Latest**, three mono rows (newest eligible release, newest playable mix, newest post if one exists), each with `▶` where playable and `→` to its page.
 - Remove all homepage catalogue sections, large tiles and the `#music` anchor section.
 - Leave the lower-right of the viewport clear for the background (no content in roughly the right 40% × bottom 50% at desktop widths).
@@ -72,10 +72,10 @@ The current content fade is too subtle (140ms out, 200ms in, 4px). Implement:
 - Keep the D-033 rules: the stage and player are never part of the content animation.
 
 ### 8. About
-About = **Brian Dillon.** + the three-fact line + bio (`TODO(copy)`) + running (`TODO(copy)`, ITRA link slot) + profiles. No slogan headings.
+About = **Brían Diolún.** + the three-fact line + bio (`TODO(copy)`) + running (`TODO(copy)`, ITRA link slot) + profiles. No slogan headings.
 
 ### 9. Header & footer
-Keep `b/d Brian Dillon` and `rdelune ↗` at the top. Footer: © line, Mixcloud, SoundCloud, rdelune, the Pause-animation toggle, and RSS when posts exist. No taglines.
+Keep `b/d Brían Diolún` and `rdelune ↗` at the top. Footer: © line, Mixcloud, SoundCloud, rdelune, the Pause-animation toggle, and RSS when posts exist. No taglines.
 
 ### 10. Stage bridge contract (D-042): app side only
 Create `src/lib/stage-bridge.ts` as **the only interface the background visual may read**. Wire it from the player engine and router. Do not implement any visual behaviour.

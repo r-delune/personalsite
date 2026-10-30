@@ -1,6 +1,6 @@
 # Personal Site — v1 Spec (merged)
 
-> Owner: Brian Dillon · music: **Brian Diolún** (DJ alias **Roam**)
+> Owner: Brían Diolún · music: **Brían Diolún** (DJ alias **Roam**)
 > Status: **v1.4 — phase-2 app implementation; visual implementation separately owned** · 2026-10-30
 > Supersedes `SPEC.claude.md` and `SPEC-CODEX.md` (kept for history). Incorporates `REVIEW.md`.
 > Resolves `REVIEW-CURRENT.md`; fixes approved by Brian (“ok fix it”). See D-020–D-025.
@@ -62,12 +62,12 @@ Primary: **Music · Mixes · Work · About**, plus **Writing** when a real non-d
 **Public builds hide sections that have no real content.** Templates may exist, but navigation and the homepage list only what has content.
 
 ### 3.2 Homepage (D-037; supersedes scrolling home D-011)
-One desktop screen, footer excepted, at 1440×900 and 1280×720. At 375×667 it may scroll but stays under about 1.5 screens. Left content: **Brian Dillon**, “Music as Brian Diolún. Mixes as Roam. Software at rdelune ↗”, a featured text Play action with data-derived year/duration, and Latest rows for newest eligible release, newest playable mix and newest visible post. Each has separate Play (where available) and detail link. No home catalogue sections, large tiles, scroll cue, slogans or numbered section labels. Leave the desktop lower-right 40% × bottom 50% clear of app content.
+One desktop screen, footer excepted, at 1440×900 and 1280×720. At 375×667 it may scroll but stays under about 1.5 screens. Left content: **Brían Diolún**, “Music as Brían Diolún. Mixes as Roam. Software at rdelune ↗”, a featured text Play action with data-derived year/duration, and Latest rows for newest eligible release, newest playable mix and newest visible post. Each has separate Play (where available) and detail link. No home catalogue sections, large tiles, scroll cue, slogans or numbered section labels. Leave the desktop lower-right 40% × bottom 50% clear of app content.
 
 ### 3.3 Work and About (D-039)
 Work: title, software-consultancy link to rdelune, CV anchored at #cv, then non-draft case studies when supplied. CV comes from zod-validated src/content/cv.json: roles (years, title, organisation, one-line summary, case-study chips), grouped skills, education. Validate every case-study reference. Seed unknown facts with TODO(copy), never invented experience. Print / save PDF opens the browser print dialog; use A4, dark text on white, hidden shell/player/canvas, and avoid breaks inside roles.
 
-About: **Brian Dillon.**, the three-fact line, bio TODO(copy), running TODO(copy), an unfilled ITRA slot, and supplied profiles. The CV belongs to Work.
+About: **Brían Diolún.**, the three-fact line, bio TODO(copy), running TODO(copy), an unfilled ITRA slot, and supplied profiles. The CV belongs to Work.
 
 ### 3.4 Density, copy and Writing (D-038, D-040)
 Page H1 is the section name, approximately clamp(2rem,3.5vw,2.75rem). Supporting text is factual and at most one line per screen. Mono metadata uses computed counts/date ranges/durations. Remove all marketing headlines and rail footer taglines. Mix rows are 64–80px, with separate title, series, year, duration, Play, detail link and current-item marker; at least eight are visible on the 1440×900 catalogue. Unavailable seed mixes are dev/preview only. Include the real roam-mix-2026 metadata/peaks; its unconfirmed title/date remain TODO(copy). Configure actual audio externally using PUBLIC_MIX_MEDIA_BASE; never commit audio.
@@ -441,7 +441,7 @@ cv (json): { roles: { id, org, title, start, end?, summary, bullets: string[], c
 | Question | Default |
 |---|---|
 | Domain | `PUBLIC_SITE_URL` placeholder |
-| Display names | Site: "Brian Dillon". Release credit: feed artist_name as published (D-041). DJ/series alias: "Roam" |
+| Display names | Site: "Brían Diolún". Release credit: feed artist_name as published (D-041). DJ/series alias: "Roam" |
 | Accent colour + hero motif | Lunar blue + moon-limb horizon. Decided at the end of M1 |
 | Hero copy, bio, CV, projects, running results | `TODO(copy)` until supplied |
 | Which album is featured | First eligible album in the fixture, after filtering and overlays |
