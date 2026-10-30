@@ -16,7 +16,7 @@ const { project, roles } = Astro.props;
 const { Content } = await render(project);
 ---
 
-<Shell title={`${project.data.title} — Brían Diolún`} section="work">
+<Shell title={`${project.data.title} — Brían Diolún`} section="work" description={project.data.summary}>
   <article class="page-column inner-page post-page">
     <a href="/work" class="back-link micro">
       ← WORK

@@ -1,3 +1,4 @@
+import { chapterAt, type Chapter } from "../../lib/tracklist.mjs";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { useStore } from "@nanostores/preact";
 import { $player, playTrack, pause, seek } from "../../lib/player";
@@ -7,6 +8,7 @@ interface Props {
   src: string;
   duration: number;
   peaks: string | null;
+  tracklist?: Chapter[];
 }
 interface Peaks {
   version: number;
@@ -15,7 +17,13 @@ interface Peaks {
   peak: number[];
   rms: number[];
 }
-export default function MixScrubber({ id, src, duration, peaks }: Props) {
+export default function MixScrubber({
+  id,
+  src,
+  duration,
+  peaks,
+  tracklist = [],
+}: Props) {
   const state = useStore($player),
     active = state.id === id;
   const [staged, setStaged] = useState<number | null>(null),
@@ -102,6 +110,7 @@ export default function MixScrubber({ id, src, duration, peaks }: Props) {
     observer.observe(element);
     return () => observer.disconnect();
   }, [data, position, d]);
+  const currentChapter = active ? chapterAt(tracklist, state.time) : null;
   const commit = (value: number) => {
     if (canceled.current) return;
     const n = Math.max(0, Math.min(value, d));
@@ -121,7 +130,7 @@ export default function MixScrubber({ id, src, duration, peaks }: Props) {
     setTimeout(() => setCopied(""), 1500);
   };
   return (
-    <div class="mix-listener">
+    <div class="mix-listener" data-stage-exclude>
       <div class="mix-listener-controls">
         <button
           class="primary-action"
@@ -129,7 +138,11 @@ export default function MixScrubber({ id, src, duration, peaks }: Props) {
           onClick={() => {
             if (active && state.playing) pause();
             else {
-              const start = Math.min(staged ?? (active ? state.time : 0), d);
+              const start =
+                staged ??
+                (active && state.phase !== "ended"
+                  ? Math.min(state.time, d)
+                  : 0);
               setStaged(null);
               void playTrack(id, start);
             }
@@ -137,7 +150,7 @@ export default function MixScrubber({ id, src, duration, peaks }: Props) {
         >
           {active && state.playing
             ? "Ⅱ Pause"
-            : staged
+            : staged !== null
               ? `▶ Play from ${time(staged)}`
               : "▶ Play"}
         </button>
@@ -193,6 +206,26 @@ export default function MixScrubber({ id, src, duration, peaks }: Props) {
           }}
         />
       </div>
+      {tracklist.length > 0 && (
+        <div class="chapter-ticks" aria-label="Waveform chapters">
+          {tracklist.map((chapter) => (
+            <button
+              class="chapter-tick"
+              style={{ left: `${(chapter.at / d) * 100}%` }}
+              title={`${chapter.artist} — ${chapter.title}`}
+              aria-label={`Play from ${time(chapter.at)}, ${chapter.artist} — ${chapter.title}`}
+              onClick={() => {
+                canceled.current = false;
+                commit(chapter.at);
+              }}
+            >
+              <span class="chapter-tooltip">
+                {chapter.artist} — {chapter.title}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
       <div class="waveform-footer">
         <span class="micro">{time(position)}</span>
         <span class="micro">{time(d)}</span>
@@ -204,6 +237,38 @@ export default function MixScrubber({ id, src, duration, peaks }: Props) {
         <output class="copy-feedback" aria-live="polite">
           {copied}
         </output>
+      )}
+      {tracklist.length > 0 && (
+        <section
+          class="mix-tracklist"
+          data-stage-exclude
+          aria-label="Tracklist"
+        >
+          <h2 class="micro">TRACKLIST</h2>
+          <ol>
+            {tracklist.map((chapter) => (
+              <li>
+                <button
+                  class={currentChapter === chapter ? "is-current" : ""}
+                  aria-current={currentChapter === chapter ? "true" : undefined}
+                  aria-label={`Play from ${time(chapter.at)}, ${chapter.artist} — ${chapter.title}`}
+                  onClick={() => {
+                    canceled.current = false;
+                    commit(chapter.at);
+                  }}
+                >
+                  <time class="micro">{time(chapter.at)}</time>
+                  <span>
+                    {chapter.artist} — {chapter.title}
+                  </span>
+                  {chapter.label && (
+                    <span class="micro chapter-label">{chapter.label}</span>
+                  )}
+                </button>
+              </li>
+            ))}
+          </ol>
+        </section>
       )}
       {!data && (
         <p class="micro subdued">

@@ -10,6 +10,16 @@ export function mountBridgeDebug(bridge: StageBridge) {
   const readout = document.createElement("span");
   readout.style.display = "block";
   box.append(readout);
+  const timeline = document.createElement("canvas");
+  timeline.width = 256;
+  timeline.height = 64;
+  timeline.style.cssText =
+    "display:block;margin-top:8px;width:256px;height:64px";
+  timeline.setAttribute(
+    "aria-label",
+    "Score bands, detected boundaries and playhead",
+  );
+  box.append(timeline);
   const history: string[] = [];
   const unsubscribe = bridge.subscribe("phase", (s) => {
     history.push(s.phase);
@@ -56,7 +66,35 @@ export function mountBridgeDebug(bridge: StageBridge) {
   const render = () => {
     const s = bridge.getSnapshot(),
       f = bridge.getFeatures();
-    readout.textContent = `BRIDGE / DEVELOPMENT\nphase  ${s.phase}\nroute  ${s.route}\nitem   ${s.itemKind || "—"} / ${s.itemId || "—"}\ntime   ${s.positionSec.toFixed(1)}\nenergy ${f.energy.toFixed(3)}\nplay   ${f.playing.toFixed(3)}\nanalysis ${s.analysisAvailable}\nmotion ${s.reducedMotion ? "reduced" : s.userPausedAnimation ? "paused" : "on"}\nlog ${history.join(" → ")}`;
+    readout.textContent = `BRIDGE / DEVELOPMENT\nphase  ${s.phase}\nroute  ${s.route}\nitem   ${s.itemKind || "—"} / ${s.itemId || "—"}\ntime   ${s.positionSec.toFixed(1)}\nenergy ${f.energy.toFixed(3)}\nplay   ${f.playing.toFixed(3)}\nscore ${s.scoreAvailable}\nlow/mid/high ${f.low.toFixed(2)} / ${f.mid.toFixed(2)} / ${f.high.toFixed(2)}\ntext zones ${bridge.getExclusionRects().length}\nmotion ${s.reducedMotion ? "reduced" : s.userPausedAnimation ? "paused" : "on"}\nlog ${history.join(" → ")}`;
+    const context = timeline.getContext("2d"),
+      window = bridge.getScoreWindow(0, s.durationSec || 0);
+    if (context) {
+      context.clearRect(0, 0, 256, 64);
+      if (window) {
+        const bands = ["energy", "low", "mid", "high"] as const;
+        const colors = ["#c7d9ed", "#819dbb", "#6a8a91", "#9a91ab"];
+        bands.forEach((band, row) => {
+          context.strokeStyle = colors[row];
+          context.beginPath();
+          for (let x = 0; x < 256; x++) {
+            const index = Math.min(
+              window.data[band].length - 1,
+              Math.floor((x / 255) * (window.endIndex - 1)),
+            );
+            const y = row * 16 + 15 - (window.data[band][index] / 255) * 14;
+            if (x === 0) context.moveTo(x, y);
+            else context.lineTo(x, y);
+          }
+          context.stroke();
+        });
+        context.fillStyle = "#c7d9ed44";
+        for (const at of window.boundaries)
+          context.fillRect((at / window.duration) * 256, 0, 1, 64);
+        context.fillStyle = "#fff";
+        context.fillRect((s.positionSec / window.duration) * 256, 0, 1, 64);
+      }
+    }
     timer = setTimeout(render, 100);
   };
   render();

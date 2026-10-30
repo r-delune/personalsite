@@ -3,7 +3,7 @@ import type { releases } from "../lib/catalogue";
 const { release } = Astro.props as { release: (typeof releases)[number] };
 ---
 
-<article class="release-card" data-row>
+<article data-preload-artwork={release.artwork} class="release-card" data-row>
   <div class="cover-wrap">
     <a
       href={`/music/${release.slug}`}

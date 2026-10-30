@@ -14,9 +14,9 @@ const escape = (s: string) =>
         "'": "&apos;",
       })[c]!,
   );
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ site }) => {
   const posts = await realPosts();
-  const base = import.meta.env.PUBLIC_SITE_URL;
+  const base = site?.href;
   if (!base)
     throw new Error("PUBLIC_SITE_URL is required to publish an RSS feed");
   return new Response(

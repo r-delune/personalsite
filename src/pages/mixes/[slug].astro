@@ -7,29 +7,54 @@ export const getStaticPaths = () =>
 const { mix } = Astro.props;
 ---
 
-<Shell title={`${mix.title} — Brían Diolún`} section="mixes">
+<Shell title={`${mix.title} — Brían Diolún`} section="mixes" description={`Listen to ${mix.title}, a DJ mix by Roam${mix.year ? ` from ${mix.year}` : ""}. Explore the tracklist and share timestamped listening links.`}>
   <div class="page-column inner-page mix-detail">
     <a href="/mixes" class="back-link micro">
       ← MIXES
     </a>
-    <header class="page-header">
-      <h1 data-stage-exclude class="page-title">{mix.title}</h1>
-      <p data-stage-exclude class="micro route-body">
-        {mix.year || "TODO(copy)"} · {time(mix.duration)} · {mix.series || "—"}
-      </p>
-      {mix.filename && (
-        <p data-stage-exclude class="source-filename micro route-body">{mix.filename}</p>
-      )}
-    </header>
+    <div class="mix-heading">
+      <img
+        class="mix-detail-cover"
+        src={mix.cover}
+        srcset={
+          mix.cover === mix.coverSmall
+            ? undefined
+            : `${mix.coverSmall} 300w, ${mix.cover} 600w`
+        }
+        sizes="(max-width: 767px) 96px, 160px"
+        width="160"
+        height="160"
+        alt={mix.coverAlt}
+        decoding="async"
+      />
+      <header class="page-header">
+        <h1 data-stage-exclude class="page-title">
+          {mix.title}
+        </h1>
+        <p data-stage-exclude class="micro route-body">
+          {mix.year || "TODO(copy)"} · {time(mix.duration)} ·{" "}
+          {mix.series || "—"}
+        </p>
+        {mix.filename && (
+          <p data-stage-exclude class="source-filename micro route-body">
+            {mix.filename}
+          </p>
+        )}
+      </header>
+    </div>
     <MixScrubber
       client:load
       id={mix.id}
       src={mix.src}
       duration={mix.duration}
       peaks={mix.peaks}
+      tracklist={mix.tracklist}
     />
     {!mix.src && (
-      <a href="https://www.mixcloud.com/brian-diolun/" class="quiet-link">
+      <a
+        href={mix.mixcloudUrl || "https://www.mixcloud.com/brian-diolun/"}
+        class="quiet-link"
+      >
         Mixcloud ↗
       </a>
     )}

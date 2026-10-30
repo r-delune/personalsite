@@ -7,11 +7,29 @@ const { mix, index } = Astro.props as {
 };
 ---
 
-<article class="mix-row" data-row>
+<article data-preload-artwork={mix.artwork} class="mix-row" data-row>
   <span class="micro mix-number">{String(index + 1).padStart(2, "0")}</span>
+  <img
+    class="mix-cover"
+    src={mix.coverSmall}
+    srcset={
+      mix.cover === mix.coverSmall
+        ? undefined
+        : `${mix.coverSmall} 300w, ${mix.cover} 600w`
+    }
+    sizes="48px"
+    width="48"
+    height="48"
+    alt=""
+    loading="lazy"
+    decoding="async"
+  />
   <a href={mix.href} class="mix-title">
     {mix.title}
     {mix.filename && <span class="source-filename micro">{mix.filename}</span>}
+    {mix.tracklist.length > 0 && (
+      <span class="micro mix-track-count">{mix.tracklist.length} TRACKS</span>
+    )}
   </a>
   <span class="mix-series micro">{mix.series || "—"}</span>
   <span class="micro mix-year">

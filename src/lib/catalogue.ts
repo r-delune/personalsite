@@ -1,5 +1,6 @@
+import type { Chapter } from "./tracklist.mjs";
 import feed from "../fixtures/showcase.sample.json";
-import mixData from "../content/mixes.json";
+import mixData from "../fixtures/mixes.json";
 import { isPreview } from "./content";
 export { time } from "./format";
 export const slugify = (s: string) =>
@@ -36,6 +37,7 @@ const mediaBase =
 export const mixes = mixData
   .map((mix) => ({
     ...mix,
+    tracklist: mix.tracklist as Chapter[],
     src:
       mix.filename && mediaBase && (isPreview || /^https:\/\//.test(mediaBase))
         ? `${mediaBase}/${mix.filename}`
@@ -43,7 +45,7 @@ export const mixes = mixData
     scoreUrl: mix.score ?? null,
     kind: "mix" as const,
     artist: "Roam",
-    artwork: "",
+    artwork: mix.cover,
     href: `/mixes/${mix.slug}`,
   }))
   .filter(

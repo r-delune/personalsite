@@ -1,3 +1,4 @@
+import { chapterAt } from "../../lib/tracklist.mjs";
 import { useStore } from "@nanostores/preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import {
@@ -12,6 +13,8 @@ import { time } from "../../lib/format";
 export default function Player() {
   const state = useStore($player);
   const track = currentTrack();
+  const chapter =
+    track?.kind === "mix" ? chapterAt(track.tracklist || [], state.time) : null;
   const ref = useRef<HTMLDivElement>(null);
   const [preview, setPreview] = useState<number | null>(null);
   const [volumeOpen, setVolumeOpen] = useState(false);
@@ -34,10 +37,16 @@ export default function Player() {
   return (
     <div class="player" data-stage-exclude ref={ref} aria-label="Audio player">
       <div class="player-meta">
-        {track.artwork && <img src={track.artwork} alt="" width="37" height="37" />}
+        {track.artwork && (
+          <img src={track.artwork} alt="" width="37" height="37" />
+        )}
         <a href={track.href}>
           <span class="player-title">{track.title}</span>
-          <span class="player-artist">{track.artist}</span>
+          <span class="player-artist" aria-live="polite" aria-atomic="true">
+            {chapter
+              ? `now: ${chapter.artist} — ${chapter.title}`
+              : track.artist}
+          </span>
         </a>
       </div>
       <div class="transport">
@@ -48,11 +57,7 @@ export default function Player() {
           class="play-toggle"
           onClick={toggle}
           aria-label={
-            state.pending
-              ? "Cancel playback"
-              : state.playing
-                ? "Pause"
-                : "Play"
+            state.pending ? "Cancel playback" : state.playing ? "Pause" : "Play"
           }
         >
           {state.playing ? "Ⅱ" : "▶"}

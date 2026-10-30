@@ -1,11 +1,12 @@
+import {
+  validateScore,
+  sampleScore,
+  scoreBands,
+  type VisualScore,
+  type ScoreWindow,
+} from "./visual-score.ts";
 export type PlaybackPhase =
-  | "idle"
-  | "loading"
-  | "playing"
-  | "buffering"
-  | "paused"
-  | "ended"
-  | "error";
+  "idle" | "loading" | "playing" | "buffering" | "paused" | "ended" | "error";
 export type RoutePose =
   | "home"
   | "music"
@@ -18,7 +19,7 @@ export type RoutePose =
   | "about"
   | "other";
 export type StageEvent =
-  "phase" | "route" | "seek" | "itemchange" | "motionprefs";
+  "phase" | "route" | "seek" | "itemchange" | "motionprefs" | "exclusions";
 export interface StageSnapshot {
   phase: PlaybackPhase;
   phaseSince: number;
@@ -30,11 +31,19 @@ export interface StageSnapshot {
   routeSince: number;
   reducedMotion: boolean;
   userPausedAnimation: boolean;
-  analysisAvailable: boolean;
+  scoreAvailable: boolean;
 }
 export interface StageBridge {
   getSnapshot(): StageSnapshot;
-  getFeatures(): { energy: number; playing: number };
+  getFeatures(): {
+    energy: number;
+    low: number;
+    mid: number;
+    high: number;
+    playing: number;
+  };
+  getScoreWindow(fromSec: number, toSec: number): ScoreWindow | null;
+  getExclusionRects(): readonly DOMRectReadOnly[];
   getItemMeta(): StageItemMeta | null;
   subscribe(event: StageEvent, cb: (s: StageSnapshot) => void): () => void;
 }
@@ -61,6 +70,11 @@ export function routePose(path: string): RoutePose {
 // singleton below; consumers read it and never construct their own bridge.
 export function createStageBridge(
   clock: () => number = () => performance.now(),
+  loadScore: (url: string) => Promise<unknown> = async (url) => {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Score unavailable");
+    return response.json();
+  },
 ) {
   const started = clock();
   const snapshot: StageSnapshot = {
@@ -74,9 +88,14 @@ export function createStageBridge(
     routeSince: started,
     reducedMotion: false,
     userPausedAnimation: false,
-    analysisAvailable: false,
+    scoreAvailable: false,
   };
-  const features = { energy: 0, playing: 0 };
+  const features = { energy: 0, low: 0, mid: 0, high: 0, playing: 0 };
+  const scores = new Map<string, Promise<VisualScore | null>>();
+  let score: VisualScore | null = null,
+    scoreRequest = 0;
+  let window: ScoreWindow | null = null;
+  const rects: DOMRectReadOnly[] = [];
   let itemMeta: StageItemMeta | null = null;
   const listeners = new Map<StageEvent, Set<(s: StageSnapshot) => void>>();
   let readPosition: () => number = () => snapshot.positionSec;
@@ -85,6 +104,29 @@ export function createStageBridge(
     for (const cb of listeners.get(event) || []) cb(snapshot);
   };
   const bridge: StageBridge = {
+    getExclusionRects() {
+      return rects;
+    },
+    getScoreWindow(fromSec, toSec) {
+      if (
+        !score ||
+        !window ||
+        !Number.isFinite(fromSec) ||
+        !Number.isFinite(toSec) ||
+        toSec < fromSec
+      )
+        return null;
+      const length = score.data.energy.length;
+      window.startIndex = Math.min(
+        length - 1,
+        Math.max(0, Math.floor(fromSec * score.rateHz)),
+      );
+      window.endIndex = Math.max(
+        window.startIndex + 1,
+        Math.min(length, Math.ceil(Math.max(0, toSec) * score.rateHz) + 1),
+      );
+      return window;
+    },
     getItemMeta() {
       return itemMeta;
     },
@@ -101,7 +143,15 @@ export function createStageBridge(
       features.playing +=
         (target - features.playing) *
         (1 - Math.exp(-dt / (target ? 1.5 : 2.5)));
-      features.energy = 0; // Compatibility field; the visual reads its score.
+      const position = bridge.getSnapshot().positionSec;
+      for (const band of scoreBands) {
+        const value = score ? sampleScore(score, band, position) : 0;
+        features[band] = score
+          ? features[band] +
+            (value - features[band]) *
+              (1 - Math.exp(-dt / (value > features[band] ? 0.08 : 0.6)))
+          : 0;
+      }
       return features;
     },
     subscribe(event, cb) {
@@ -146,6 +196,37 @@ export function createStageBridge(
       snapshot.itemKind = kind;
       snapshot.positionSec = 0;
       snapshot.durationSec = duration;
+      score = null;
+      window = null;
+      snapshot.scoreAvailable = false;
+      for (const band of scoreBands) features[band] = 0;
+      const request = ++scoreRequest,
+        url = itemMeta.scoreUrl;
+      if (url) {
+        let pending = scores.get(url);
+        if (!pending) {
+          pending = Promise.resolve()
+            .then(() => loadScore(url))
+            .then(validateScore)
+            .catch(() => null);
+          scores.set(url, pending);
+        }
+        void pending.then((value) => {
+          if (request !== scoreRequest) return;
+          score = value;
+          snapshot.scoreAvailable = !!score;
+          window = score
+            ? {
+                rateHz: score.rateHz,
+                duration: score.duration,
+                startIndex: 0,
+                endIndex: 0,
+                data: score.data,
+                boundaries: score.boundaries,
+              }
+            : null;
+        });
+      }
       emit("itemchange");
     },
     seek(position: number) {
@@ -168,6 +249,14 @@ export function createStageBridge(
       snapshot.userPausedAnimation = paused;
       emit("motionprefs");
     },
+    exclusions(elements: readonly Element[]) {
+      rects.length = 0;
+      for (const element of elements) {
+        const r = element.getBoundingClientRect();
+        if (r.width > 0 && r.height > 0) rects.push(r);
+      }
+      emit("exclusions");
+    },
     position(reader: () => number) {
       readPosition = reader;
     },
@@ -179,6 +268,63 @@ let bound = false;
 export function bindStageBridge() {
   if (bound) return;
   bound = true;
+  let scheduled = false;
+  const updateExclusions = () => {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(() => {
+      scheduled = false;
+      const elements = Array.from(
+        document.querySelectorAll("[data-stage-exclude]"),
+      );
+      // Nested marked groups are covered by their outer group.
+      stageWriter.exclusions(
+        elements.filter(
+          (el) => !el.parentElement?.closest("[data-stage-exclude]"),
+        ),
+      );
+    });
+  };
+  const resize = new ResizeObserver(updateExclusions);
+  const observePage = () => {
+    mutations.disconnect();
+    mutations.observe(document.body, { childList: true, subtree: true });
+    resize.disconnect();
+    resize.observe(document.body);
+    document
+      .querySelectorAll("[data-stage-exclude]")
+      .forEach((el) => resize.observe(el));
+    updateExclusions();
+  };
+  const mutations = new MutationObserver((records) => {
+    if (
+      records.some((record) =>
+        [...record.addedNodes, ...record.removedNodes].some(
+          (node) =>
+            node instanceof Element &&
+            (node.matches("[data-stage-exclude]") ||
+              node.querySelector("[data-stage-exclude]")),
+        ),
+      )
+    )
+      observePage();
+  });
+  mutations.observe(document.body, { childList: true, subtree: true });
+  addEventListener("resize", updateExclusions);
+  const onLayoutMotionEnd = (event: Event) => {
+    if ((event.target as Element).closest?.("[data-stage-exclude]"))
+      updateExclusions();
+  };
+  document.addEventListener("animationend", onLayoutMotionEnd);
+  document.addEventListener("transitionend", onLayoutMotionEnd);
+  void document.fonts.ready.then(updateExclusions);
+  addEventListener("scroll", updateExclusions, {
+    passive: true,
+    capture: true,
+  });
+  document.addEventListener("astro:page-load", observePage);
+  document.addEventListener("astro:after-swap", observePage);
+  observePage();
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
   const motion = () => {
     let paused = false;

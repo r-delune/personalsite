@@ -10,7 +10,39 @@ import "@fontsource-variable/geist-mono";
 import "../styles/global.css";
 import "../styles/phase2.css";
 import "../styles/motion.css";
-const { title = "Brían Diolún", section = "home" } = Astro.props;
+interface Props {
+  title?: string;
+  section?: string;
+  description?: string;
+  image?: string;
+  noindex?: boolean;
+  article?: { datePublished: string; headline: string };
+}
+const descriptions: Record<string, string> = {
+  home: "Music by Brían Diolún, DJ mixes as Roam, and software work at rdelune. Listen to releases and mixes, explore projects, and read recent writing.",
+  music: "Listen to original releases by Brían Diolún. Explore albums, artwork, and individual tracks.",
+  mixes: "DJ mixes by Roam: explore the archive, browse tracklists, and listen with timestamped chapters.",
+  work: "Software work and experience from Brían Diolún, with consultancy through rdelune.",
+  writing: "Writing by Brían Diolún on music, software, and current projects.",
+  about: "About Brían Diolún: musician, DJ as Roam, and software consultant at rdelune.",
+};
+const { title = "Brían Diolún — Music, mixes & software", section = "home", description = descriptions[section] || descriptions.home, image = "/social/default.png", noindex = false, article } = Astro.props;
+const canonical = new URL(Astro.url.pathname.replace(/\/$/, "") || "/", Astro.site);
+const socialImage = new URL(image, Astro.site);
+const preventIndexing = isPreview || noindex;
+const person = {
+  "@type": "Person", "@id": new URL("/about#person", Astro.site).href,
+  name: "Brían Diolún", alternateName: "Roam", url: new URL("/about", Astro.site).href,
+  sameAs: ["https://www.mixcloud.com/brian-diolun/", "https://soundcloud.com/brian-d", "https://rdelune.dev"],
+};
+const structuredData = article ? {
+  "@context": "https://schema.org", "@type": "BlogPosting", ...article,
+  author: person, mainEntityOfPage: canonical.href, image: socialImage.href,
+} : section === "about" ? {
+  "@context": "https://schema.org", "@type": "ProfilePage", url: canonical.href, mainEntity: person,
+} : section === "home" ? {
+  "@context": "https://schema.org", "@type": "WebSite", name: "Brían Diolún", url: canonical.href,
+} : null;
 const posts = await visiblePosts(),
   published = await realPosts();
 const nav = [
@@ -33,7 +65,8 @@ const pageMedia = mixes
     href: m.href,
     peaksUrl: m.peaks,
     scoreUrl: m.scoreUrl,
-    boundariesSec: [],
+    tracklist: m.tracklist,
+    boundariesSec: m.tracklist.map((chapter) => chapter.at),
     bpm: null,
     beatStartAtSec: null,
   }));
@@ -48,10 +81,23 @@ const pageMedia = mixes
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <meta name="theme-color" content="#0b0c0e" />
-    <meta
-      name="description"
-      content="Brían Diolún. Music as Brían Diolún. Mixes as Roam. Software at rdelune."
-    />
+    <meta name="description" content={description} />
+    {preventIndexing && <meta name="robots" content="noindex, follow" />}
+    {!noindex && <link rel="canonical" href={canonical.href} />}
+    <meta property="og:site_name" content="Brían Diolún" />
+    <meta property="og:type" content={article ? "article" : "website"} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical.href} />
+    <meta property="og:image" content={socialImage.href} />
+    <meta property="og:image:alt" content={image === "/social/default.png" ? "Brían Diolún — Music, mixes and software" : title} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImage.href} />
+    {article && <meta property="article:published_time" content={article.datePublished} />}
+    {structuredData && <script type="application/ld+json" set:html={JSON.stringify(structuredData).replaceAll("<", "\\u003c")} />}
+    {published.length > 0 && <link rel="alternate" type="application/rss+xml" title="Brían Diolún — Writing" href="/rss.xml" />}
     <title>{title}</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <ClientRouter fallback="swap" />
@@ -87,7 +133,12 @@ const pageMedia = mixes
         </button>
       </div>
     </header>
-    <nav class="rail" aria-label="Primary" transition:persist="rail">
+    <nav
+      data-stage-exclude
+      class="rail"
+      aria-label="Primary"
+      transition:persist="rail"
+    >
       <span class="rail-label micro">INDEX</span>
       <span class="rail-active" aria-hidden="true"></span>
       {nav.map((item, i) => (

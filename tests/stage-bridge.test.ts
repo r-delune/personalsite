@@ -65,7 +65,7 @@ test("pose changes ignore query/hash and classify detail routes", () => {
 test("native playback exposes only a playing envelope and zero compatibility energy", () => {
   let now = 0;
   const w = createStageBridge(() => now);
-  assert.equal(w.bridge.getSnapshot().analysisAvailable, false);
+  assert.equal(w.bridge.getSnapshot().scoreAvailable, false);
   w.transport("playing", 0, 100);
   for (let i = 0; i < 20; i++) {
     now += 100;
@@ -79,7 +79,7 @@ test("native playback exposes only a playing envelope and zero compatibility ene
   w.transport("paused", 2, 100);
   now += 100;
   assert(w.bridge.getFeatures().playing < playing);
-  assert.equal(w.bridge.getSnapshot().analysisAvailable, false);
+  assert.equal(w.bridge.getSnapshot().scoreAvailable, false);
 });
 test("URL time parser rejects malformed and unsafe input", () => {
   assert.equal(parseTime("1h12m30s"), 4350);
@@ -93,13 +93,19 @@ test("URL time parser rejects malformed and unsafe input", () => {
 test("score metadata preserves confirmed boundaries and clears on unscored items", () => {
   const w = createStageBridge(() => 0);
   const meta = {
-    itemKind: "mix" as const, itemId: "mix:roam-mix-2026",
-    durationSec: 3626.74, peaksUrl: "/data/roam-mix-2026.peaks.json",
-    scoreUrl: "/data/roam-mix-2026.score.json", boundariesSec: [60, 120],
-    bpm: null, beatStartAtSec: null,
+    itemKind: "mix" as const,
+    itemId: "mix:roam-mix-2026",
+    durationSec: 3626.74,
+    peaksUrl: "/data/roam-mix-2026.peaks.json",
+    scoreUrl: "/data/roam-mix-2026.score.json",
+    boundariesSec: [60, 120],
+    bpm: null,
+    beatStartAtSec: null,
   };
   let observed: unknown;
-  w.bridge.subscribe("itemchange", () => { observed = w.bridge.getItemMeta(); });
+  w.bridge.subscribe("itemchange", () => {
+    observed = w.bridge.getItemMeta();
+  });
   w.item(meta.itemId, "mix", meta.durationSec, meta);
   assert.equal(observed, meta);
   w.seek(100);

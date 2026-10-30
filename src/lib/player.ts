@@ -1,7 +1,10 @@
+import { chapterAt, type Chapter } from "./tracklist.mjs";
+import { bindArtworkPreload, preloadArtwork } from "./artwork";
 import { atom } from "nanostores";
 import initialTracks from "../fixtures/playable-tracks.json";
 import { bindStageBridge, stageWriter } from "./stage-bridge";
 export interface MediaItem {
+  tracklist?: Chapter[];
   peaksUrl?: string | null;
   scoreUrl?: string | null;
   boundariesSec?: number[];
@@ -64,6 +67,7 @@ function publish(phase = $player.get().phase, error = "") {
     error,
   });
   stageWriter.transport(phase, clock(), d || null);
+  syncMediaMetadata();
 }
 function saveMix() {
   const item = currentTrack();
@@ -127,7 +131,7 @@ function installMediaEvents(item: MediaItem, token: number) {
       publish(confirmed ? "buffering" : "loading");
   });
   on("pause", () => {
-    if (!a.ended) {
+    if (!a.ended && a.paused) {
       // Native pauses (including OS/lock-screen controls) cancel pending plays.
       intent = false;
       operation++;
@@ -158,6 +162,13 @@ export async function playTrack(id: string, position?: number) {
   const item = media.get(id);
   if (!item?.src) return;
   const a = ensureAudio();
+  preloadQueue(item);
+  if (
+    $player.get().id === id &&
+    $player.get().phase === "ended" &&
+    position === undefined
+  )
+    position = 0;
   if (
     $player.get().id === id &&
     (intent || $player.get().playing) &&
@@ -229,21 +240,40 @@ export async function playTrack(id: string, position?: number) {
     if (token === generation && request === operation && intent) {
       intent = false;
       a.pause();
-      publish(
-        "error",
-        "Playback could not start. Retry.",
-      );
+      publish("error", "Playback could not start. Retry.");
     }
   }
-  if ("mediaSession" in navigator) {
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: item.title,
-      artist: item.artist,
-      artwork: item.artwork
-        ? [{ src: new URL(item.artwork, location.href).href }]
-        : [],
-    });
-  }
+}
+let metadataKey = "";
+function syncMediaMetadata() {
+  const item = currentTrack();
+  if (
+    !item ||
+    !("mediaSession" in navigator) ||
+    typeof MediaMetadata === "undefined"
+  )
+    return;
+  const chapter =
+    item.kind === "mix" ? chapterAt(item.tracklist || [], clock()) : null;
+  const key = `${item.id}:${chapter?.at ?? ""}`;
+  if (key === metadataKey) return;
+  metadataKey = key;
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: chapter?.title || item.title,
+    artist: chapter?.artist || item.artist,
+    album: chapter ? item.title : "",
+    artwork: item.artwork
+      ? [{ src: new URL(item.artwork, location.href).href }]
+      : [],
+  });
+}
+function preloadQueue(item: MediaItem) {
+  preloadArtwork(item.artwork);
+  if (item.kind !== "track") return;
+  const queue = Array.from(media.values()).filter(
+    (m) => m.kind === "track" && m.href === item.href,
+  );
+  preloadArtwork(queue[queue.findIndex((m) => m.id === item.id) + 1]?.artwork);
 }
 export function pause() {
   intent = false;
@@ -324,6 +354,7 @@ export function bindPlayback() {
   if (bound) return;
   bound = true;
   bindStageBridge();
+  bindArtworkPreload();
   registerPageMedia();
   document.addEventListener("click", (event) => {
     const button = (event.target as Element).closest<HTMLElement>(
