@@ -1,0 +1,11 @@
+<div id="stage" class="stage" aria-hidden="true" transition:persist="stage" transition:name="stage">
+  <picture class="stage-poster"><source media="(max-width:767px)" srcset="/poster/horizon-mobile.avif"/><img src="/poster/horizon.avif" alt="" width="1600" height="1000" fetchpriority="high"/></picture>
+  <canvas id="horizon-canvas"></canvas>
+  <div class="stage-shade"></div>
+</div>
+<script>
+  import { initStage } from './runtime';
+  const launch = () => initStage();
+  if ('requestIdleCallback' in window) window.requestIdleCallback(launch, { timeout: 1600 });
+  else setTimeout(launch, 100);
+</script>

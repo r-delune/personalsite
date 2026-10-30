@@ -1,0 +1,6 @@
+---
+import Shell from '../../layouts/Shell.astro';
+import Icon from '../../components/Icon.astro';
+import { mixes } from '../../lib/catalogue';
+---
+<Shell title="Mixes — Brian Dillon" section="mixes"><div class="page-column inner-page"><p class="micro section-index">02 / MIXES & SELECTIONS</p><h1 class="page-title">Stay for a while.</h1><p class="page-intro">A collection of longer listens, assembled over the years.</p><div class="mix-list">{mixes.map((mix,i) => <article class="mix-row"><span class="micro mix-number">0{i+1}</span><a href={`/mixes/${mix.slug}`} class="mix-title">{mix.title}<span class="mix-category micro">{mix.subtitle}</span></a><span class="micro mix-year">c. {mix.year}</span><span class="micro mix-duration">{mix.duration}</span><a class="circle-link" href={`/mixes/${mix.slug}`} aria-label={`Explore ${mix.title}`}><Icon/></a></article>)}</div><p class="preview-caption">Mix audio is awaiting import. Original recordings are available on <a href="https://www.mixcloud.com/brian-diolun/">Mixcloud ↗</a>.</p></div></Shell>

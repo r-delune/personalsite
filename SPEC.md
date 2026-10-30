@@ -1,0 +1,513 @@
+# Personal Site — v1 Spec (merged)
+
+> Owner: Brian Dillon · music: **Brian Diolún** (DJ alias **Roam**)
+> Status: **v1.3 — M1 local layout/background preview built; Brian/Claude visual review pending** · 2026-10-30
+> Supersedes `SPEC.claude.md` and `SPEC-CODEX.md` (kept for history). Incorporates `REVIEW.md`.
+> Resolves `REVIEW-CURRENT.md`; fixes approved by Brian (“ok fix it”). See D-020–D-025.
+> Consolidates `claude-ux-plan.md`, `CODEX-UI-UX-PLAN.md` and `CODEX-UX-COMPARISON.md` into this single review reference. UX synthesis: D-026–D-031. Source proposals remain historical context, not additional build requirements.
+> Related: `DECISIONS.md` (why things are the way they are) · `ROADMAP.md` (everything deferred)
+> Visual reference: https://omp.sh · Consultancy (linked, not merged): https://rdelune.dev
+
+**Rules for whoever builds this:**
+1. Items marked **[LOCKED]** do not change without a new entry in `DECISIONS.md` that Brian has approved.
+2. Anything not in this file goes to `ROADMAP.md`, not into the build.
+3. Never invent biography, client work, achievements, release or mix metadata. Use visibly marked placeholders (`TODO(copy)`) that render only in dev.
+4. Playback counts as verified only when tested with real media on the real host. A mock player is not verification.
+5. **Review before implementation:** Brian requested this consolidated document for Claude to review first. Review the checklist in §14 and record unresolved findings before implementation starts. This editing task does not start scaffolding, installation or deployment.
+
+---
+
+## 1. Purpose
+
+A **personal website** for Brian. It is primarily a home for **his introduction, music releases and DJ mixes**, with room for work, a CV, writing and personal interests. rdelune (his consultancy) is **linked in places**, not co-branded. The site is mainly for Brian and secondarily builds his visibility on the web.
+
+Priority: **1. blurb + music → 2. mixes → 3. work/about → 4. writing.**
+**Less is more.** That means one shared background, generous negative space, one accent colour, and no feature added to fill space.
+
+### Non-goals for v1
+No CMS, accounts, comments, newsletter, contact backend or analytics. No storyboard or immersive mode, multiple scenes, crossfades or beat detection. No command palette, podcast feed, mix filters or batch ingest. All of these are in `ROADMAP.md`.
+
+---
+
+## 2. Locked decisions **[LOCKED]**
+
+| Topic | Decision |
+|---|---|
+| Identity | Personal site. rdelune.dev is linked from the intro, the Work page and the footer. No equal-blend branding |
+| Navigation model | Real pages with URLs, inside a **persistent shell**. The background canvas and player **never unmount** on internal navigation |
+| Releases source | The **Roam Studio showcase feed** (`https://audio.rdelune.dev/showcase.json`, MP3s on R2), the same source as productions.rdelune.dev. v1 uses a **local fixture in the feed's shape**. Live fetch is on the roadmap |
+| Mixes source | Owned by **this repo**: derivative audio + peaks on R2, metadata in a `mixes` content collection. **Mixes never go through Roam Studio** |
+| Mixcloud | An "Also on Mixcloud" link per mix and in the footer. Never the playback source |
+| Audio → visuals | Playback **lightly** modulates the background, within the caps in §8. It looks the same site when idle |
+| Storyboard | Not built. Only the separation described in §9 is required |
+| Roam Archive / rdelune-productions | Inspiration and future integration only. No code dependency in v1 |
+
+---
+
+## 3. Information architecture
+
+### 3.1 Navigation
+Primary: **Music · Mixes · Work · About**, plus **Writing**, which appears only once at least one non-draft post exists.
+
+| Route | Purpose |
+|---|---|
+| `/` | Introduction and curated entry points |
+| `/music`, `/music/[slug]` | Releases, and a release with its tracklist |
+| `/mixes`, `/mixes/[slug]` | Mix catalogue, and a mix with its scrubber and tracklist |
+| `/work`, `/work/[slug]` | Selected projects and case studies, plus a link to rdelune.dev |
+| `/about` | Bio, CV (roles → case studies), a short running section, profiles and contact |
+| `/writing`, `/writing/[slug]` | Blog (hidden from nav while empty) |
+| `/404` | |
+
+**Public builds hide sections that have no real content.** Templates may exist, but navigation and the homepage list only what has content.
+
+### 3.2 Homepage (normal scrolling, no scroll hijacking, no autoplay)
+1. **Intro.** `min-height: 100svh` (never a fixed height), a three-tone headline, a two-line blurb, then a named **▶ Play [featured title]** action (starts the selected eligible track/mix only on click), a small **Browse music** link and a secondary **rdelune ↗** link. Show a quiet title/type/duration line if space permits. Content and the action are visible at first paint; graphics initialization never gates them.
+2. **Music.** One featured release plus a small row of others.
+3. **Mixes.** 3–5 editorial rows: title, year, duration, ▶.
+4. **Selected work.** 2–3 projects, only when they exist.
+5. **Writing.** The latest 3, only when they exist.
+6. **Footer.** © Brian Dillon, rdelune.dev, Mixcloud, SoundCloud, GitHub, LinkedIn, and RSS (when writing exists).
+
+### 3.3 About
+Expanded bio, then a **CV** section (roles with dates and bullets, each linking to the case studies that back it up), then a short **running** section (a few selected results, and an ITRA link if Brian supplies one), then profiles and contact. Includes a **"Print / save PDF"** button (`window.print()`) with a print stylesheet that hides the shell and uses A4 margins.
+
+---
+
+## 4. Design language
+
+We take omp.sh's restraint, three-tone headline, mono micro-labels, dark negative space and particle background. We do **not** copy its branding, palette or content.
+
+### 4.1 Tokens (`src/styles/tokens.css`, CSS custom properties)
+```css
+--bg:        oklch(0.13 0 0);
+--bg-raised: oklch(0.17 0 0);
+--line:      oklch(0.28 0 0);
+--fg:        oklch(0.96 0.005 80);  /* warm off-white */
+--fg-muted:  oklch(0.72 0 0);
+--fg-dim:    oklch(0.52 0 0);
+--accent:    oklch(0.80 0.10 250);  /* PROVISIONAL lunar blue */
+--accent-2:  oklch(0.72 0.17 330);  /* PROVISIONAL, used only inside the visual */
+--grain-opacity: 0.06;
+--player-h: 56px; /* initial desktop estimate; updated to measured outer height, including safe-area padding */
+```
+Dark only (`color-scheme: dark`). The accent appears in at most one highlighted phrase per screen, plus focus and active states. Text must keep AA contrast over every animated state of the background (add a scrim where needed).
+
+### 4.2 Type
+Geist (sans) and Geist Mono, self-hosted, with the sans preloaded.
+- H1 `clamp(2.5rem, 6vw, 4.5rem)`, weight 500, tracking -0.02em. Line 2 in `--fg-muted`, the key phrase in `--accent`.
+- Micro-labels: mono, 11px, uppercase, tracking 0.18em, `--fg-dim`.
+- Body: 16–17px, max 62ch, line-height 1.6.
+
+### 4.3 Surfaces & layout
+- Grain: a fixed SVG-noise overlay with `pointer-events:none`.
+- Editorial rows and thin `--line` dividers rather than card grids. Radius ≤ 6px. No shadows. The player bar alone gets `backdrop-filter: blur(12px)`.
+- Icons: Lucide, 16px, stroke 1.5. Every icon-only control has an accessible name.
+- **Desktop:** a quiet left rail with a recognizable home/name link, icons/optional mono indices and concise, persistently visible destination labels where width permits. Labels never scramble. On narrower screens adapt the rail/content offset before squeezing text; 18vw is a composition guide, not a universal inset. The visual owns the lower-right; active navigation uses `aria-current` and a non-colour-only cue.
+- **Mobile (<768px):** a compact top bar (wordmark + menu button opening a full-screen nav). **No bottom tab bar**, so the bottom edge belongs to the player alone. Use 16px gutters and respect safe-area insets. Measure the player's actual outer height with `ResizeObserver`, including safe-area padding, into `--player-h`; use it for content bottom padding and scroll padding while visible. Reset the reserved height to zero when hidden. Content and focused controls must remain clear of the player at zoom and when metadata wraps.
+- Play actions must work on touch and keyboard focus, not just hover.
+- Catalogue rows have separate title/detail links and Play buttons; never nest a button inside a whole-row link. The current item has one consistent now-playing marker wherever it appears. A static marker is sufficient; decorative equalizer animation is optional and stops under reduced motion/manual animation pause.
+
+### 4.4 Continuous browsing and motion
+
+The player and background are one stable environment; page content changes inside it. The distinction should be visible in the prototype, not just true of the DOM.
+
+| Interaction | Initial timing | Implementation |
+|---|---|---|
+| Hover/focus/press | Immediate acknowledgement; optional 100–160ms styling | CSS, visible focus, no animation that delays the action |
+| Page content change | Compare 160–220ms against 260ms in M1 | Short fade with at most 6–8px movement; animate content only |
+| Player first appearance | 180–220ms | Transform/opacity after layout reservation; no cover fly-in |
+| Mobile menu | 160–220ms | Simple, interruptible entrance/exit |
+| Poster → live canvas | 300–450ms starting point | Matched composition; retain poster until a successful warmed frame |
+| Audio response | 1.5s rise / 2.5s fall | Existing time-based envelopes and influence caps |
+
+- Never fade, freeze or ghost the entire player/canvas as part of a route snapshot. Do not serialize an exit/entrance sequence that blocks new input. Cancel or retarget interrupted motion.
+- **View Transition mechanics (D-033).** Give the Stage and Player their own `view-transition-name`s and suppress their *old* snapshots (`::view-transition-old(stage), ::view-transition-old(player) { display: none }`; `::view-transition-new(stage), ::view-transition-new(player) { animation: none }`). The old snapshot is a static image, while the new one renders live, so this keeps the canvas and progress live. Only `<main>` gets the content animation. While a transition runs, its pseudo-element overlay sits above the page, so verify in M1 that a player control pressed mid-transition still works (e.g. `:root::view-transition { pointer-events: none }`, verified per browser). Keep content transitions ≤220ms. Browsers without View Transitions get Astro's instant-swap fallback; persistence must never depend on View Transition support.
+- Keep essential text visible on initial load. No staged CTA appearance, character reveals, repeated scroll reveals, label decoding, pointer-following controls or scroll interception.
+- A single **cover-to-release artwork transition** is an M1 experiment, not a requirement for every list/title/chip. Only the source/destination pair has matching transition names. Repeated artwork, rapid navigation and back/forward must remain correct; use a plain content fade if not.
+- Use CSS transitions/keyframes first and Web Animations API for animation that needs explicit cancellation. Default to transform/opacity for moving surfaces; profile filters/clip-path rather than assuming hardware acceleration.
+- Reduced motion removes displacement, shared-element morphs and decorative animation. Immediate state changes are valid; no animation is required for understanding or operating the interface.
+
+### 4.5 Navigation, menu and focus
+
+- Retain normal links and browser history. New-page navigation begins at its content entry point; back/forward restores scroll; hash navigation lands clear of fixed UI. Coordinate route focus and announcements with Astro rather than adding duplicate announcements.
+- The mobile menu uses a labelled native modal `dialog` with a visible Close control, Escape support, focus containment and opener-focus restoration. Preserve the reading position and release scroll lock on close or route selection. The menu is above the player, which remains audible; do not leave the document inert after dismissal.
+- Keep the old page visible while navigation loads; provide quiet feedback when needed. Prefetch likely internal HTML on intent using Astro, honour supported data-saving signals, and avoid speculative audio downloads.
+
+### 4.6 Reading and layout stability
+
+- About, work and writing use a comfortable text measure and quieter background/scrim. Active chapter changes do not automatically scroll the tracklist while a visitor is reading.
+- Reserve artwork dimensions and use self-hosted fonts with metric-matched fallbacks; preload only critical assets. Use responsive artwork via Astro assets where applicable; small placeholders must not delay real images.
+- Player appearance/resizing must preserve the reader's viewport/scroll anchor, especially near a page's end. Measuring its height alone is not proof of stability. Do not animate page padding; test visibility and position directly at 200% zoom and on mobile.
+
+---
+
+## 5. Tech stack **[LOCKED]**
+
+| Layer | Choice |
+|---|---|
+| Framework | **Astro**, current major, **exact version pinned** at scaffold time and recorded in `DECISIONS.md`. `output: 'static'`. `<ClientRouter />` + `transition:persist` |
+| Language | TypeScript (strict) |
+| Styling | **Custom CSS**: global `tokens.css` + Astro scoped styles. No Tailwind |
+| Islands | **Preact**, for the player UI and mix scrubber only |
+| State | **nanostores** for UI state only (track, queue, playing, time at ~4Hz, buffered, error, interruption). **No per-frame data in stores**. `uiMode` is deferred with immersive mode |
+| Visual | **three.js**, one canvas, one `ShaderMaterial` points scene, loaded lazily |
+| Audio | One `HTMLAudioElement` + Web Audio `AnalyserNode` |
+| Interface motion | CSS + native Web Animations API; Astro content transitions. No additional motion runtime required initially |
+| Menu | Native modal `dialog`, with tested focus/scroll lifecycle |
+| Content | Astro Content Layer: `src/content.config.ts`, zod schemas, MD/MDX |
+| Hosting | Cloudflare Pages (site), R2 at `media.<domain>` (mixes) and `audio.rdelune.dev` (releases, existing) |
+| Package manager | pnpm |
+
+---
+
+## 6. Architecture
+
+```
+src/
+  content.config.ts
+  layouts/Shell.astro            ← ClientRouter, Rail/TopBar, <Stage/>, <Player/>, grain, <slot/>
+  components/
+    nav/Rail.astro, nav/TopBar.astro
+    stage/Stage.astro            ← <canvas transition:persist="stage"> + poster <img>
+    stage/runtime.ts             ← renderer, rAF loop, visibility pause, scene host
+    stage/scenes/horizon.ts      ← the only v1 scene
+    player/Player.tsx            ← island, transition:persist="player"
+    player/Scrubber.tsx
+  lib/
+    audio/engine.ts              ← singleton (§7)
+    audio/analysis.ts            ← energy + playing envelope (§8)
+    stores.ts                    ← nanostores (UI only)
+    feed/showcase.ts             ← reads fixture now, live feed later; normalises
+  content/
+    mixes/*.md   projects/*.mdx   posts/*.mdx   about.md   cv.json   site.json
+  fixtures/showcase.sample.json  ← curated, validated upstream-shaped album; see §10.2
+  fixtures/README.md             ← source, capture date, field mapping and publication verification
+public/poster/horizon.avif
+scripts/ingest-mix.ts            ← single-mix ingest (§10)
+```
+
+### 6.1 Persistence (acceptance-critical)
+- `Stage` and `Player` use `transition:persist`. Clicking internal links and using back/forward must cause **no audible gap, no second `<audio>`, no second WebGL context, and no duplicate listeners**. Guard every init with a module-level `if (initialized) return`.
+- The engine is created lazily on the first user gesture and never recreated.
+
+### 6.2 Data flow
+- Engine → stores: track, playing, buffered, error, interruption, and `time` (throttled to ~4Hz for the UI). Set `playing` from confirmed transport/context state, not just a successful button click.
+- Engine → Stage: the Stage calls `engine.getFeatures()` inside its own rAF loop. No store subscription and no UI rerender.
+- UI → Engine: `load(item)`, `play()`, `pause()`, `seek(s)`, `next()`, `prev()`.
+- Scene rendering, visible transport progress and pointer preview have independent scheduling gates. Pausing/hiding graphics must not freeze an active player's seek UI. A shared scheduler may dispatch them, but never stop all UI work with the scene's pause flag. Per-frame analysis/preview stays outside UI stores; store time remains ~4Hz.
+
+---
+
+## 7. Audio engine & player
+
+### 7.1 Engine
+- One `<audio crossorigin="anonymous" preload="metadata">`. Never fetch or decode whole files.
+- The `AudioContext` and `MediaElementAudioSourceNode` are created on the first play gesture and resumed on later gestures if suspended.
+- **Three distinct states**, each surfaced separately:
+  1. **Media error.** Load or decode failure, including CORS rejection. Show an inline error in the player with a **Retry** action.
+  2. **Analysis unavailable.** If analysis fails before binding the element to Web Audio, retain native playback and use only the `playing` envelope. If analysis fails while a healthy output graph remains running, keep audible playback through that graph and use the same visual fallback. This is not a CORS bypass or a guarantee of playback through a suspended context.
+  3. **Legitimate silence.** Never treat low energy as an error.
+- CORS facts the build must respect: with `crossorigin="anonymous"`, a failed CORS check **stops the media loading**. Without the attribute, a cross-origin source routed through a `MediaElementAudioSourceNode` **outputs silence**. So keep the attribute and configure the host (§10.3).
+- Media Session API: title, artist, artwork, play/pause/seek/prev/next handlers.
+- **Context recovery:** once the element is bound to a `MediaElementAudioSourceNode`, the output path depends on its AudioContext. Keep that graph running during playback even when animation is paused or hidden. Observe context state changes and playback promise rejections. On an unexpected suspension/interruption, attempt supported recovery while playback is still intended; if it cannot resume, preserve the item and position, show **“Playback interrupted — Resume”**, and resume context plus transport from that explicit gesture. Do not show a playing state while output is unavailable. A user pause must cancel pending automatic recovery. Do not recreate the source node or promise a transparent native-output bypass after binding. Test this path in M2.
+- No mandatory 150ms gain ramp for every transport action. Assess actual audible clicks first. If mitigation is needed, use the shortest effective envelope with explicit cancellation/retargeting, seek/buffer sequencing and preserved mute/volume. Rapid Pause/Play/seek must not leave stale automation or delayed actions overriding current intent.
+- New selection intent supersedes old pending loads/seeks/play promises. Keep item-specific tokens/listeners so stale callbacks cannot change the current item. Treat a rejected play promise as a state to recover, not as confirmed playback.
+- **iOS / iPadOS output policy (D-032).** On WebKit for iOS, media routed through Web Audio can be muted by the hardware silent switch. The AudioContext can also be interrupted when the page is backgrounded or the screen locks, which would break lock-screen listening to a long mix. Default: **on iOS/iPadOS, do not bind the element to Web Audio.** Use native `<audio>` output, drive the visual from the `playing` envelope only (§8.3), and set `navigator.audioSession.type = 'playback'` before first play where the API exists. Re-enable analysis on iOS only after M2 proves silent-switch, screen-lock and background playback on a real device. Desktop browsers and Android keep analysis. Detect capability and platform once, before first bind, because binding is irreversible (above).
+- **Element ownership (D-034).** The engine module creates the single `HTMLAudioElement` in JavaScript and owns it outside page and island markup, so DOM swaps can never remove, clone or re-render it. Create and `resume()` the AudioContext **synchronously inside the first Play gesture handler**, before any `await`. Otherwise Safari treats it as non-gesture and leaves it suspended.
+- **Global controls target the active item (D-034).** `Space`/`J`/`L`/`M`, Media Session actions and player-bar buttons always act on the engine's active item, never on a mix that is only displayed or staged on the current page (§7.4).
+
+### 7.2 Player bar (persistent)
+- Hidden until something has been loaded, then slides in. Desktop target height is 56px before safe-area padding; it may grow with content or zoom. `--player-h` tracks the measured outer height (§4.3).
+- Shows: artwork thumb · title + artist/series (mono) · prev/play/next · seek slider · elapsed/total (mono) · volume (desktop only, since it is often read-only on iOS) · link to the item's page.
+- **Mobile layout:** two rows, with safe-area padding below. First row: linked title/artist and prev/play/next, with artwork only if space permits. Second row: elapsed time, seek slider, total time. Hide volume. Allow wrapping and increased height at large text sizes; do not squeeze all controls into a 56px row. Keep transport touch targets at least 44×44px and reserve space using the measured height.
+- For mixes, it shows the current tracklist entry ("now: Artist — Title") when a tracklist exists.
+- Shows loading and buffering states. Uses `aria-live="polite"` **only** for track changes and errors, never for time updates.
+- **Resume (mixes only):** saves `{slug, position}` to `localStorage` at most every 5s and on pause, wrapped in try/catch. A later visit shows an inline, dismissible "Resume <title> at 42:10" choice and only plays when the visitor clicks. It never interrupts an active session or blocks the page.
+- **Keyboard:** `Space` play/pause, `J`/`L` ±15s, `M` mute. **Ignored** when focus is in an input, textarea, contenteditable, select, or on a button, link or slider, so native behaviour is preserved there.
+
+### 7.3 Mix scrubber
+- **The waveform is in v1.** Mixes are a headline feature, scrubbing 2.5 hours needs orientation, and the peaks are cheap to precompute. It stays visually quiet.
+- **Peaks format (single, fixed):**
+  ```json
+  { "version": 2, "duration": 3626.74, "length": 2000, "peak": [0.0, 0.91, ...], "rms": [0.0, 0.43, ...] }
+  ```
+  `peak[i]` is the **max absolute amplitude** and `rms[i]` the **RMS** of bucket *i* (equal-duration buckets). Each array is normalised so its own loudest bucket equals 1.0 and rounded to 3 decimals. **Draw `rms` as the waveform body** and `peak` as a faint outline at most. On loud, mastered mixes max-abs alone renders as a near-solid block (measured on the first real mix: median 0.88 vs 0.43 for RMS; see `inputs/mixes/roam-mix-2026/waveforms.png`) (D-035). When aggregating into fewer bars, take the max of `peak` and the max of `rms` per bar.
+- **Drawing:** bars = `floor(canvasCssWidth / 3)` (2px bar + 1px gap). Each bar takes the **max** of the peaks in its range. The canvas is DPR-scaled and redrawn on resize. Played bars use `--fg` and unplayed bars use `--fg-dim`. A hover/drag line shows a time tooltip, and seeking is committed on pointerup.
+- Pointer preview follows the next rendered frame using local staged position; transport updates must not pull the thumb away during dragging. On commit, place the marker at the requested time immediately and distinguish seeking from confirmed playback. Do not glide through skipped time. Avoid waveform draw-in or bar magnification initially; make the whole waveform height a comfortable hit target. Peaks/image failures do not block audio; retain a plain seek input if peaks fail.
+- Tracklist markers are small ticks at the top. Chapter and waveform actions follow §7.4 rather than blindly seeking whichever item the global player holds.
+- Accessible: pair the canvas (decorative, hidden from assistive technology) with a focusable native range input, a visible focus indicator, an accessible label and `aria-valuetext="42 minutes 10 seconds of 2 hours 25 minutes"`. Set min/max/value from the displayed mix and disable seeking until duration is known. Arrow keys move ±5s, PageUp/PageDown ±60s, Home/End go to the start/end. Support pointer capture for dragging; pointer cancellation restores the previous position without seeking. Preserve vertical touch scrolling outside an intentional scrub gesture.
+- **Deep link:** `?t=1h12m30s` stages a requested time on the displayed mix page; route entry never replaces, pauses or seeks the active player. Show **“Play from 1:12:30”**. A "Copy link at current time" button uses that mix's active position when it is the current item, otherwise its staged page position; it must never copy another item's time. See §7.4.
+
+### 7.4 Browsing versus playback
+- Keep the displayed page's mix/track ID and staged position separate from the engine's active item. Navigation, including back/forward and time-linked URLs, leaves active playback untouched. On a fresh visit, stage the requested item/time without creating playback or autoplaying it.
+- **Play from a staged time or chapter:** an explicit click/keyboard activation selects that mix, loads it if necessary, seeks once metadata is available, and plays it. This replaces another active item only because the visitor requested playback.
+- **Waveform seek:** if the displayed mix is already active, seek it while preserving its current play/pause state. If it is not active, committing a scrub stages the position on that page only and shows **“Play from [time]”**; the engine's existing item and playback remain untouched until that explicit Play action. Use the same rule for keyboard and pointer scrubbing. Cancelling a gesture does not change the engine. This supersedes v1.1's load-another-mix-paused rule (D-023; see D-026).
+- Starting a mix uses this precedence: explicit chapter/scrub time, then valid URL time, then a saved position only when the visitor selects Resume, otherwise zero. Merely browsing never restores a saved position into the engine.
+- Accept non-negative integer seconds or ordered hour/minute/second strings such as `1h12m30s`. Invalid or non-finite values are ignored; clamp valid requested times to the real media duration after metadata loads. Make metadata listeners item-specific so a late event from an old selection cannot seek a new item. Browser history changes update staged page state only.
+
+### 7.5 Feedback and direct control
+
+- A Play request receives immediate selected/pending feedback, while playing indicators wait for confirmed transport. Keep Pause/Cancel available during pending work. Do not navigate or open a modal as a side effect of pressing Play.
+- Use inline loading/buffering/error/interruption states, stable artwork/title, and Retry/Resume where appropriate. A small spinner or text label is acceptable after ~150ms if needed; do not pretend indeterminate loading has measurable progress. Controls respond before network audio starts.
+- Time uses tabular numerals. Metadata changes must not push controls around. Use a linked, accessibly named truncated title when space is limited.
+- Copy-time success confirms inline for about 1.5s without moving focus. If clipboard access fails, offer selectable link text.
+- A mix ends with Replay and no unrelated automatic next item. Release next/previous follows eligible track order. The detail page is the expanded listening view; a second mobile player sheet is deferred.
+
+---
+
+## 8. Background & audio response
+
+### 8.1 Scene interface (the only abstraction v1 needs)
+```ts
+interface AudioFeatures { energy: number; playing: number } // 0..1, smoothed
+interface Scene {
+  mount(ctx: { renderer: THREE.WebGLRenderer; width: number; height: number; reducedMotion: boolean }): void | Promise<void>;
+  update(f: AudioFeatures, timeSec: number, dtSec: number): void;
+  resize(width: number, height: number): void;
+  dispose(): void;
+}
+```
+The runtime hosts exactly **one** scene in v1. There is no crossfade machinery, no second scene and no immersive mode (see `ROADMAP.md`).
+
+### 8.2 Scene `horizon` (provisional motif, to be assessed in the M1 prototype)
+- A particle field forming a curved moon/planet limb rising from the lower-right. It is dense at the edge and scatters into dust above. A thin rim light uses `--accent` and blends towards `--accent-2` deeper in. Slow idle drift.
+- Particle counts are **tuned during the prototype** with targets of 60fps on an M-series laptop and ≥45fps on a mid-range phone. Start at around 60k desktop / 15k mobile and adjust.
+- DPR is capped at 2 on desktop and 1.5 on mobile. The render loop pauses when `document.hidden` or when the canvas is off-screen.
+- **First paint** shows `public/poster/horizon.avif`, and the canvas fades in once the first frame renders. If WebGL fails, the poster stays.
+- Generate stable typed point buffers once; move particles through shader time/parameters rather than CPU per-particle updates. Tune silhouette, density, rim light and sparse dust before adding more points. Start without bloom or additional full-screen postprocessing passes. Profile point size/transparency overdraw as well as draw calls.
+- Match poster and live framing at desktop and phone sizes. Warm/compile the scene where supported before replacing the poster; do not require an arbitrary frame count. Graphics failure/context loss restores the poster and does not disable audio/UI.
+- Reset/clamp render delta after tab restoration and integrate audio-driven phase (`phase += dt * speed`) rather than multiplying total elapsed time by a changing speed. Smooth audio parameters alone cannot prevent that phase jump.
+- Start with main-thread rendering and stable downward quality steps when measured frame times remain poor. No repeated quality oscillation. Respect motion settings before loading graphics where practical. Shader dithering is an optional remedy for observed gradient banding; sparse point fragments cannot replace grain across untouched background pixels.
+
+### 8.3 Analysis (`analysis.ts`)
+- `AnalyserNode`, fftSize 2048. **Energy** is the RMS of the time-domain signal, normalised by a slowly adapting running max that decays with **elapsed time** (half-life ~20s), so ambient mixes still register. Floor the denominator at `1e-4`; silence produces zero, reject non-finite samples/results, and clamp the final energy to [0,1].
+- Envelopes are **time-based**: `a = 1 - exp(-dt / tau)`, with attack tau 80ms and release tau 600ms. The result is independent of frame rate.
+- `playing` eases 0→1 over 1.5s on play and 1→0 over 2.5s on pause or end. Seeking and track changes **hold** the current energy envelope and must not reset it, so there are no flashes.
+
+### 8.4 Caps **[LOCKED]**
+| Uniform | Drives | Max change vs. idle |
+|---|---|---|
+| `uEnergy × uPlaying` | drift speed | +20% |
+| `uEnergy × uPlaying` | rim brightness | +15% |
+| `uPlaying` | dust sparkle | +10% |
+
+No colour shifts, no strobing, no camera shake, and no page-brightness change. **Test:** a screenshot taken idle and one taken mid-track should read as the same site.
+
+### 8.5 Motion controls
+- `prefers-reduced-motion: reduce` renders a single still frame with no audio modulation.
+- A **manual "Pause animation" toggle** goes in the footer and the mobile menu, persisted in `localStorage` with try/catch. It freezes the scene on its current frame.
+- Freeze decorative now-playing glyphs as well. UI state/progress, seeking and audio keep working. A route change while animation is paused must not move the scene; apply the current route's pose only when motion resumes, or retain the stable pose.
+
+### 8.6 Bounded visual experiments in M1
+
+- Compare a stable horizon with **restrained route-aware framing**: home retains the opening silhouette; mixes preserve waveform clearance; reading pages pull detail away and soften the rim. Use a few explicit poses, the same palette and one scene. Treat 600–1200ms as a prototype range, not a required wait. Query/time updates alone never change the pose. Audio influence caps remain relative to each pose's idle baseline.
+- Brian chooses whether route poses and the single artwork handoff improve the experience at the end of M1. Stable framing and plain content fades are complete fallbacks, not unfinished states. Do not require these experiments to justify a second scene or render-target infrastructure.
+- A small dev-only tuning panel may help compare framing/density/motion if config editing becomes a bottleneck. Exclude imports and UI from production; a query-string switch alone is insufficient. No production tuning dependency is required.
+- Worker rendering, a mobile sheet, recurring scroll choreography and pointer parallax are not prerequisites for this prototype. Further enhancements belong in `ROADMAP.md` with evidence-based triggers.
+
+---
+
+## 9. Future storyboard: required separation only
+
+Keep three layers independent: **(1) the audio engine**, which owns media, transport and **the playback clock, the future source of truth for timed visuals**; **(2) the visual runtime**, which hosts a `Scene`; and **(3) content/UI**. The ambient scene must not depend on scroll position or page lifecycle. The content schemas include an optional, unused `scene?: string` field. Everything else (timelines, multiple scenes, crossfades, immersive mode, and using the rdelune-productions visual runtime as a scene) is in `ROADMAP.md`.
+
+---
+
+## 10. Content & media
+
+### 10.1 Schemas (`src/content.config.ts`)
+```ts
+site (json): { name, headline: string[3], blurb, rdeluneUrl, profiles: {label, href}[], contactEmail? }
+
+mixes: {
+  id: string, slug, title, date: date, dateApprox: boolean = false,
+  series?: string, tags: string[] = [], description?: string,
+  cover?: image, coverAlt?: string,
+  media: { src: url, duration: number, bytes: number, peaks: url, lufs?: number, sha: string },
+  tracklist: { at: number, artist: string, title: string }[] = [],   // validated: ascending, < duration
+  mixcloudUrl?: url, featured: boolean = false, scene?: string, draft: boolean = false,
+}
+
+releaseOverlays: {        // thin layer over the showcase feed; keyed by album slug
+  albumSlug: string, featured: boolean = false, blurb?: string, credits?: string,
+  links?: {label, href}[], hidden: boolean = false, scene?: string,
+}
+
+projects: { slug, title, year, role, summary, stack: string[], outcomes: string[],
+            links: {label, href}[], cover?, coverAlt?, featured: boolean, order: number, draft: boolean }
+
+posts:    { slug, title, date, description?, tags: string[], draft: boolean = false }
+
+cv (json): { roles: { id, org, title, start, end?, summary, bullets: string[], caseStudies: string[] }[],
+             skills: {group, items: string[]}[], education: [], talks: [] }
+             // caseStudies[] must reference existing project slugs (validate at build)
+```
+
+### 10.2 Releases (`lib/feed/showcase.ts`)
+- v1 reads `src/fixtures/showcase.sample.json`, which has the **upstream feed shape** (see `rdelune-productions/docs/showcase-feed-spec.md`). It normalises snake_case/legacy camelCase, ignores unknown fields, and **only exposes `is_published` tracks with an `r2_url`**. Track order comes from the feed's array order, never from filenames.
+- **Fixture provenance:** curate one album from an upstream feed capture and validate against the upstream JSON Schema. Keep its real track IDs, URLs and metadata; record capture date/source in `src/fixtures/README.md`. `rdelune-productions/public/data/showcase.json` is already normalized (`src`, `source_url`, `duration`) and must not be copied directly as upstream input. If only that file is available, explicitly map it back to upstream fields, document each mapping, and verify publication flags rather than guessing. `showcase-template.json` is not a ready-to-use substitute: tracks without explicit publication flags cannot qualify under this site's publication rule. Do not widen the importer to silently accept the normalized contract.
+- **Eligibility order:** normalize accepted legacy field names, then exclude albums explicitly marked `active: false` (missing `active` defaults to true per the upstream contract), apply local `hidden` overlays, and retain only tracks explicitly published with valid public MP3 URLs under the contract. Omit albums with no eligible tracks. Use this single eligibility result for pages, catalogue rows, featured selection and queues. Malformed records fail validation with a clear error; unpublished/inactive records are intentionally filtered.
+- **Track identity is the Roam Studio track `id`.** Release URLs use a diacritic-stripped album slug (same rule as productions).
+- Overlays are merged by `albumSlug`. `hidden: true` removes an album from the site.
+- `audio.rdelune.dev` must serve CORS for this site's origin (§10.3). **This is verified in M2.**
+
+### 10.3 Media host requirements (R2)
+- CORS on **both** buckets, for the production origin and `http://localhost:4321`:
+  `AllowedMethods: GET, HEAD` · `AllowedHeaders: Range` · `ExposeHeaders: Content-Length, Content-Range, Accept-Ranges, ETag` · `MaxAgeSeconds: 86400`.
+- M1 uses a **local development preview**, where visibly marked placeholder copy is permitted. Hosted preview publication is not required. If a hosted preview is later used, declare its exact origin in the media CORS policy before claiming host verification; do not assume production-origin permissions cover it. Production build checks continue to reject `TODO(copy)` placeholders.
+- Verify that a `Range` request returns **206** with a `Content-Range` header, that seeking near the end of a long mix is fast, and that audio is **audible** while routed through the analyser.
+- **Mix derivative filenames are content-hashed:** `mixes/<slug>.<sha8>.<mp3|m4a>`, `mixes/<slug>.<sha8>.peaks.json`. Served with `Cache-Control: public, max-age=31536000, immutable`. Slugs and page URLs stay stable.
+
+### 10.4 `scripts/ingest-mix.ts` (one mix at a time in v1)
+1. Input: a master file plus a slug.
+2. **Derivative by source type (D-036). No loudness processing.** Measure integrated LUFS and true peak (`ebur128=peak=true`) and record them as `media.lufs` / `media.truePeak` for information only.
+   - **Lossy source (MP3 ≥ 256 kbps CBR, or AAC):** **pass through unchanged** (byte copy). Do not transcode lossy to lossy. CBR MP3 seeks accurately with range requests in all target browsers.
+   - **Lossless source (WAV/AIFF/FLAC):** encode on macOS with **Apple's AAC encoder** (`ffmpeg -c:a aac_at -b:a 256k -movflags +faststart`, or `afconvert -f m4af -d aac -b 256000`), *not* ffmpeg's built-in `aac`. Fallback where Apple AAC is unavailable: LAME MP3 320 kbps CBR.
+   - **Post-encode check (all transcodes):** decode the derivative and count samples above 0 dBFS. If any are found, re-encode with a fixed gain trim (start at -1 dB, step -0.5 dB, max -3 dB) until clean, and record `media.gainDb`. Fail with a clear message if still not clean at -3 dB. Pass-through files skip this step.
+   - Evidence: on the first real mix (a -10.6 LUFS, 320 kbps MP3), ffmpeg's built-in AAC produced decoded overs of up to +4.8 dBFS at 192–320 kbps, and still overshot after a -1.2 dB trim. The source MP3 peaks at +0.19 dBFS. See `inputs/mixes/roam-mix-2026/README.md`.
+3. `audiowaveform` → raw peaks, converted to the §7.3 format.
+4. `sha` = hash of (master bytes + recipe string + ffmpeg version + audiowaveform version). A changed recipe or tool produces a new derivative.
+5. Upload the audio, then the peaks. **Write or update the mix `.md` front-matter only after both uploads succeed.**
+6. Optional `--tracklist file.txt` parses lines like `00:00 Artist - Title` / `1:02:30 Artist - Title`.
+
+---
+
+## 11. Accessibility, performance, SEO
+
+- Semantic landmarks, a skip link, logical headings and visible focus (accent outline).
+- Everything works with WebGL off, JS off (reading and navigation) and reduced motion on.
+- **Performance targets** (Lighthouse mobile preset, simulated slow 4G, on `/`, `/mixes/[slug]`, `/about`): Performance ≥ 90, Accessibility 100, SEO 100. LCP < 2.0s. First-load JS excluding three.js < 60 KB gz. **Also measure 10s after the animation starts:** no long tasks over 50ms from the scene on a mid-range phone profile, and stable fps per §8.2. The three.js chunk loads on `requestIdleCallback`, with a 2s fallback.
+- Artwork is lazy-loaded below the fold with explicit dimensions (no layout shift).
+- Per-route title, description and canonical URL. One static default OG image (generated OG images are on the roadmap).
+- JSON-LD `Person` on `/`, whose `sameAs` lists **only profiles that identify Brian** (Mixcloud, SoundCloud, GitHub, LinkedIn). rdelune is represented as `worksFor` → `Organization` only after Brian confirms the wording. `BlogPosting` on posts, once posts exist.
+- `sitemap.xml`, `robots.txt`, and `/rss.xml` once writing exists.
+
+### 11.1 Smoothness verification
+
+- Target visible control acknowledgement within 100ms on named tested devices; pointer preview should follow the next rendered frame. Do not guarantee all input under 16ms or equate network playback latency with UI response.
+- Inspect actual frame-time distributions and sustained bad frames during navigation, playback, dragging and resizing. Record device/browser/network conditions. Do not substitute a universal zero-dropped-frame assertion or CPU-throttled desktop for real mobile checks.
+- Navigation persistence checks use a sufficiently long, playing fixture: record engine/audio/renderer initialization counts and object identities, unexpected pause/load events and media-time progression with tolerance for browser clock precision/buffering. One DOM canvas is not proof of one WebGL context, and advancing time alone is not proof of audible output. Listen manually too.
+- Test static/reduced-motion/paused graphics with active seeking so rendering pause cannot disable transport UI. Test stale media callbacks, rapid selections, context recovery, menu focus and page/history scroll restoration.
+- Check visible layout stability in addition to CLS telemetry, including player appearance at the bottom of a page. Recent-input shifts may be excluded from CLS. No padding animation is allowed to move the reading surface.
+- A short repeat-use pass includes 15 minutes of listening while reading/browsing, repeated scrubbing, phone rotation and background/restore. Record available devices and remaining verification limits. Automate meaningful state/routing cases when tooling exists; no image-perfect assertion against an unconstrained animated frame.
+
+---
+
+## 12. Milestones & exit criteria
+
+**M0 · Reconcile.** ✅ This document, `DECISIONS.md` and `ROADMAP.md`.
+
+**M1 · Visual prototype** (homepage, nav, one mix page, player layout; real fonts and tokens; static poster first, then the `horizon` scene)
+- [ ] Use a local development preview for placeholder copy. Prepare the curated upstream fixture and check one real release URL early; unavailable media is recorded, not represented as verified.
+- [ ] Tested at wide desktop, 375px phone, a short viewport (~600px tall) and 200% zoom. The intro never clips.
+- [ ] The two-row mobile player and dynamic safe-area reservation keep content, seek controls and focus visible at large text sizes.
+- [ ] Keyboard-only pass, reduced motion, and the manual pause toggle all work.
+- [ ] Named featured Play action, discoverable navigation, short interruptible content transition and stable player reservation are reviewable. Compare the bounded route-pose and artwork-transition experiments (§8.6); retain only what improves the composition and control.
+- [ ] Brian reviews composition, motif and accent colour, **then locks or changes them** (logged in `DECISIONS.md`).
+
+**M2 · Listening path proof** (fixtures: `Long Distance Runaround` 2:25:06 on R2, plus 1 album from the showcase fixture on `audio.rdelune.dev`)
+- **Required inputs, not yet verified:** the actual long-mix master, single-mix derivative/peaks upload, validated release fixture, chosen media hostname, and ability to configure CORS on both hosts. Start local engine work independently, but leave host/browser checks incomplete until these inputs are available. Record browsers/devices unavailable for testing.
+- [ ] Play, seek to 2:20:00, navigate through every route, use back/forward: **no gap and no duplicate audio or WebGL**.
+- [ ] Reload → inline resume choice → resumes only on click. Fresh and internally navigated `?t=` links stage the correct mix/time; browsing or scrubbing a different mix leaves current playback untouched until explicit Play. Chapter playback and waveform staging/seek follow §7.4; URL time wins over saved resume time, invalid times are ignored and out-of-range times clamp safely.
+- [ ] Media errors show Retry. Analysis-unavailable follows §7.1 without promising output through a suspended context. Simulate context suspension and recovery, including failed recovery and explicit Resume; a user pause never triggers automatic restart. Silence produces finite zero energy and is not flagged.
+- [ ] Fixture validation and eligibility checks cover the normalized-input mismatch, inactive albums, unpublished tracks, local hidden overlays, empty albums, featured selection and queues.
+- [ ] CORS, 206 responses and audible analysed playback are verified **on both media hosts** in Safari (macOS + iOS) and Chrome (desktop + Android if available).
+- [ ] Only then: energy modulation switched on, the §8.4 caps verified, and the idle-vs-playing screenshot test passed.
+- [ ] Complete §11.1 checks: truthful feedback, seek commit without playhead glide, animation pause without frozen controls, rapid-input race handling, and sustained listening. No mandatory mobile sheet, gain ramps, worker or animation library added to pass this milestone.
+
+**M3 · Catalogues & pages**
+- [ ] Music grid and release pages built from fixture + overlays, with prev/next in the release.
+- [ ] Mix catalogue (all seed mixes listed; unplayable ones are hidden until ingested), tracklist chapters, copy-time link.
+- [ ] Work + case study template, About with CV ↔ case-study links validated, print stylesheet.
+- [ ] Writing templates (hidden from nav while empty).
+
+**M4 · Content & ship**
+- [ ] Real copy from Brian replaces every `TODO(copy)`. A dev check fails the production build if any remain.
+- [ ] Domain, OG image, JSON-LD and sitemap in place. Deploy to Cloudflare Pages. §11 targets met.
+
+---
+
+## 13. Open questions (defaults apply until answered)
+
+| Question | Default |
+|---|---|
+| Domain | `PUBLIC_SITE_URL` placeholder |
+| Display names | Site: "Brian Dillon". Music credit: "Brian Diolún". DJ/series alias: "Roam" |
+| Accent colour + hero motif | Lunar blue + moon-limb horizon. Decided at the end of M1 |
+| Hero copy, bio, CV, projects, running results | `TODO(copy)` until supplied |
+| Which album is featured | First eligible album in the fixture, after filtering and overlays |
+| rdelune wording in JSON-LD and the intro | Plain link only until confirmed |
+| ~~Mix derivatives over 0 dBFS~~ | **Resolved by D-036** (pass-through for lossy sources; Apple AAC + post-encode check for lossless) |
+
+---
+
+## 14. Claude review before implementation
+
+Review this consolidated v1.2 document as the primary source. The two UX plans and `CODEX-UX-COMPARISON.md` explain the alternatives; do not treat every proposed effect or library in them as an accepted requirement. Record findings against this document before starting implementation. Completed 2026-10-30: see §15.
+
+- [x] Check the synthesis for conflicts with locked identity, sources, publication rules and persistence.
+- [x] Check that inactive-mix scrub staging (D-026) is consistent across URL, chapter, Resume and Play behaviours.
+- [x] Confirm the two-row player, mobile modal navigation, focus/scroll lifecycle and measured safe-area layout are implementable without competing player surfaces.
+- [x] Check that route poses and one artwork handoff are bounded prototype experiments; failures fall back cleanly, without expanding v1 scope.
+- [x] Check scene/UI scheduling, source-node recovery, stale media events, seek completion and phase continuity.
+- [x] Check native motion and renderer choices against the pinned versions when scaffolding eventually occurs; identify any specific dependency justified by an accepted interaction.
+- [x] Check fixture provenance, upstream schema compatibility and eligibility against the existing local contract.
+- [x] Flag missing real inputs and browser/device access explicitly. Do not mark media, performance or visual acceptance criteria complete based on documentation.
+
+Expected review output: actionable findings with severity, file/section and a proposed correction; identify genuine blockers separately from optional polish. Do not implement the site during this review. Resolve review findings before moving into M1.
+
+---
+
+---
+
+## 15. Claude review of v1.2 (2026-10-30)
+
+**Verdict: ready for M1 once the three corrections below are applied (now done in this document).** The synthesis is consistent with the locked identity, sources, publication rules and persistence model. Codex's critique of `claude-ux-plan.md` is accepted. In particular: independent scheduling gates (my single-loop wording could freeze the scrubber), no playhead glide through skipped time, no blanket gain ramps, measured rather than absolute performance claims, and direct two-row mobile transport before any sheet. Route poses and one artwork handoff are correctly bounded as M1 experiments with complete fallbacks.
+
+### Findings
+
+| # | Severity | Section | Finding | Correction | Status |
+|---|---|---|---|---|---|
+| R1 | **P1 (blocker for mobile listening)** | §7.1 | Routing media through Web Audio on iOS/iPadOS risks silence under the hardware silent switch and interruption on screen lock/backgrounding, which is exactly how people listen to 2-hour mixes on a phone. Binding is irreversible, so §7.1's recovery path cannot fix this after the fact | Native output on iOS by default, `audioSession.type='playback'` where available, analysis re-enabled only after device proof | Applied (§7.1, D-032) |
+| R2 | P2 | §4.4 | With Astro's ClientRouter the browser snapshots the page during a View Transition. Unless the Stage and Player are named and their old snapshots suppressed, the background and progress freeze for the transition, and the overlay can swallow a player click | Named transitions, old snapshot hidden, live new snapshot, pointer-events check, ≤220ms, VT-independent persistence | Applied (§4.4, D-033) |
+| R3 | P2 | §7.1 / §7.4 | Unspecified: who owns the audio element, gesture-synchronous context resume, and whether global shortcuts/Media Session act on the active or the staged mix (D-026 makes these differ) | Engine-owned JS element; synchronous `resume()` in the gesture; global controls always target the active item | Applied (§7.1, D-034) |
+| R4 | P3 | §8.5 | A reduced-motion still frame must re-render on resize and after context restoration, or the poster/scene framing drifts | Implementation note: "still" means no time advance, not no rendering | Note only |
+| R5 | P3 | §10.4 | `audiowaveform` and `ffmpeg` are host tools. Pin and record their versions (they're part of the derivative `sha`) and check for them with a clear error | Add to the setup docs at scaffold time | Note only |
+
+### §14 checklist results
+- Locked identity, sources, publication rules and persistence: **consistent**.
+- D-026 staging across URL / chapter / Resume / Play: **consistent**. R3 closes the remaining gap (global controls).
+- Two-row player, modal mobile nav, focus/scroll lifecycle, measured safe-area reservation: **implementable** with one player surface.
+- Route poses and artwork handoff: **bounded**, with clean fallbacks.
+- Scene/UI scheduling, source-node recovery, stale events, seek completion, phase continuity: **covered**, plus R1 for iOS.
+- Native motion and renderer: **no additional dependency justified yet**. Re-check when the Astro and three.js versions are pinned.
+- Fixture provenance and eligibility vs the local contract: **correct** (D-020, D-021).
+
+### Missing real inputs (not blockers for M1, blockers for M2)
+1. The master file for *Long Distance Runaround* (or another long mix).
+2. An R2 bucket and media hostname for mixes, plus the ability to set CORS on it **and on `audio.rdelune.dev`**.
+3. An upstream `showcase.json` capture for the curated fixture.
+4. Devices: Brian's Mac (Safari + Chrome) and iPhone; an Android phone if available. Record whatever is missing.
+5. Real copy (hero, blurb, bio) for M4. Placeholders are fine for M1.
+
+---
+
+## Appendix A — Seed mixes (Mixcloud, read 2026-10-30)
+
+All dates are approximate (Mixcloud shows relative dates only), so set `dateApprox: true`. Series names are **provisional** until Brian confirms them. Mixcloud URLs are to be filled in per mix.
+
+| slug | title | ~year | duration | series (provisional) |
+|---|---|---|---|---|
+| long-distance-runaround | Long Distance Runaround // Running Tunes | 2025 | 2:25:06 | Running |
+| year-24 | '24 | 2025 | 1:00:00 | Year mixes |
+| year-23 | '23 | 2024 | 57:36 | Year mixes |
+| year-22 | '22 | 2022 | 1:00:00 | Year mixes |
+| holiday-fizzler | Holiday Fizzler (Ambient) | 2020 | 1:19:24 | — |
+| autnote-6 | Skirmish Blog AUTNOTE series #6 (Jazz, Lo-fi, Eastern) | 2017 | 1:05:05 | AUTNOTE |
+| roam-mix-1 | Roam mix 1 | 2017 | 1:30:35 | Roam |
+| autnote-1 | Skirmish Blog AUTNOTE series #1 | 2015 | 1:00:32 | AUTNOTE |
+| bank-holiday-chillout | Bank Holiday Chillout | 2014 | 59:53 | — |
+| dream-gathering-african-vibes | Dream Gathering DJ set (African Vibes) | 2014 | 1:23:39 | — |
+
+Profiles: Mixcloud https://www.mixcloud.com/brian-diolun/ · SoundCloud https://soundcloud.com/brian-d · rdelune https://rdelune.dev

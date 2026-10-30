@@ -1,0 +1,6 @@
+---
+import Shell from '../../layouts/Shell.astro';
+import ReleaseCard from '../../components/ReleaseCard.astro';
+import { releases } from '../../lib/catalogue';
+---
+<Shell title="Music — Brian Dillon" section="music"><div class="page-column inner-page"><p class="micro section-index">01 / ORIGINAL MUSIC</p><h1 class="page-title">A place for sound.</h1><p class="page-intro">Releases as Brian Diolún / Roam. Pick a record, take your time.</p><div class="release-grid">{releases.map(release => <ReleaseCard release={release}/>)}</div><p class="preview-caption">Preview selection from the Roam Studio showcase. Full catalogue to follow.</p></div></Shell>

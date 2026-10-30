@@ -1,0 +1,40 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import Stage from '../components/stage/Stage.astro';
+import Player from '../components/player/Player';
+import Icon from '../components/Icon.astro';
+import '@fontsource-variable/geist';
+import '@fontsource-variable/geist-mono';
+import '../styles/global.css';
+const { title = 'Brian Dillon — software, sound & the long way around', section = 'home' } = Astro.props;
+const nav = [{ name: 'Music', href: '/music' }, { name: 'Mixes', href: '/mixes' }, { name: 'Work', href: '/work' }, { name: 'About', href: '/about' }];
+---
+<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/><meta name="theme-color" content="#0b0c0e"/><meta name="description" content="Music, mixes and selected work from Brian Dillon / Brian Diolún."/><title>{title}</title><link rel="icon" href="/favicon.svg" type="image/svg+xml"/><ClientRouter fallback="swap"/></head>
+<body data-section={section}>
+  <a href="#main" class="skip-link">Skip to content</a>
+  <Stage/>
+  <header class="topbar"><a href="/" class="identity" aria-label="Brian Dillon home"><span class="identity-mark">b<span>∕</span>d</span><span>Brian Dillon</span></a><div class="topbar-right"><a href="https://rdelune.dev" class="external-link" target="_blank" rel="noreferrer">rdelune <Icon name="external" size={14}/></a><button class="menu-trigger" aria-haspopup="dialog" aria-controls="mobile-menu">Menu <span>＋</span></button></div></header>
+  <nav class="rail" aria-label="Primary"><span class="rail-label micro">INDEX</span>{nav.map((item,i) => <a href={item.href} data-astro-prefetch aria-current={section === item.name.toLowerCase() ? 'page' : undefined}><span class="nav-index">0{i+1}</span><span>{item.name}</span><span class="nav-indicator">↗</span></a>)}<div class="rail-foot"><span class="rail-line"></span><span class="micro">INDEPENDENT<br/>BY NATURE.</span></div></nav>
+  <dialog id="mobile-menu" aria-label="Site navigation"><div class="dialog-top"><span class="micro">EXPLORE</span><button class="menu-close" aria-label="Close menu">Close ×</button></div><nav aria-label="Mobile primary">{nav.map((item,i) => <a href={item.href} aria-current={section === item.name.toLowerCase() ? 'page' : undefined}><span class="micro">0{i+1}</span>{item.name}<span>↗</span></a>)}</nav><button class="motion-toggle text-control" aria-pressed="false">Pause animation</button></dialog>
+  <main id="main" tabindex="-1" transition:name="content"><slot/></main>
+  <footer class="site-footer"><a href="/" class="footer-signature">Brian Dillon <span>© {new Date().getFullYear()}</span></a><div class="footer-links"><a href="https://www.mixcloud.com/brian-diolun/" target="_blank" rel="noreferrer">Mixcloud ↗</a><a href="https://soundcloud.com/brian-d" target="_blank" rel="noreferrer">SoundCloud ↗</a><button class="motion-toggle text-control" aria-pressed="false"><span class="motion-dot"></span><span class="motion-label">Pause animation</span></button>{import.meta.env.DEV && <button class="framing-toggle text-control" aria-pressed="false">Framing: fixed</button>}</div></footer>
+  <div class="dev-note">{import.meta.env.DEV && 'LAYOUT PREVIEW · COPY & MIX MEDIA TO BE CONFIRMED'}</div>
+  <Player client:load transition:persist="player" transition:name="player"/>
+  <script>
+    import { bindPlayback } from '../lib/player';
+    bindPlayback();
+    function bindMenu() {
+      const dialog = document.querySelector<HTMLDialogElement>('#mobile-menu');
+      const trigger = document.querySelector<HTMLButtonElement>('.menu-trigger');
+      if (!dialog || !trigger) return;
+      const close = () => dialog.close();
+      trigger.onclick = () => { dialog.showModal(); document.documentElement.classList.add('menu-open'); };
+      dialog.querySelector<HTMLButtonElement>('.menu-close')!.onclick = close;
+      dialog.addEventListener('close', () => { document.documentElement.classList.remove('menu-open'); trigger.focus({ preventScroll: true }); });
+      dialog.querySelectorAll('a').forEach(a => a.addEventListener('click', close));
+      dialog.addEventListener('click', e => { if (e.target === dialog) close(); });
+    }
+    document.addEventListener('astro:page-load', bindMenu);
+    document.addEventListener('astro:before-swap', () => { document.querySelector<HTMLDialogElement>('#mobile-menu')?.close(); document.documentElement.classList.remove('menu-open'); });
+  </script>
+</body></html>
