@@ -41,12 +41,15 @@ test("failed build removes both stale and partially generated publication output
   try {
     await mkdir(join(directory, "scripts"));
     await mkdir(join(directory, "dist"));
+    for (const name of ["generate-pwa-icons", "check-media", "build-pwa"])
+      await writeFile(join(directory, `scripts/${name}.mjs`), "");
     await writeFile(join(directory, "dist/stale.html"), "Old publication output");
     await writeFile(join(directory, "scripts/prepare-fixture.mjs"), `import { existsSync } from 'node:fs'; if (existsSync('dist/stale.html')) process.exit(2);`);
-    await writeFile(join(directory, "scripts/astro.mjs"), `import { mkdirSync, writeFileSync } from 'node:fs'; mkdirSync('dist', {recursive:true}); writeFileSync('dist/partial.html', 'TODO(copy)');`);
+    await writeFile(join(directory, "scripts/astro.mjs"), `import { mkdirSync, writeFileSync } from 'node:fs'; mkdirSync('dist', {recursive:true}); writeFileSync('dist/partial.html', 'TODO(copy)'); writeFileSync('compiled.flag', 'yes');`);
     await writeFile(join(directory, "scripts/check-content.mjs"), `process.exit(1);`);
     const result = spawnSync(process.execPath, [resolve("scripts/build.mjs")], { cwd: directory, encoding: "utf8" });
     assert.equal(result.status, 1);
+    assert.equal(await readFile(join(directory, "compiled.flag"), "utf8"), "yes");
     assert(result.stderr.includes("dist was removed"));
     await assert.rejects(stat(join(directory, "dist")), { code: "ENOENT" });
   } finally { await rm(directory, { recursive: true, force: true }); }
