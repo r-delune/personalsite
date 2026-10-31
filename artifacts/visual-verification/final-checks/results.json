@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-31T03:31:55.634Z",
+  "browser": "156.0.8078.76",
+  "source": "real roam-mix-2026.score.json",
+  "variants": {},
+  "assertions": [
+    {
+      "test": "muted arc and eased seek",
+      "quiet": 0.00004347982365276726,
+      "peak": 0.9546963715122789,
+      "early": 0.22122633219774318
+    },
+    {
+      "test": "palette uniforms unchanged across quiet passage, peak and seek",
+      "passed": true
+    },
+    {
+      "test": "combined rendered highlights stay dark behind full UI overlap",
+      "maxChannel": 36,
+      "passed": true
+    },
+    {
+      "test": "buffering holds arc, colour and ripple",
+      "passed": true
+    },
+    {
+      "test": "animation pause freezes pixels across seek, route and exclusion updates",
+      "passed": true
+    },
+    {
+      "test": "reduced motion stays still and rerenders on resize",
+      "passed": true
+    },
+    {
+      "test": "context loss restores fallback, reduced-motion restore remains still",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "passages": {
+    "quiet": 750,
+    "peak": 1282,
+    "boundary": 340.8,
+    "duration": 3626.74
+  }
+}

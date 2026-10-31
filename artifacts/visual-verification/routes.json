@@ -1,0 +1,242 @@
+[
+  {
+    "route": "/",
+    "width": 1440,
+    "height": 900,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 5
+  },
+  {
+    "route": "/music",
+    "width": 1440,
+    "height": 900,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 4
+  },
+  {
+    "route": "/music/anna-doni",
+    "width": 1440,
+    "height": 900,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 4
+  },
+  {
+    "route": "/mixes",
+    "width": 1440,
+    "height": 900,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 4
+  },
+  {
+    "route": "/mixes/roam-mix-2026",
+    "width": 1440,
+    "height": 900,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 5
+  },
+  {
+    "route": "/work",
+    "width": 1440,
+    "height": 900,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 4
+  },
+  {
+    "route": "/writing",
+    "width": 1440,
+    "height": 900,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 4
+  },
+  {
+    "route": "/writing/sample-template",
+    "width": 1440,
+    "height": 900,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 4
+  },
+  {
+    "route": "/about",
+    "width": 1440,
+    "height": 900,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 6
+  },
+  {
+    "route": "/missing-visual-review",
+    "width": 1440,
+    "height": 900,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 2
+  },
+  {
+    "route": "/",
+    "width": 1280,
+    "height": 720,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 5
+  },
+  {
+    "route": "/music",
+    "width": 1280,
+    "height": 720,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 4
+  },
+  {
+    "route": "/music/anna-doni",
+    "width": 1280,
+    "height": 720,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 4
+  },
+  {
+    "route": "/mixes",
+    "width": 1280,
+    "height": 720,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 4
+  },
+  {
+    "route": "/mixes/roam-mix-2026",
+    "width": 1280,
+    "height": 720,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 5
+  },
+  {
+    "route": "/work",
+    "width": 1280,
+    "height": 720,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 4
+  },
+  {
+    "route": "/writing",
+    "width": 1280,
+    "height": 720,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 4
+  },
+  {
+    "route": "/writing/sample-template",
+    "width": 1280,
+    "height": 720,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 4
+  },
+  {
+    "route": "/about",
+    "width": 1280,
+    "height": 720,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 6
+  },
+  {
+    "route": "/missing-visual-review",
+    "width": 1280,
+    "height": 720,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 2
+  },
+  {
+    "route": "/",
+    "width": 375,
+    "height": 812,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 5
+  },
+  {
+    "route": "/music",
+    "width": 375,
+    "height": 812,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 4
+  },
+  {
+    "route": "/music/anna-doni",
+    "width": 375,
+    "height": 812,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 4
+  },
+  {
+    "route": "/mixes",
+    "width": 375,
+    "height": 812,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 4
+  },
+  {
+    "route": "/mixes/roam-mix-2026",
+    "width": 375,
+    "height": 812,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 5
+  },
+  {
+    "route": "/work",
+    "width": 375,
+    "height": 812,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 4
+  },
+  {
+    "route": "/writing",
+    "width": 375,
+    "height": 812,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 4
+  },
+  {
+    "route": "/writing/sample-template",
+    "width": 375,
+    "height": 812,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 4
+  },
+  {
+    "route": "/about",
+    "width": 375,
+    "height": 812,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 6
+  },
+  {
+    "route": "/missing-visual-review",
+    "width": 375,
+    "height": 812,
+    "horizontalOverflow": false,
+    "renderer": "webgl",
+    "exclusions": 2
+  }
+]

@@ -8,7 +8,9 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); f
 .lab-panel label { display: flex; gap: 6px; align-items: center; justify-content: space-between; margin: 4px 0; color: var(--muted); }
 .lab-panel select, .lab-panel input[type="number"] { background: #15181e; color: var(--fg); border: 1px solid #2b3038; }
 .lab-panel button { width: 100%; padding: 6px; background: #15181e; color: var(--fg); border: 1px solid #2b3038; cursor: pointer; }
-.lab-sliders label { display: grid; grid-template-columns: 1fr 110px 44px; }
+.lab-sliders { margin-top: 8px; }
+.lab-note { color: var(--muted); font-size: 11px; }
+@media (max-width: 767px) { .lab-panel { width: min(280px, calc(100vw - 48px)); max-height: 35vh; font-size: 11px; } }
 .lab-sliders output { text-align: right; color: var(--fg); }
 .lab-pitch { color: var(--muted); margin: 6px 0; }
 .lab-hud { white-space: pre-wrap; color: var(--fg); background: #0f1114; padding: 6px; margin: 8px 0; }

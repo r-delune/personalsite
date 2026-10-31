@@ -16,3 +16,8 @@ const group = routeGroup(routePose(Astro.url.pathname));
   if ('requestIdleCallback' in window) window.requestIdleCallback(launch, { timeout: 1600 });
   else setTimeout(launch, 100);
 </script>
+
+<style>
+  /* The scene and its posters already carry the shared film grain. */
+  :global(body:has(#stage)::after) { display: none; }
+</style>

@@ -1,50 +1,77 @@
-# Visual phase V — report
+# Visual phase V — review and completion
 
-> Built by Claude on 2026-10-30 from `claude-prompt-codex-visual.md` (Codex was out of credits). Branch `codex/visual`.
+31 October 2026. Branch `codex/visual`. A remains the default. This pass continues the existing planet implementation rather than replacing it; phase 2b was already preserved in its own commits.
 
-## Concept pitches
+## The three pitches
 
-**A · Breathing limb (ships).** At 5 s a pale, half-lit moon rests in the corner, its thin edge of light drawing a slow breath while dust idles past. At the mix's peak the limb is thicker and brighter, more dust has gathered close to the surface, and each transition sends one long ripple of light along the edge.
+**A · Breathing limb.** At 5 seconds a pale, half-lit moon sits beyond the page, with fine ground visible inside its edge and dust passing at three depths. At the mix’s peak the ground gathers near the limb and a slow transition wave travels along it, while the unlit body stays quiet.
 
-**B · Orbiting dust.** At 5 s a faint tilted ring of debris lies across the moon, barely turning. By the peak the ring has swung a third of the way round in step with the mix's progress, catching more light, and each transition shivers along it as a ripple.
+**B · Orbiting dust.** At 5 seconds a sparse, tilted debris belt crosses the half-lit world, giving it the scale of an orbital view. At the peak its angle reflects progress through the mix, and a transition wave travels through the belt without changing the world’s palette.
 
-**C · Atmosphere.** At 5 s the moon's sunlit edge carries a thin, cool haze, like dawn seen from orbit. At the peak the haze has swollen into a deep violet-to-blue band whose outer edge sharpens with the hats, while the surface itself stays almost still.
+**C · Atmosphere.** At 5 seconds a thin haze separates the lunar ground from the dark sky. At the peak that haze widens and its outer edge becomes more defined, making the musical arc visible as a change in the air around the body.
 
-## What changed
-- `src/components/stage/`: `scene.ts` (geometry, shaders, lens), `runtime.ts` (bridge, tiers, governor, poses, exclusions, motion settings, context loss, poster swap), `coupling.ts` (pure, tested logic), `params.ts` (variants, caps, slider ranges), `Stage.astro` (per-route poster).
-- `src/lab/` + one line in `astro.config.mjs`: the dev-only `/lab`.
-- `scripts/render-posters.mjs` (`pnpm posters`), `tests/visual.test.ts` (8 tests), `public/poster/*.avif` (8 posters from the real scene).
-- `DECISIONS.md` D-051 to D-056; `SPEC.md` §8.7.
+## Compare
 
-## How it was checked
-Rendered headless in a cloud browser with a software GPU, against the lab with a stand-in score shaped like your mix (your real score is used on your machine):
-- Body, terminator and atmosphere at rest; colour bloom at a peak; variant B ring; variant C halo.
-- Ripple fires exactly when playback crosses a boundary (e.g. 41:06.5), runs 3.2 s, and doesn't fire on seeks.
-- Mock page layouts at 1440×900, 1280×720 and 375×812 on home, mixes and reading routes: text areas stay clear and the limb calms behind UI without a visible rectangle.
-- Unit tests: caps for every variant, envelope timings, buffering hold, loading inhale, macro envelope, boundary priority, seek-safe ripples, governor (drops fast, recovers slowly, no oscillation), pose clearance, seed stability.
+[Comparison sheet](artifacts/visual-verification/comparison.png)
 
-**Not yet measured:** real frame rates (the software renderer runs at ~4 fps, so its numbers mean nothing), 15-minute memory, long tasks, iOS, and recordings. Open `/lab`, press Play at ×10: the HUD shows fps, frame time, quality and DPR.
+| Variant | Recording: idle → quiet → build → seek → pause → end | Phone still |
+|---|---|---|
+| A | [Breathing limb](artifacts/visual-verification/variant-a.webm) | [375 px](artifacts/visual-verification/variant-a-mobile.png) |
+| B | [Orbiting dust](artifacts/visual-verification/variant-b.webm) | [375 px](artifacts/visual-verification/variant-b-mobile.png) |
+| C | [Atmosphere](artifacts/visual-verification/variant-c.webm) | [375 px](artifacts/visual-verification/variant-c-mobile.png) |
 
-## Extras (after the brief)
-- **Tonight's moon (D-057):** the lit fraction follows the real lunar phase, from a thin backlit crescent at new moon to a broad gibbous at full. Today it's waning gibbous. It eases in after first paint, and the sun always stays on the right, away from the text. Preview any phase in the lab with `?moon=0.02` or `?moon=0.5`.
-- **Pointer parallax (D-058):** on desktop the dust layers shift a few pixels with the pointer, nearer layers more, so the scene has depth. It's calmer on reading pages and off with reduced motion or the animation pause.
+**Recommendation: A.** It gives the music a visible arc while leaving the planet and page typography in balance. B makes progress more explicit but adds a strong competing shape; C is quieter and its extra subtlety is less useful behind reading pages. All three use the same scene and the same ≤15% atmosphere cap.
 
-### Further ideas, not built
-- **Listening view:** a button (or key) that fades the page and glides the moon to a centred hero pose while a mix plays. Needs a player-bar control, and the brief lists immersive mode as out of scope.
-- **Artwork handoff:** on play, the cover's average colour tints the atmosphere for that item only. Needs the per-release tint rule, which is also out of scope.
-- **Chapter-aware ripples:** start each ripple from the limb point nearest the tracklist row that just became active, linking UI and scene.
-- **Arc preview on mix rows:** draw each mix's macro arc as a faint line under its row, so visitors can see its shape before pressing play.
+## What was corrected
 
-## Deviations from the brief
-- **No Tweakpane:** your machine's sandbox couldn't install packages, so the lab has its own slider panel (zero dependencies).
-- **Posters are per route group** (home, listen, mixes, read), since routes in a group share a pose.
-- **Ripple brightness** only uses what's left of the +15% rim cap, so at loud peaks a ripple is mostly a travelling bulge and local density rather than light.
-- The old dev "Framing" button in the footer no longer does anything (poses are automatic); it can be removed from `Shell.astro`.
+- Removed section-driven HSL changes and light-angle changes. The two accent hues remain fixed; only playback state controls the monochrome-to-colour bloom.
+- Buffering holds the ripple and musical values. Manual animation pause preserves pixels across seeks, route changes and exclusion updates; reduced motion remains still after resize and context recovery.
+- Loading releases a previous item’s playing envelope. The lab now honors the real idle tier instead of forcing 60 fps through its HUD callback.
+- Shader warmup is asynchronous. The governor can recover at normal 60 Hz cadence; its previous recovery threshold was unreachable at that cadence.
+- Exclusion factors protect the body, dust and atmosphere. A final soft highlight ceiling also bounds their accumulated light behind text; the footer now participates in the existing rectangle bridge.
+- Removed the second CSS grain overlay. Eight route-group posters were exported from the actual scene with real page exclusions and the shared lens.
+- Added dev-only Tweakpane, a cached score timeline, confirmed chapters when available, real app-bridge playback mode, recordings and repeatable verification scripts.
 
-## Needs your decision
-1. **D-052:** colour blooms on play. You asked for it, but §8.4 is locked and says "no colour shifts", so please confirm.
-2. **D-054:** caps for density (12%) and atmosphere (+15%; C asks +20%).
-3. **Pick A, B or C.**
+The footer bridge change is isolated in commit `db82543`. Decisions D-059–D-064 and SPEC §8 document the visual changes.
 
-## Recommendation: A
-A is the calmest and reads as a place, with the music visible in the light rather than in a new object. B is the most striking (the ring makes progress through a mix legible), but it adds a strong "Saturn" motif that competes with artwork and costs 7k more particles. C is the most restrained and nearly identical to A at rest; its +20% atmosphere needs a cap change. If B appeals, try it in the lab at ×10 on your mix before deciding.
+## Verification
+
+The replay uses the supplied 3626.74-second score unchanged. Its public copy has the same SHA-256 as the source under `inputs/mixes/roam-mix-2026`.
+
+[Final browser assertions](artifacts/visual-verification/final-checks/results.json) passed: muted arc, eased seeking, fixed palette uniforms, buffering hold, frozen pixels, reduced-motion resize, context loss/recovery, and combined highlight protection. The quiet passage at 12:30 and peak at 21:22 produce an arc of approximately 0 and 0.95 without sound. Full text overlap limited the actual rendered RGB channels to 36/255.
+
+[Thirty final route captures](artifacts/visual-verification/final-routes/routes.json) cover ten route types at 1440×900, 1280×720 and 375×812; none has horizontal overflow. Their screenshots are beside the JSON. Routes intentionally share four framing groups; this is also how the eight posters are organized. The supplied mix has no confirmed named chapters, so the timeline identifies its detected boundaries without inventing track names.
+
+`npm test`: 36 passed. `npm run check`: zero errors; four existing schema deprecation hints. The isolated final visual snapshot passed `npm run build`, rendered-copy checks and site checks. Its production output has neither `/lab` nor Tweakpane. Concurrent launch/PWA work in the shared checkout was left outside this visual verification snapshot.
+
+## Performance and limits
+
+Final short measurements: Chrome 156.0.8078.76, Apple M1, 1440×900 at DPR 2, with mock text exclusions active. Frame times are presented-frame cadence, not GPU execution time.
+
+| Variant | FPS | Frame time | Ending quality | Long tasks in sample |
+|---|---:|---:|---:|---:|
+| A | 60.00 | 16.67 ms | 1.00 | 0 |
+| B | 60.00 | 16.67 ms | 1.00 | 0 |
+| C | 60.00 | 16.67 ms | 0.94 | 0 |
+
+[Final measurements](artifacts/visual-verification/final-performance.json).
+
+The [15-minute profile](artifacts/visual-verification/profile-15min.json) ran for 902.0 seconds with 180 samples and changing item identities. Active playback averaged 59.98 fps / 16.67 ms; idle averaged about 20.5 fps. Heap stayed between 10.87 and 13.14 MB, with the late low-water mark slightly below the early one. GPU allocation counts stayed at three geometries and one texture; quality ranged from 0.80 to 1.00 and DPR from 1.75 to 2. The sustained run preceded the final contrast ceiling and duration guard; final builds and short measurements include both.
+
+Two main-thread tasks of 52 and 55 ms were observed during the sustained run. Their source was not captured, so the “no scene tasks over 50 ms” acceptance remains unverified. Physical iPhone testing also remains unverified.
+
+The configured local MP3 is a different 4214.36-second master from the 3626.74-second score. As requested, this phase retains the supplied score. [Native bridge verification](artifacts/visual-verification/real-audio.json) confirms that audio still plays and blooms colour, while musical coupling is disabled with a lab notice when durations disagree. The real-score replay is the musical reference for these recordings; this pass does not claim synchronized playback against that different local master.
+
+## Reproduce
+
+Run `pnpm dev`, then use `/lab` for silent score replay or the real-bridge switch for configured native audio. `?visual=b` / `?visual=c` select alternatives in dev; A ships on public pages.
+
+```sh
+pnpm posters
+node scripts/verify-visual.mjs
+node scripts/measure-visual.mjs
+node scripts/capture-visual-routes.mjs
+node scripts/profile-visual.mjs
+```
+
+Set `LAB_URL` if the dev server uses another origin. `CHECKS_ONLY=1` skips recording in the verification script. `PROFILE_SECONDS` defaults to 900. Chrome is used when installed on this Mac; other machines can install Chromium through Playwright or set `CHROME_PATH`.

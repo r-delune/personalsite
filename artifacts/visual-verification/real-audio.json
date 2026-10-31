@@ -1,0 +1,33 @@
+{
+  "snapshot": {
+    "phase": "playing",
+    "phaseSince": 1891,
+    "positionSec": 2.982394,
+    "durationSec": 4214.360775,
+    "itemKind": "mix",
+    "itemId": "mix:roam-mix-2026",
+    "route": "other",
+    "routeSince": 408.5,
+    "reducedMotion": false,
+    "userPausedAnimation": false,
+    "scoreAvailable": true
+  },
+  "scoreDuration": 3626.74,
+  "durationMatches": false,
+  "stats": {
+    "fps": 60.007276227866704,
+    "frameMs": 16.664645737338287,
+    "quality": 1,
+    "dpr": 1,
+    "tier": "active",
+    "colour": 0.9607796884917122,
+    "coupling": 0.9800893397554139,
+    "breath": 0,
+    "scored": false,
+    "arc": 0.000024557281393690747,
+    "rim": 1.0000381438271386,
+    "ripple": -1,
+    "frames": 276
+  },
+  "hud": "0:02 / 60:26  ×1  playing\n60 fps  16.7 ms  q 1.00  dpr 1  active\nscore off  colour 0.96  coupling 0.98  breath 0.00  arc 0.00  rim ×1.000\nAudio/score duration mismatch: coupling disabled. Use the matching 60:26 master or regenerate its score."
+}

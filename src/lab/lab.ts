@@ -1,20 +1,44 @@
+import { Pane } from "tweakpane";
+import mixes from "../fixtures/mixes.json";
 // /lab (dev only): replays a mix's visual score through a real bridge
 // instance, with transport, state switches, live parameters, a frame-time
 // HUD and a timeline strip. Never imported by production pages.
 import { createStageBridge, type PlaybackPhase, type RoutePose } from "../lib/stage-bridge";
 import { initStage, type StageController, type StageStats } from "../components/stage/runtime";
-import { macroEnvelope, routeGroup } from "../components/stage/coupling";
+import { macroEnvelope, routeGroup, scoreMatchesDuration } from "../components/stage/coupling";
 import { PARAM_RANGES, VARIANTS, variantFromString, type SceneParams, type VariantId } from "../components/stage/params";
 
 const SCORE_URL = "/data/roam-mix-2026.score.json";
 const AUDIO_URL = "/__local-media/ROAM_MIX_2026.mp3";
 const ITEM_ID = "mix:roam-mix-2026";
+const chapters = mixes.find((m) => m.id === ITEM_ID)?.tracklist ?? [];
 const ROUTES: RoutePose[] = ["home", "music", "release", "mixes", "mix", "work", "writing", "post", "about", "other"];
 const PHASES: (PlaybackPhase | "auto")[] = ["auto", "idle", "loading", "playing", "buffering", "paused", "ended", "error"];
 
 const q = new URLSearchParams(location.search);
 const posterMode = q.has("poster");
 const writer = createStageBridge();
+let followingApp = false;
+let liveBridge: import("../lib/stage-bridge").StageBridge | null = null;
+const source = () => followingApp && liveBridge ? liveBridge : writer.bridge;
+// Proxy reads: the renderer never sees app writers, even in the lab.
+const labBridge: import("../lib/stage-bridge").StageBridge = {
+  getSnapshot: () => source().getSnapshot(),
+  getFeatures: () => source().getFeatures(),
+  getItemMeta: () => source().getItemMeta(),
+  getScoreWindow: (a, b) => source().getScoreWindow(a, b),
+  getExclusionRects: () => source().getExclusionRects(),
+  subscribe: (event, cb) => {
+    const off = writer.bridge.subscribe(event, (s) => { if (!followingApp) cb(s); });
+    let offLive: (() => void) | undefined;
+    void import("../lib/stage-bridge").then(({ stageBridge, bindStageBridge }) => {
+      bindStageBridge();
+      liveBridge = stageBridge;
+      offLive = stageBridge.subscribe(event, (s) => { if (followingApp) cb(s); });
+    });
+    return () => { off(); offLive?.(); };
+  },
+};
 const state = {
   playing: false,
   pos: Number(q.get("t")) || 0,
@@ -28,8 +52,25 @@ const state = {
 let controller: StageController | null = null;
 let score: { rateHz: number; duration: number; data: Record<string, number[]>; boundaries: number[] } | null = null;
 let macro: Float32Array | null = null;
-const audio = new Audio();
-audio.preload = "none";
+let engine: typeof import("../lib/player") | null = null;
+let audioError = "";
+async function enableRealAudio(enabled: boolean) {
+  state.realAudio = followingApp = enabled;
+  if (!enabled) { engine?.pause(); return; }
+  engine = await import("../lib/player");
+  engine.registerDevMedia({
+    id: ITEM_ID, kind: "mix", title: "ROAM MIX 2026", artist: "Roam",
+    src: AUDIO_URL, duration: state.duration, artwork: "/artwork/mixes/roam-mix-2026.svg", href: "/mixes/roam-mix-2026",
+    scoreUrl: SCORE_URL, boundariesSec: chapters.map((c) => c.at), tracklist: chapters,
+  });
+  engine.bindPlayback();
+  if (state.playing) await engine.playTrack(ITEM_ID, state.pos);
+}
+function realPlay() {
+  if (!engine) return;
+  if (state.playing) void engine.playTrack(ITEM_ID, state.pos);
+  else engine.pause();
+}
 
 const el = <K extends keyof HTMLElementTagNameMap>(tag: K, attrs: Record<string, string> = {}, text = "") => {
   const node = document.createElement(tag);
@@ -45,19 +86,20 @@ function setItem() {
     durationSec: state.duration,
     peaksUrl: null,
     scoreUrl: state.scored ? SCORE_URL : null,
-    boundariesSec: [],
+    boundariesSec: chapters.map((c) => c.at),
     bpm: null,
     beatStartAtSec: null,
   });
 }
 function phaseNow(): PlaybackPhase {
+  if (state.realAudio && liveBridge) return liveBridge.getSnapshot().phase;
   if (state.phase !== "auto") return state.phase;
   if (state.pos >= state.duration) return "ended";
   return state.playing ? "playing" : state.pos > 0 ? "paused" : "idle";
 }
 function seek(to: number) {
   state.pos = Math.min(state.duration, Math.max(0, to));
-  if (state.realAudio) audio.currentTime = state.pos;
+  if (state.realAudio) engine?.seek(state.pos);
   writer.seek(state.pos);
 }
 
@@ -91,11 +133,20 @@ function layoutMock(route: RoutePose) {
 
 // ---- timeline strip
 const strip = el("canvas", { class: "lab-strip", height: "72" }) as HTMLCanvasElement;
+const stripBack = document.createElement("canvas");
+let stripDirty = true;
 function drawStrip() {
   const ctx = strip.getContext("2d");
   if (!ctx) return;
-  const w = (strip.width = strip.clientWidth * devicePixelRatio),
-    h = (strip.height = 72 * devicePixelRatio);
+  const w = Math.round(strip.clientWidth * devicePixelRatio), h = Math.round(72 * devicePixelRatio);
+  if (strip.width !== w || strip.height !== h) { strip.width = w; strip.height = h; stripDirty = true; }
+  if (!stripDirty) {
+    ctx.drawImage(stripBack, 0, 0);
+    ctx.fillStyle = "#eae9e5";
+    ctx.fillRect((state.pos / state.duration) * w - devicePixelRatio, 0, 2 * devicePixelRatio, h);
+    return;
+  }
+  stripBack.width = w; stripBack.height = h;
   ctx.clearRect(0, 0, w, h);
   ctx.fillStyle = "rgba(11,12,14,.85)";
   ctx.fillRect(0, 0, w, h);
@@ -127,6 +178,13 @@ function drawStrip() {
     ctx.fillStyle = "rgba(160,128,181,.9)";
     for (const b of score.boundaries) ctx.fillRect((b / state.duration) * w, 0, devicePixelRatio, h);
   }
+  for (const chapter of chapters) {
+    const x = chapter.at / state.duration * w;
+    ctx.fillStyle = "#eae9e5";
+    ctx.fillText(chapter.title, x + 4, 12 * devicePixelRatio);
+  }
+  stripBack.getContext("2d")!.drawImage(strip, 0, 0);
+  stripDirty = false;
   ctx.fillStyle = "#eae9e5";
   ctx.fillRect((state.pos / state.duration) * w - devicePixelRatio, 0, 2 * devicePixelRatio, h);
 }
@@ -146,10 +204,13 @@ const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).p
 let lastStats: StageStats | null = null;
 function onStats(s: StageStats) {
   lastStats = s;
+  if (state.realAudio && score && liveBridge && !scoreMatchesDuration(score.duration, liveBridge.getSnapshot().durationSec))
+    audioError = "Audio/score duration mismatch: coupling disabled. Use the matching 60:26 master or regenerate its score.";
+  else audioError = "";
   hud.textContent =
     `${fmt(state.pos)} / ${fmt(state.duration)}  ×${state.speed}  ${phaseNow()}\n` +
     `${s.fps.toFixed(0)} fps  ${s.frameMs.toFixed(1)} ms  q ${s.quality.toFixed(2)}  dpr ${s.dpr}  ${s.tier}\n` +
-    `colour ${s.colour.toFixed(2)}  coupling ${s.coupling.toFixed(2)}  breath ${s.breath.toFixed(2)}  arc ${s.arc.toFixed(2)}  rim ×${s.rim.toFixed(3)}`;
+    `score ${s.scored ? "matched" : "off"}  colour ${s.colour.toFixed(2)}  coupling ${s.coupling.toFixed(2)}  breath ${s.breath.toFixed(2)}  arc ${s.arc.toFixed(2)}  rim ×${s.rim.toFixed(3)}` + (audioError ? `\n${audioError}` : "");
 }
 
 function select<T extends string>(label: string, options: readonly T[], value: T, on: (v: T) => void) {
@@ -176,28 +237,23 @@ function buildPanel(root: HTMLElement) {
   play.addEventListener("click", () => {
     state.playing = !state.playing;
     play.textContent = state.playing ? "Pause" : "Play";
-    if (state.realAudio) state.playing ? void audio.play() : audio.pause();
+    if (state.realAudio) realPlay();
   });
   const variant = variantFromString(q.get("visual"));
   let reduced = false,
     frozen = false;
   const sliders = el("div", { class: "lab-sliders" });
+  let pane: Pane | null = null;
   const fillSliders = () => {
-    sliders.replaceChildren();
+    pane?.dispose();
     const p = controller?.params();
     if (!p) return;
+    pane = new Pane({ container: sliders, title: "Scene parameters" });
     for (const key of Object.keys(PARAM_RANGES) as (keyof SceneParams)[]) {
-      const [min, max, stepSize] = PARAM_RANGES[key];
-      const row = el("label", {}, key);
-      const input = el("input", { type: "range", min: String(min), max: String(max), step: String(stepSize) }) as HTMLInputElement;
-      const out = el("output", {}, String(p[key]));
-      input.value = String(p[key]);
-      input.addEventListener("input", () => {
-        controller?.setParam(key, Number(input.value));
-        out.textContent = input.value;
+      const [min, max, step] = PARAM_RANGES[key];
+      pane.addBinding(p, key, { min, max, step }).on("change", (event) => {
+        controller?.setParam(key, Number(event.value));
       });
-      row.append(input, out);
-      sliders.append(row);
     }
   };
   const pitch = el("p", { class: "lab-pitch" }, VARIANTS[variant].pitch);
@@ -206,10 +262,11 @@ function buildPanel(root: HTMLElement) {
     play,
     select("Speed", ["1", "2", "5", "10", "20"] as const, String(state.speed) as "1", (v) => {
       state.speed = Number(v);
-      audio.playbackRate = Math.min(4, state.speed);
+      // Native app playback keeps its actual media clock at ×1.
+      if (state.realAudio) state.speed = 1;
     }),
     select("Phase", PHASES, state.phase, (v) => (state.phase = v)),
-    select("Route", ROUTES, "home", (v) => {
+    select("Route", ROUTES, writer.bridge.getSnapshot().route, (v) => {
       writer.route(v);
       layoutMock(v);
     }),
@@ -232,13 +289,9 @@ function buildPanel(root: HTMLElement) {
       state.mock = v;
       layoutMock(writer.bridge.getSnapshot().route);
     }),
-    toggle("Follow real audio (local mix)", false, (v) => {
-      state.realAudio = v;
-      if (v) {
-        audio.src = AUDIO_URL;
-        audio.currentTime = state.pos;
-        if (state.playing) void audio.play();
-      } else audio.pause();
+    el("p", { class: "lab-note" }, "The selected mix has no confirmed chapters yet; violet ticks are detected score boundaries."),
+    toggle("Follow real app bridge (local mix)", false, (v) => {
+      void enableRealAudio(v).catch((error) => { audioError = String(error); });
     }),
     (() => {
       const wrap = el("label", {}, "Seed");
@@ -268,12 +321,13 @@ async function main() {
       score = s;
       state.duration = s.duration;
       macro = macroEnvelope(s.data.energy, s.rateHz);
+      stripDirty = true;
     })
     .catch(() => {});
   controller = await initStage({
     host: document.getElementById("stage")!,
-    bridge: writer.bridge,
-    timeScale: () => (state.playing ? state.speed : 1),
+    bridge: labBridge,
+    timeScale: () => (state.playing && !state.realAudio ? state.speed : 1),
     variant: variantFromString(q.get("visual")),
     still: posterMode,
     onFrame: posterMode ? undefined : onStats,
@@ -282,15 +336,15 @@ async function main() {
   layoutMock(writer.bridge.getSnapshot().route);
   addEventListener("resize", () => layoutMock(writer.bridge.getSnapshot().route));
   if (q.has("play")) state.playing = true;
-  let last = performance.now();
+  let last = performance.now(), stripAt = 0;
   const tick = (now: number) => {
     const dt = Math.min(0.1, (now - last) / 1000);
     last = now;
-    if (state.realAudio && !audio.paused) state.pos = audio.currentTime;
+    if (state.realAudio && liveBridge) state.pos = liveBridge.getSnapshot().positionSec;
     else if (state.playing) state.pos = Math.min(state.duration, state.pos + dt * state.speed);
     if (state.pos >= state.duration) state.playing = false;
-    writer.transport(phaseNow(), state.pos, state.duration);
-    if (!posterMode) drawStrip();
+    if (!state.realAudio) writer.transport(phaseNow(), state.pos, state.duration);
+    if (!posterMode && now - stripAt >= 50) { drawStrip(); stripAt = now; }
     requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);

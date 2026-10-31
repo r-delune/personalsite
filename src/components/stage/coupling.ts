@@ -82,6 +82,8 @@ export class PhaseEnvelopes implements Envelopes {
       case "loading": {
         const target = age < 3 ? 1 : 0;
         this.inhale = approach(this.inhale, target, dt, 0.6);
+        this.coupling = approach(this.coupling, 0, dt, 0.8);
+        this.colour = approach(this.colour, idle, dt, 1.6);
         this.dim = approach(this.dim, 1, dt, 0.8);
         break;
       }
@@ -103,6 +105,7 @@ export class PhaseEnvelopes implements Envelopes {
   }
   /** True while any envelope is still visibly moving. */
   settling(phase: Phase) {
+    if (phase === "buffering") return false;
     const colourTarget = phase === "playing" ? 1 : this.idleColour;
     return (
       Math.abs(this.colour - colourTarget) > 0.004 ||
@@ -165,6 +168,11 @@ export function sampleEnvelope(env: Float32Array, sec: number) {
 /** Look ahead so builds are led, not lagged (2–8 s window; default 5 s). */
 export const ARC_LOOKAHEAD_SEC = 5;
 
+/** Scores describe the whole source, not a time-stretched substitute master. */
+export function scoreMatchesDuration(scoreSec: number, mediaSec: number | null) {
+  return mediaSec === null || mediaSec <= 0 || Math.abs(scoreSec - mediaSec) <= 2;
+}
+
 // ---------------------------------------------------------------------------
 // Structure
 
@@ -217,52 +225,6 @@ export function sectionAt(boundaries: readonly number[], position: number, durat
 /** Section transitions ease over min(0.35 × section length, 6 s). */
 export const sectionEaseSeconds = (sectionLength: number) =>
   Math.min(0.35 * Math.max(0, sectionLength), 6);
-
-/**
- * Section mood: what changes when the music moves into a new section.
- * Productions learned that changing *scene* per section reads as channel-
- * flipping; changing light and colour temperature inside one world reads as
- * the music moving. Section 0 is the track's home look. Later sections walk
- * a golden-ratio sequence from the item seed, so neighbours always differ
- * noticeably and the same section always looks the same.
- */
-export const SECTION_LIGHT_SWING = 0.35; // radians either side of home
-export const SECTION_HUE_SWING = 0.06; // HSL hue units (~±22°)
-export const SECTION_SAT_SWING = 0.08;
-export interface SectionMood {
-  /** Light-angle offset, radians. */
-  light: number;
-  /** Accent hue offset, HSL units. */
-  hue: number;
-  /** Accent saturation offset, HSL units. */
-  sat: number;
-}
-export function sectionMood(seed: number, index: number, out: SectionMood): SectionMood {
-  if (index <= 0) {
-    out.light = out.hue = out.sat = 0;
-    return out;
-  }
-  const walk = (offset: number) => {
-    const v = (seeded(seed, offset) + index * 0.618034) % 1;
-    return v * 2 - 1; // -1..1
-  };
-  out.light = walk(100) * SECTION_LIGHT_SWING;
-  out.hue = walk(200) * SECTION_HUE_SWING;
-  out.sat = walk(300) * SECTION_SAT_SWING;
-  return out;
-}
-
-/**
- * Time constant (s) for easing into a section's mood. Role-aware like
- * productions' section-easing: the opening and the final section move
- * slowly (establish / settle); middle sections follow their length.
- * Never a cut: the shortest dissolve is ~2.5 s (3 tau).
- */
-export function sectionMoodTau(index: number, count: number, sectionLength: number) {
-  if (index <= 0) return 2;
-  if (count > 1 && index >= count - 1) return 2.5;
-  return Math.min(2, Math.max(0.85, sectionEaseSeconds(sectionLength) / 3));
-}
 
 // ---------------------------------------------------------------------------
 // Determinism
@@ -432,8 +394,9 @@ export class QualityGovernor {
       // Drop fast.
       const target = Math.max(this.floor, this.quality / over);
       this.quality = approach(this.quality, target, dt, 1 / 1.6);
-    } else if (over < 0.8) {
-      // Recover slowly (~10 s) and only with clear headroom: no oscillation.
+    } else if (over < 0.98) {
+      // Recover slowly (~10 s) once cadence is stable again. A 60 Hz frame
+      // cannot fall below 80% of a 55 fps budget, even on an idle GPU.
       this.quality = approach(this.quality, 1, dt, 10);
     }
     this.quality = Math.min(1, Math.max(this.floor, this.quality));

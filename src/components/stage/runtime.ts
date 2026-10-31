@@ -22,16 +22,13 @@ import {
   poseFor,
   rippleBudget,
   sampleEnvelope,
-  sectionAt,
-  sectionMood,
-  sectionMoodTau,
-  type SectionMood,
+  scoreMatchesDuration,
   seeded,
   type Phase,
   type Pose,
 } from "./coupling.ts";
-import { VARIANTS, variantFromString, type SceneParams, type VariantId } from "./params.ts";
-import { MAX_EXCLUSIONS, type BuiltScene } from "./scene.ts";
+import { MAX_EXCLUSIONS, VARIANTS, variantFromString, type SceneParams, type VariantId } from "./params.ts";
+import type { BuiltScene } from "./scene.ts";
 
 export interface StageOptions {
   host?: HTMLElement;
@@ -53,6 +50,7 @@ export interface StageStats {
   colour: number;
   coupling: number;
   breath: number;
+  scored: boolean;
   arc: number;
   rim: number;
   /** Seconds into the current ripple, or -1. */
@@ -66,6 +64,8 @@ export interface StageController {
   setSeed(seed: number | null): void;
   renderNow(): void;
   destroy(): void;
+  /** Development-only diagnostics read from the actual uniforms and renderer. */
+  inspect?: () => { palette: string[]; light: number[]; rim: number; atmosphere: number; geometries: number; textures: number };
 }
 
 let active: Promise<StageController | null> | null = null;
@@ -123,6 +123,7 @@ async function start(options: StageOptions): Promise<StageController | null> {
     lastRender = 0,
     frames = 0,
     destroyed = false;
+  let contextLost = false, inView = true;
   let spin = 0,
     drift = 0,
     twinkle = 0,
@@ -134,6 +135,7 @@ async function start(options: StageOptions): Promise<StageController | null> {
     seekBoost = 0;
   let macro: Float32Array | null = null;
   let macroFor: string | null = null;
+  let boundaryItem: string | null | undefined;
   let boundaries: number[] = [];
   let lastPos = 0;
   let rippleAge = -1;
@@ -142,16 +144,6 @@ async function start(options: StageOptions): Promise<StageController | null> {
   let seedOverride: number | null = import.meta.env.DEV && query.has("seed") ? Number(query.get("seed")) || 0 : options.seed ?? null;
   const seedPhase = { x: 0, y: 0, z: 0 };
   const seedTarget = { x: 0, y: 0, z: 0 };
-  let lightJitter = 0,
-    lightTarget = 0;
-  // Section mood: accent hue/saturation drift around the palette per section.
-  const mood: SectionMood = { light: 0, hue: 0, sat: 0 };
-  let hueShift = 0,
-    satShift = 0;
-  const baseAccent = u.uAccent.value.clone();
-  const baseAccent2 = u.uAccent2.value.clone();
-  let sectionIndex = -1,
-    sectionTau = 2;
   const poseFrom: Pose = { cx: 0, cy: 0, r: 1, calm: 1 };
   const poseTo: Pose = { cx: 0, cy: 0, r: 1, calm: 1 };
   const pose: Pose = { cx: 0, cy: 0, r: 1, calm: 1 };
@@ -166,7 +158,7 @@ async function start(options: StageOptions): Promise<StageController | null> {
   const fine = matchMedia("(pointer: fine)");
   const parallax = { x: 0, y: 0, tx: 0, ty: 0 };
   const onPointer = (event: PointerEvent) => {
-    if (!fine.matches || options.still) return;
+    if (!fine.matches || options.still || frozen() || reduced()) return;
     parallax.tx = (event.clientX / Math.max(1, innerWidth)) * 2 - 1;
     parallax.ty = (event.clientY / Math.max(1, innerHeight)) * 2 - 1;
     schedule();
@@ -218,9 +210,10 @@ async function start(options: StageOptions): Promise<StageController | null> {
     height = Math.max(1, innerHeight);
     dpr = governor.dpr(baseDpr);
     built.setSize(width, height, dpr);
-    snapPose(poseRoute);
+    if (!frozen()) snapPose(poseRoute);
     updateExclusions();
-    renderNow();
+    if (frozen()) draw(); // same uniforms, resized framebuffer
+    else renderNow();
   };
 
   const updateExclusions = () => {
@@ -253,15 +246,29 @@ async function start(options: StageOptions): Promise<StageController | null> {
     if (!snap.scoreAvailable || !snap.itemId) {
       macro = null;
       macroFor = null;
-      boundaries = activeBoundaries(bridge.getItemMeta()?.boundariesSec, null);
+      if (boundaryItem !== snap.itemId) {
+        boundaries = activeBoundaries(bridge.getItemMeta()?.boundariesSec, null);
+        boundaryItem = snap.itemId;
+      }
+      return;
+    }
+    const window = bridge.getScoreWindow(0, 1);
+    if (!window) return;
+    if (!scoreMatchesDuration(window.duration, snap.durationSec)) {
+      if (macro || boundaryItem !== snap.itemId) {
+        boundaries = activeBoundaries(bridge.getItemMeta()?.boundariesSec, null);
+        boundaryItem = snap.itemId;
+        rippleAge = -1;
+      }
+      macro = null;
+      macroFor = null;
       return;
     }
     if (macroFor === snap.itemId) return;
-    const window = bridge.getScoreWindow(0, 1);
-    if (!window) return;
     macro = macroEnvelope(window.data.energy, window.rateHz);
     macroFor = snap.itemId;
     boundaries = activeBoundaries(bridge.getItemMeta()?.boundariesSec, window.boundaries);
+    boundaryItem = snap.itemId;
   };
 
   const frozen = () => bridge.getSnapshot().userPausedAnimation;
@@ -271,7 +278,7 @@ async function start(options: StageOptions): Promise<StageController | null> {
     const snap = bridge.getSnapshot();
     const features = bridge.getFeatures();
     const phase = snap.phase as Phase;
-    const sim = dt * Math.max(1, timeScale());
+    const sim = dt * (seekBoost > 0 ? 1 : Math.max(1, timeScale()));
     ensureMacro(snap);
 
     env.step(dt, phase, Math.max(0, (now - snap.phaseSince) / 1000));
@@ -294,24 +301,12 @@ async function start(options: StageOptions): Promise<StageController | null> {
           u.uRipple.value.y = toScreen - 1.1 + (seeded(rippleSeed, Math.round(hit)) - 0.5) * 0.4;
         }
       }
-      // structure owns the arc: each section gets a seeded light angle,
-      // eased over min(0.35 × section, 6 s)
-      const section = sectionAt(boundaries, pos, snap.durationSec ?? 0);
-      if (section.index !== sectionIndex) {
-        sectionIndex = section.index;
-        sectionTau = sectionMoodTau(section.index, boundaries.length + 1, section.length);
-        sectionMood(rippleSeed, section.index, mood);
-        lightTarget = mood.light;
-      }
       // variant B: ring orbit follows progress through the item
       const progress = snap.durationSec ? Math.min(1, pos / snap.durationSec) : 0;
       orbit = approach(orbit, progress * params.ringTurnsPerItem * Math.PI * 2, sim, seekBoost > 0 ? 0.45 : 1.2);
       lastPos = pos;
     }
     seekBoost = Math.max(0, seekBoost - dt);
-    lightJitter = approach(lightJitter, lightTarget, sim, sectionTau);
-    hueShift = approach(hueShift, mood.hue, sim, sectionTau);
-    satShift = approach(satShift, mood.sat, sim, sectionTau);
 
     const c = env.coupling;
     const gains = musicalGains(
@@ -330,11 +325,11 @@ async function start(options: StageOptions): Promise<StageController | null> {
 
     // ---- integrated phases: speed changes never jump
     const motion = (1 - 0.15 * env.inhale) * (0.72 + 0.28 * pose.calm);
-    drift += dt * params.driftSpeed * gains.drift * motion;
+    drift += dt * params.driftSpeed * (env.hold ? 1 : gains.drift) * motion;
     spin += dt * params.spinSpeed * motion;
     twinkle += dt * 1.1;
     disturb = approach(disturb, 0, dt, 0.6);
-    if (rippleAge >= 0) {
+    if (rippleAge >= 0 && !env.hold) {
       rippleAge += dt;
       if (rippleAge > params.rippleSeconds) rippleAge = -1;
     }
@@ -351,25 +346,22 @@ async function start(options: StageOptions): Promise<StageController | null> {
     u.uDrift.value = drift;
     u.uTwinkle.value = twinkle;
     u.uDisturb.value = disturb;
-    u.uRimGain.value = gains.rim * (1 + 0.04 * env.inhale);
+    u.uRimGain.value = Math.min(1.15, gains.rim * (1 + 0.04 * env.inhale));
     u.uDensity.value = gains.density;
     u.uSparkle.value = params.sparkle * gains.sparkle;
     u.uAtmoThick.value = params.atmoThickness * gains.atmosphere;
     u.uEdge.value = gains.edge;
     u.uColour.value = env.colour;
-    // Accent colours only show as colour blooms in, so this rides on playback.
-    u.uAccent.value.copy(baseAccent).offsetHSL(hueShift, satShift, 0);
-    u.uAccent2.value.copy(baseAccent2).offsetHSL(hueShift, satShift, 0);
     u.uDim.value = env.dim;
     u.uOrbit.value = orbit;
     u.uRipple.value.x = rippleAge;
     u.uRipple.value.z = rippleAge >= 0 ? params.rippleStrength : 0;
     // Ripple brightness only spends what is left of the +15% rim cap.
-    u.uRippleLight.value = Math.min(1, rippleBudget(gains.rim) / 0.12);
+    u.uRippleLight.value = Math.min(1, rippleBudget(u.uRimGain.value) / 0.12);
     u.uSeedPhase.value.set(seedPhase.x, seedPhase.y, seedPhase.z);
     // Sun upper right, slightly behind: a terminator crosses the visible limb
     // and the side nearest the content stays dark.
-    const la = Math.atan2(0.68, 0.5) + lightJitter;
+    const la = Math.atan2(0.68, 0.5);
     if (!reduced()) lightZ = approach(lightZ, moonTarget, dt, 2);
     const xy = Math.sqrt(1 - lightZ * lightZ);
     u.uLightDir.value.set(Math.cos(la) * xy, Math.sin(la) * xy, lightZ);
@@ -378,22 +370,21 @@ async function start(options: StageOptions): Promise<StageController | null> {
     parallax.y = approach(parallax.y, parallax.ty, dt, 0.9);
     const unit = 2 / Math.max(1, height);
     u.uParallax.value.set(-parallax.x * 6 * unit * pose.calm, parallax.y * 6 * unit * pose.calm);
-    built.composite.uniforms.uTime.value = now / 1000;
+    built.composite.uniforms.uTime.value += dt;
 
     stats.colour = env.colour;
     stats.coupling = c;
     stats.breath = breath;
+    stats.scored = !!macro;
     stats.arc = arc;
     stats.rim = gains.rim;
     stats.ripple = rippleAge;
     return (
       phase === "playing" ||
       poseStart >= 0 ||
-      rippleAge >= 0 ||
+      (rippleAge >= 0 && !env.hold) ||
       disturb > 0.01 ||
       Math.abs(lightZ - moonTarget) > 0.002 ||
-      Math.abs(lightJitter - lightTarget) > 0.002 ||
-      Math.abs(hueShift - mood.hue) > 0.001 ||
       Math.abs(parallax.x - parallax.tx) + Math.abs(parallax.y - parallax.ty) > 0.004 ||
       env.settling(phase) ||
       seekBoost > 0
@@ -409,6 +400,7 @@ async function start(options: StageOptions): Promise<StageController | null> {
     colour: 0,
     coupling: 0,
     breath: 0,
+    scored: false,
     arc: 0,
     rim: 1,
     ripple: -1,
@@ -424,8 +416,10 @@ async function start(options: StageOptions): Promise<StageController | null> {
 
   /** Still frame: idle state, current route pose, no coupling. */
   function renderNow() {
-    if (destroyed) return;
+    if (destroyed || contextLost) return;
+    if (frozen() && frames > 0) return;
     if (reduced()) {
+      parallax.x = parallax.y = parallax.tx = parallax.ty = 0;
       env.rest();
       breath = arc = high = low = 0;
       rippleAge = -1;
@@ -439,7 +433,7 @@ async function start(options: StageOptions): Promise<StageController | null> {
 
   function loop(now: number) {
     frame = 0;
-    if (destroyed || document.hidden) {
+    if (destroyed || document.hidden || contextLost || !inView) {
       previous = 0;
       return;
     }
@@ -451,7 +445,7 @@ async function start(options: StageOptions): Promise<StageController | null> {
     // Clamp dt after tab restore.
     const dt = previous ? Math.min((now - previous) / 1000, 0.1) : 0;
     previous = now;
-    const isActive = step(now, dt) || !!options.onFrame;
+    const isActive = step(now, dt);
     // Active: at most 60 fps (no 120 Hz burn on ProMotion; the UI shares the
     // GPU). Idle: 20 fps. Frames that skip rendering teach the governor the
     // browser's real frame cadence.
@@ -461,7 +455,7 @@ async function start(options: StageOptions): Promise<StageController | null> {
       const frameMs = lastRender ? now - lastRender : 16.7;
       lastRender = now;
       if (isActive && bridge.getSnapshot().phase === "playing") {
-        governor.sample(frameMs, dt);
+        governor.sample(frameMs, Math.min(frameMs / 1000, 0.25));
         built.setQuality(governor.quality);
         const next = governor.dpr(baseDpr);
         if (next !== dpr) {
@@ -483,8 +477,9 @@ async function start(options: StageOptions): Promise<StageController | null> {
   }
 
   function schedule() {
-    if (!frame && !document.hidden && !destroyed && !frozen() && !reduced()) {
+    if (!frame && !document.hidden && !destroyed && !contextLost && inView && !frozen() && !reduced()) {
       previous = 0;
+      lastRender = 0;
       frame = requestAnimationFrame(loop);
     }
   }
@@ -496,12 +491,11 @@ async function start(options: StageOptions): Promise<StageController | null> {
       seekBoost = 1.3;
       disturb = Math.max(disturb, 0.6);
       lastPos = s.positionSec;
-      if (reduced()) renderNow();
+      if (reduced() && !frozen()) renderNow();
       schedule();
     }),
     bridge.subscribe("itemchange", (s) => {
       applySeed(s.itemId);
-      sectionIndex = -1;
       macroFor = null;
       lastPos = 0;
       rippleAge = -1;
@@ -517,14 +511,22 @@ async function start(options: StageOptions): Promise<StageController | null> {
     }),
     bridge.subscribe("motionprefs", (s) => {
       controls();
+      if (s.userPausedAnimation) {
+        cancelAnimationFrame(frame);
+        frame = 0;
+        previous = 0;
+        stats.tier = "frozen";
+      } else if (poseStart >= 0) {
+        glideTo(s.route, performance.now());
+      }
       if (!s.userPausedAnimation && !s.reducedMotion && s.route !== poseRoute)
         glideTo(s.route, performance.now());
-      if (s.reducedMotion) renderNow();
+      if (s.reducedMotion && !s.userPausedAnimation) renderNow();
       schedule();
     }),
     bridge.subscribe("exclusions", () => {
       updateExclusions();
-      if (frozen() || reduced()) renderNow();
+      if (reduced() && !frozen()) renderNow();
     }),
   ];
 
@@ -571,15 +573,24 @@ async function start(options: StageOptions): Promise<StageController | null> {
   addEventListener("resize", resize);
   const onLost = (event: Event) => {
     event.preventDefault();
+    contextLost = true;
     host.classList.remove("is-ready");
     cancelAnimationFrame(frame);
     frame = 0;
   };
   const onRestored = () => {
+    contextLost = false;
     resize();
+    if (frozen()) draw();
     host.classList.add("is-ready");
     schedule();
   };
+  const observer = new IntersectionObserver(([entry]) => {
+    inView = entry.isIntersecting;
+    if (inView) schedule();
+    else { cancelAnimationFrame(frame); frame = 0; previous = 0; }
+  });
+  observer.observe(host);
   canvas.addEventListener("webglcontextlost", onLost);
   canvas.addEventListener("webglcontextrestored", onRestored);
 
@@ -591,7 +602,7 @@ async function start(options: StageOptions): Promise<StageController | null> {
   updateExclusions();
   built.setQuality(1);
   try {
-    built.compile();
+    await built.compile();
   } catch {}
   step(performance.now(), 0);
   if (reduced()) renderNow();
@@ -616,7 +627,7 @@ async function start(options: StageOptions): Promise<StageController | null> {
     setParam(key, value) {
       params[key] = value;
       applyParams();
-      if (frozen() || reduced()) renderNow();
+      if (reduced() && !frozen()) renderNow();
     },
     params: () => params,
     setSeed(seed) {
@@ -625,8 +636,17 @@ async function start(options: StageOptions): Promise<StageController | null> {
       schedule();
     },
     renderNow,
+    inspect: import.meta.env.DEV ? () => ({
+      palette: [u.uAccent.value.getHexString(), u.uAccent2.value.getHexString()],
+      light: u.uLightDir.value.toArray(),
+      rim: u.uRimGain.value,
+      atmosphere: u.uAtmoThick.value,
+      geometries: renderer.info.memory.geometries,
+      textures: renderer.info.memory.textures,
+    }) : undefined,
     destroy() {
       destroyed = true;
+      observer.disconnect();
       cancelAnimationFrame(frame);
       unsubscribe.forEach((off) => off());
       document.removeEventListener("click", onToggle, true);

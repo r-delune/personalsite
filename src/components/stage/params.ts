@@ -1,6 +1,8 @@
 // Scene parameters, variants and the locked response caps (SPEC §8.4).
 // Pure data: no three.js, no DOM. Shared by the runtime, the lab and tests.
 
+export const MAX_EXCLUSIONS = 12;
+
 export type VariantId = "a" | "b" | "c";
 
 export interface SceneParams {
@@ -48,8 +50,7 @@ export interface SceneParams {
 
 /**
  * Maximum change vs. the pose's idle baseline. drift/rim/sparkle are the
- * LOCKED §8.4 values. density/atmosphere are the proposed limits recorded in
- * D-054; variant C asks for atmosphere 0.20 (needs Brian's approval).
+ * LOCKED §8.4 values. density/atmosphere are the limits recorded in D-059; all variants use the same conservative cap.
  */
 export const CAPS = {
   drift: 0.2,
@@ -57,7 +58,7 @@ export const CAPS = {
   sparkle: 0.1,
   density: 0.12,
   atmosphere: 0.15,
-  atmosphereC: 0.2,
+  atmosphereC: 0.15,
 } as const;
 
 const base: SceneParams = {
@@ -113,7 +114,7 @@ export const VARIANTS: Record<
       ...base,
       atmoIntensity: 0.42,
       atmoThickness: 0.045,
-      arcAtmo: 0.2,
+      arcAtmo: 0.15,
       highEdge: 0.6,
       breathRim: 0.05,
       arcRim: 0.1,
@@ -140,7 +141,7 @@ export const PARAM_RANGES: Record<keyof SceneParams, [number, number, number]> =
     breathRim: [0, 0.15, 0.005],
     arcRim: [0, 0.15, 0.005],
     arcDensity: [0, 0.12, 0.005],
-    arcAtmo: [0, 0.2, 0.005],
+    arcAtmo: [0, 0.15, 0.005],
     highSparkle: [0, 0.1, 0.005],
     highEdge: [0, 1, 0.05],
     lowRim: [0, 0.15, 0.005],

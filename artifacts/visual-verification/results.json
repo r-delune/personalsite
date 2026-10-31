@@ -1,0 +1,60 @@
+{
+  "date": "2026-10-30T23:45:50.810Z",
+  "browser": "156.0.8078.76",
+  "source": "real roam-mix-2026.score.json",
+  "variants": {
+    "a": {
+      "fps": 60.00672536326181,
+      "frameMs": 16.664799323584774,
+      "quality": 0.6910898222950604,
+      "longTasks": []
+    },
+    "b": {
+      "fps": 60.00080671776778,
+      "frameMs": 16.66644349906311,
+      "quality": 1,
+      "longTasks": []
+    },
+    "c": {
+      "fps": 60.001005340248774,
+      "frameMs": 16.666388117088317,
+      "quality": 1,
+      "longTasks": []
+    }
+  },
+  "assertions": [
+    {
+      "test": "muted arc and eased seek",
+      "quiet": 0.00002921077613745211,
+      "peak": 0.9539405408694054,
+      "early": 0.2212164495529776
+    },
+    {
+      "test": "palette uniforms unchanged across quiet passage, peak and seek",
+      "passed": true
+    },
+    {
+      "test": "buffering holds arc, colour and ripple",
+      "passed": true
+    },
+    {
+      "test": "animation pause freezes pixels across seek, route and exclusion updates",
+      "passed": true
+    },
+    {
+      "test": "reduced motion stays still and rerenders on resize",
+      "passed": true
+    },
+    {
+      "test": "context loss restores fallback, reduced-motion restore remains still",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "passages": {
+    "quiet": 750,
+    "peak": 1282,
+    "boundary": 340.8,
+    "duration": 3626.74
+  }
+}

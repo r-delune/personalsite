@@ -25,7 +25,7 @@ import {
   type WebGLRenderer,
 } from "three";
 
-export const MAX_EXCLUSIONS = 12;
+import { MAX_EXCLUSIONS } from "./params.ts";
 
 const linear = (hex: string) => new Color(hex); // three converts sRGB hex → linear
 export const PALETTE = {
@@ -156,24 +156,24 @@ void main(){
     float keep = mix(.34, 1., pow(limb, .55));
     // points cluster on the bright ground and thin out over the dark maria
     keep *= mix(.55, 1., terr);
+    float baseKeep = keep;
     keep *= mix(1., uDensity, smoothstep(.55, .96, limb));
     pos = uCenter + p.xy * uRadius + uParallax * .25;
     float rip = ripple(atan(p.y, p.x)) * smoothstep(.7, 1., limb);
     pos += normalize(p.xy + 1e-5) * uRadius * .013 * rip;
     float excl = exclusion(toCss(pos));
-    keep = min(1., keep + rip * .3);
+    keep = min(baseKeep, keep + rip * .12 * baseKeep);
     keep *= mix(1., .68, excl);
     if (aSeed.x > keep) { hide(); return; }
     alpha = uSurfaceAlpha * mix(.06, 1., day) * mix(.2, 1., terr * terr) * (.55 + .45 * aSeed.y);
     float rim = pow(limb, 4.) * uRimAlpha * mix(.12, 1., day) * (uRimGain + rip * .12 * uRippleLight);
-    float body = alpha;
     alpha += rim;
     vec3 surf = mix(uMoonDark, uMoon, day);
     vec3 rimCol = mix(uMoon, mix(uAccent, uAccent2, (1. - day) * .8), uColour * .85);
     col = mix(surf, rimCol, clamp(rim / max(alpha, 1e-3), 0., 1.));
     col = mix(col, uAccent2, (1. - day) * uColour * .3);
     // calm behind UI: alpha and contrast
-    alpha = mix(alpha, .5 * (body + .12), excl * .28);
+    col *= mix(1., .72, excl);
     alpha *= mix(1., .58, excl);
     // long-tailed sizes: mostly fine grain, a few larger grains
     size = .7 + aSeed.z * aSeed.z * 1.3 + limb * .6;
@@ -183,12 +183,12 @@ void main(){
     float spread = kind < 1.5 ? 1.7 : 1.;
     float rad = position.x, ang0 = position.y;
     float speed = (.55 + aSeed.y * .9) / (rad * rad) * (kind < 1.5 ? .35 : 1.);
-    float a = ang0 + uDrift * speed;
+    float a = ang0 + uSeedPhase.x + uDrift * speed;
     vec2 local = vec2(cos(a), sin(a) * mix(1., .86, position.z)) * rad * spread;
-    float wob = (.012 + .03 * uDisturb) * uMotion;
-    local += vec2(sin(uDrift * 9. + aSeed.x * 40.), cos(uDrift * 7.7 + aSeed.y * 30.)) * wob;
     pos = uCenter * k + vec2(uAspect, 0.) * (1. - k) * .35 + local * uRadius + uParallax * k * k;
     float excl = exclusion(toCss(pos));
+    float wob = (.012 + .03 * uDisturb) * uMotion * mix(1., .72, excl);
+    pos += vec2(sin(uDrift * 9. + aSeed.x * 40.), cos(uDrift * 7.7 + aSeed.y * 30.)) * wob * uRadius;
     float tw = .5 + .5 * sin(uTwinkle * (.7 + aSeed.z * 2.4) + aSeed.x * 60.);
     alpha = uDustAlpha * (.25 + .75 * aSeed.z) * (1. + uSparkle * (tw * 2. - 1.));
     alpha *= kind < 1.5 ? .55 : kind < 2.5 ? .85 : 1.;
@@ -196,6 +196,7 @@ void main(){
     alpha *= mix(1., .58, excl);
     if (aSeed.x > mix(1., .68, excl)) { hide(); return; }
     col = mix(uMoon * .9, mix(uAccent, uAccent2, aSeed.y), uColour * .35 * aSeed.z);
+    col *= mix(1., .72, excl);
     if (kind < 1.5) {
       size = .6 + aSeed.z * aSeed.z * .6; // far: fine, crisp
     } else if (kind < 2.5) {
@@ -212,7 +213,7 @@ void main(){
     // ---- variant B: tilted debris ring whose orbit follows the mix
     if (uRingAlpha <= 0.) { hide(); return; }
     float rad = position.x;
-    float a = position.y + uOrbit + uDrift * .15;
+    float a = position.y + uSeedPhase.y + uOrbit + uDrift * .15;
     vec2 local = vec2(cos(a) * rad, sin(a) * rad * .2 + position.z * .012);
     // tilted so the ring crosses the visible upper-left quadrant
     float ct = cos(2.32), st = sin(2.32);
@@ -223,9 +224,10 @@ void main(){
     float rip = ripple(a);
     float excl = exclusion(toCss(pos));
     float front = far ? .45 : 1.;
-    alpha = uRingAlpha * (.3 + .7 * aSeed.z) * front * (1. + rip * .5);
+    alpha = uRingAlpha * (.3 + .7 * aSeed.z) * front * (uRimGain + rip * .12 * uRippleLight);
     alpha *= mix(1., .58, excl);
     col = mix(uMoon * .85, mix(uAccent, uAccent2, aSeed.y), uColour * .45);
+    col *= mix(1., .72, excl);
     size = .9 + aSeed.z * .9;
   }
   alpha *= uDim * mix(.8, 1., uCalm);
@@ -314,6 +316,7 @@ void main(){
 `;
 
 const COMPOSITE_FRAGMENT = /* glsl */ `
+${COMMON}
 uniform sampler2D tScene;
 uniform vec2 uResolution;
 uniform float uTime, uGrain, uVignette, uExposure;
@@ -330,6 +333,12 @@ void main(){
   gl_FragColor = vec4(max(c, 0.), 1.);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
+  // Layer factors calm detail, but additive highlights can still accumulate.
+  // Bound display luminance behind text after the shared lens, with the same
+  // 120 px soft field (no opaque card or rectangular cutout).
+  float e = exclusion(vec2(vUv.x * uViewport.x, (1. - vUv.y) * uViewport.y));
+  float peak = max(gl_FragColor.r, max(gl_FragColor.g, gl_FragColor.b));
+  gl_FragColor.rgb *= mix(1., min(1., .14 / max(peak, .14)), e);
   gl_FragColor.rgb += (ign(gl_FragCoord.xy) - .5) / 255.;
 }
 `;
@@ -341,7 +350,7 @@ export interface BuiltScene {
   setQuality(q: number): void;
   setSize(width: number, height: number, dpr: number): void;
   render(): void;
-  compile(): void;
+  compile(): Promise<void>;
   counts: { surface: number; dust: number; ring: number };
   dispose(): void;
 }
@@ -452,6 +461,7 @@ export function buildScene(
   });
   const composite = new ShaderMaterial({
     uniforms: {
+      ...uniforms,
       tScene: { value: target.texture },
       uResolution: { value: new Vector2(1, 1) },
       uTime: { value: 0 },
@@ -496,9 +506,9 @@ export function buildScene(
       renderer.setRenderTarget(null);
       renderer.render(post, camera);
     },
-    compile() {
-      renderer.compile(scene, camera);
-      renderer.compile(post, camera);
+    async compile() {
+      await renderer.compileAsync(scene, camera);
+      await renderer.compileAsync(post, camera);
     },
     dispose() {
       mainGeometry.dispose();
