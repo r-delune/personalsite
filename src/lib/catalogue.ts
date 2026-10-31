@@ -17,7 +17,7 @@ export const releases = feed.albums
     title: a.name,
     artist: a.artist_name || "",
     year: a.release_date || "",
-    artwork: `/artwork/${slugify(a.name)}.jpg`,
+    artwork: `/artwork/optimized/${slugify(a.name)}.webp`,
     tracks: a.tracks
       .filter((t) => t.is_published === true && t.r2_url && t.format === "mp3")
       .map((t) => ({
@@ -26,7 +26,7 @@ export const releases = feed.albums
         src: t.r2_url!,
         duration: t.duration_seconds || 0,
         artist: a.artist_name || "",
-        artwork: `/artwork/${slugify(a.name)}.jpg`,
+        artwork: `/artwork/optimized/${slugify(a.name)}.webp`,
         href: `/music/${slugify(a.name)}`,
       })),
   }))
@@ -40,7 +40,7 @@ export const mixes = mixData
     tracklist: mix.tracklist as Chapter[],
     src:
       mix.filename && mediaBase && (isPreview || /^https:\/\//.test(mediaBase))
-        ? `${mediaBase}/${mix.filename}`
+        ? `${mediaBase}/${mediaBase.endsWith("/__local-media") ? mix.filename : mix.streamFilename || mix.filename}`
         : "",
     scoreUrl: mix.score ?? null,
     kind: "mix" as const,

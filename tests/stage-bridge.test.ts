@@ -115,3 +115,14 @@ test("score metadata preserves confirmed boundaries and clears on unscored items
   assert.equal(w.bridge.getItemMeta()?.scoreUrl, null);
   assert.deepEqual(w.bridge.getItemMeta()?.boundariesSec, []);
 });
+
+test("UI mode changes publish once without changing transport", () => {
+  const writer = createStageBridge();
+  let changes = 0;
+  writer.bridge.subscribe("ui", () => changes++);
+  writer.ui("listen");
+  writer.ui("listen");
+  assert.equal(writer.bridge.getSnapshot().ui, "listen");
+  assert.equal(changes, 1);
+  assert.equal(writer.bridge.getSnapshot().phase, "idle");
+});

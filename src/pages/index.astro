@@ -1,81 +1,118 @@
 ---
+// Home is a listening room, not an index: one sentence about who this is,
+// the record to start with, a shelf of everything else, and the sky.
+// The rail already covers navigation and the topbar carries the name, so
+// neither is repeated here.
 import Shell from "../layouts/Shell.astro";
 import { releases, mixes, time } from "../lib/catalogue";
-import { visiblePosts } from "../lib/content";
-const featured = releases[0],
-  latestRelease = [...releases].sort(
-    (a, b) => Number(b.year) - Number(a.year),
-  )[0];
-const latestMix = mixes.find((m) => m.src),
-  post = (await visiblePosts())[0];
+const featured = releases[0];
+const featuredLength = time(
+  featured.tracks.reduce((n, t) => n + t.duration, 0),
+);
+const shelf = [
+  ...releases.slice(1).map((r) => ({
+    key: r.slug,
+    title: r.title,
+    meta: `Release · ${r.year}`,
+    art: r.artwork,
+    href: `/music/${r.slug}`,
+    play: r.tracks[0].id,
+  })),
+  ...mixes
+    .filter((m) => m.src && !m.title.includes("TODO("))
+    .slice(0, 3)
+    .map((m) => ({
+      key: m.slug,
+      title: m.title,
+      meta: `Mix${m.year ? ` · ${m.year}` : ""}`,
+      art: m.artwork,
+      href: m.href,
+      play: m.id,
+    })),
+];
 ---
 
 <Shell>
-  <section class="page-column home-screen">
-    <div class="home-content">
-      <h1 data-stage-exclude class="page-title">Brían Diolún</h1>
-      <p data-stage-exclude class="fact-line route-body">
-        Music as Brían Diolún. Mixes as Roam.
-        <br />
-        Software at <a href="https://rdelune.dev">rdelune ↗</a>
-      </p>
-      <div data-stage-exclude class="featured-listen route-body">
-        <button class="primary-action" data-track-id={featured.tracks[0].id}>
-          <span data-play-glyph>▶</span>
-          {featured.title}
-        </button>
-        <span class="micro">
-          {featured.year} ·{" "}
-          {time(featured.tracks.reduce((n, t) => n + t.duration, 0))} ·{" "}
-          {featured.artist}
-        </span>
-      </div>
-      <div data-stage-exclude class="latest-block">
-        <h2 class="micro">LATEST</h2>
-        <div class="latest-row" data-row>
-          <span class="micro">RELEASE</span>
-          <a href={`/music/${latestRelease.slug}`}>{latestRelease.title}</a>
-          <button
-            data-track-id={latestRelease.tracks[0].id}
-            aria-label={`Play ${latestRelease.title}`}
-          >
-            <span data-play-glyph>▶</span>
-          </button>
-          <a
-            href={`/music/${latestRelease.slug}`}
-            aria-label={`Open ${latestRelease.title}`}
-          >
-            →
+  <section class="page-column room">
+    <div class="room-inner">
+      <h1 data-stage-exclude class="room-statement room-in" style="--i:0">
+        <span class="room-name">Brían Diolún</span> makes music, mixes as
+        Roam, and builds software at
+        <a href="https://rdelune.dev" target="_blank" rel="noreferrer">rdelune&nbsp;↗</a>
+      </h1>
+
+      <article
+        data-stage-exclude
+        class="room-featured room-in"
+        style="--i:1"
+        data-preload-artwork={featured.artwork}
+      >
+        <a
+          href={`/music/${featured.slug}`}
+          class="room-cover"
+          data-cover-link={featured.slug}
+          data-astro-prefetch
+          aria-label={`Open ${featured.title}`}
+        >
+          <img
+            src={featured.artwork}
+            width="132"
+            height="132"
+            alt=""
+            data-cover-name={featured.slug}
+          />
+        </a>
+        <div class="room-featured-text">
+          <span class="micro room-kicker">Start here</span>
+          <a href={`/music/${featured.slug}`} class="room-featured-title" data-astro-prefetch>
+            {featured.title}
           </a>
-        </div>
-        {latestMix && (
-          <div class="latest-row" data-row>
-            <span class="micro">MIX</span>
-            <a href={latestMix.href}>{latestMix.title}</a>
-            <button data-track-id={latestMix.id} aria-label="Play latest mix">
+          <span class="micro room-meta">
+            {featured.artist} · {featured.year} · {featured.tracks.length} tracks · {featuredLength}
+          </span>
+          <button
+            class="room-play"
+            data-track-id={featured.tracks[0].id}
+            aria-label={`Play ${featured.title}`}
+          >
+            <span class="room-play-disc" aria-hidden="true">
               <span data-play-glyph>▶</span>
-            </button>
-            <a href={latestMix.href} aria-label="Open latest mix">
-              →
-            </a>
-          </div>
-        )}
-        {post && (
-          <div class="latest-row" data-row>
-            <span class="micro">
-              {post.data.sample ? "SAMPLE POST" : "POST"}
             </span>
-            <a href={`/writing/${post.data.slug}`}>{post.data.title}</a>
-            <span></span>
-            <a
-              href={`/writing/${post.data.slug}`}
-              aria-label={`Open ${post.data.title}`}
-            >
-              →
-            </a>
-          </div>
-        )}
-      </div>
+            <span>Listen</span>
+          </button>
+        </div>
+      </article>
+
+      {shelf.length > 0 && (
+        <div data-stage-exclude class="room-shelf room-in" style="--i:2">
+          <h2 class="micro">Also</h2>
+          <ul>
+            {shelf.map((item) => (
+              <li class="shelf-item">
+                <a href={item.href} class="shelf-cover" data-astro-prefetch aria-label={`Open ${item.title}`}>
+                  <img src={item.art} width="76" height="76" alt="" loading="lazy" />
+                </a>
+                <button
+                  class="shelf-play"
+                  data-track-id={item.play}
+                  aria-label={`Play ${item.title}`}
+                >
+                  <span data-play-glyph>▶</span>
+                </button>
+                <a href={item.href} class="shelf-title" data-astro-prefetch>
+                  {item.title}
+                </a>
+                <span class="micro shelf-meta">{item.meta}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <p class="room-hint micro room-in" style="--i:3" data-no-sky>
+        <span class="room-hint-dot" aria-hidden="true"></span>
+        Click the sky, or press <kbd>F</kbd>, for play mode
+      </p>
     </div>
   </section>
 </Shell>

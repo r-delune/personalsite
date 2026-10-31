@@ -82,7 +82,7 @@ for (const album of feed.albums) {
       artist: album.artist_name || "",
       src: track.r2_url,
       duration: track.duration_seconds || 0,
-      artwork: `/artwork/${slug(album.name)}.jpg`,
+      artwork: `/artwork/optimized/${slug(album.name)}.webp`,
       href: `/music/${slug(album.name)}`,
     });
   }

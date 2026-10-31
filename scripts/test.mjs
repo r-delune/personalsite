@@ -14,6 +14,9 @@ const result = spawnSync(
     "tests/stage-bridge.test.ts",
     "tests/phase2b.test.ts",
     "tests/visual.test.ts",
+    "tests/navigation.test.ts",
+    "tests/pwa.test.ts",
+    "tests/launch.test.ts",
   ],
   { stdio: "inherit" },
 );

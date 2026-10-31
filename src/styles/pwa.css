@@ -1,0 +1,19 @@
+[data-pwa-install][hidden],
+[data-pwa-status][hidden] {
+  display: none !important;
+}
+.pwa-status {
+  font-size: 11px;
+  color: var(--fg-muted);
+  max-width: 250px;
+  line-height: 1.5;
+}
+.footer-links {
+  flex-wrap: wrap;
+}
+@media print {
+  [data-pwa-install],
+  [data-pwa-status] {
+    display: none !important;
+  }
+}

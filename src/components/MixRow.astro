@@ -24,7 +24,7 @@ const { mix, index } = Astro.props as {
     loading="lazy"
     decoding="async"
   />
-  <a href={mix.href} class="mix-title">
+  <a href={mix.href} class="mix-title" data-astro-prefetch>
     {mix.title}
     {mix.filename && <span class="source-filename micro">{mix.filename}</span>}
     {mix.tracklist.length > 0 && (
@@ -50,6 +50,7 @@ const { mix, index } = Astro.props as {
   </button>
   <a
     class="row-link"
+    data-astro-prefetch
     href={mix.href}
     aria-label={`Open ${mix.filename || mix.title}`}
   >

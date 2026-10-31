@@ -19,3 +19,5 @@ Development only: load `/?bridge` to inspect phase, route, position and energy. 
 
 - `getScoreWindow(fromSec, toSec)` returns null without a valid score, otherwise a reused descriptor: rateHz, duration, startIndex (inclusive), endIndex (exclusive), data (all four original arrays), boundaries (detected seconds). Indices bound the requested interval plus interpolation neighbour. Consume immediately; never mutate or retain it as history. No per-call array copies or allocations.
 - `getExclusionRects()` returns the same readonly array of CSS-pixel rectangles. Event `exclusions` fires after a throttled layout recomputation on route/scroll/resize/player changes. Nested marked content is represented by its outer group. Rect objects are refreshed on layout events, never by a getter or the scene loop. The visual owns its falloff response.
+
+UI mode: snapshot.ui is browse, listen or storyboard. The app writer emits ui only on a change; route poses remain the sole stage camera input. Listen uses the existing responsive listening pose, storyboard uses the authored storyboard poses.

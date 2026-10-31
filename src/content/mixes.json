@@ -2,18 +2,21 @@
   {
     "id": "mix:roam-mix-2026",
     "slug": "roam-mix-2026",
-    "title": "TODO(copy)",
-    "year": null,
+    "title": "26'",
+    "year": "2026",
     "dateApprox": false,
-    "series": "TODO(copy)",
-    "duration": 3626.74,
+    "series": "Year mixes",
+    "duration": 4214.360775,
     "filename": "ROAM_MIX_2026.mp3",
-    "peaks": "/data/roam-mix-2026.peaks.json",
-    "score": "/data/roam-mix-2026.score.json",
+    "peaks": "/data/roam-mix-2026.f843b1b3.peaks.json",
+    "score": "/data/roam-mix-2026.f843b1b3.score.json",
     "tracklistFile": "inputs/mixes/roam-mix-2026/tracklist.txt",
     "cover": "/artwork/mixes/roam-mix-2026.svg",
     "coverSmall": "/artwork/mixes/roam-mix-2026.svg",
-    "coverAlt": "Roam mix placeholder artwork"
+    "coverAlt": "Roam mix placeholder artwork",
+    "streamFilename": "roam-mix-2026.f843b1b3.mp3",
+    "sourceSha256": "f843b1b3515ff0efef191045945e8217b02975ab1aa4c235c37408539d3dc53d",
+    "sourceBytes": 168574431
   },
   {
     "id": "mix:long-distance-runaround",

@@ -1,0 +1,59 @@
+name: Deploy checked site
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Deployment target
+        type: choice
+        options: [staging, production]
+        default: staging
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: deploy-${{ inputs.target }}
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.target }}
+    env:
+      PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL || 'https://me.rdelune.dev' }}
+      PUBLIC_MIX_MEDIA_BASE: ${{ vars.PUBLIC_MIX_MEDIA_BASE || 'https://audio.rdelune.dev/mixes' }}
+      PUBLIC_PWA_ENABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: pnpm test
+      - run: pnpm audit --prod --audit-level=high
+      - run: node scripts/check-media.mjs --remote
+      - name: Build verified deployment artifact
+        run: |
+          if [ "${{ inputs.target }}" = "production" ]; then
+            pnpm build
+          else
+            pnpm build:preview
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: checked-site-${{ inputs.target }}-${{ github.sha }}
+          path: dist
+          retention-days: 14
+      - name: Upload the checked artifact
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo 'Configure a scoped Cloudflare Pages API token in this environment.'; exit 1; }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo 'Configure CLOUDFLARE_ACCOUNT_ID in this environment.'; exit 1; }
+          branch=pwa-staging
+          if [ "${{ inputs.target }}" = "production" ]; then branch=main; fi
+          npx --yes wrangler@4.81.0 pages deploy dist --project-name rdelune-personalsite --branch "$branch" --commit-hash "$GITHUB_SHA"

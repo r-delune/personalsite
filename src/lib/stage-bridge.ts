@@ -5,9 +5,11 @@ import {
   type VisualScore,
   type ScoreWindow,
 } from "./visual-score.ts";
+export type UIMode = "browse" | "listen" | "storyboard";
 export type PlaybackPhase =
   "idle" | "loading" | "playing" | "buffering" | "paused" | "ended" | "error";
 export type RoutePose =
+  | "listen"
   | "home"
   | "music"
   | "release"
@@ -17,10 +19,13 @@ export type RoutePose =
   | "writing"
   | "post"
   | "about"
-  | "other";
+  | "other"
+  // Play mode's slow camera shots (ui-mode.ts › STORY_SHOTS).
+  | `storyboard-${number}`;
 export type StageEvent =
-  "phase" | "route" | "seek" | "itemchange" | "motionprefs" | "exclusions";
+  "phase" | "route" | "seek" | "itemchange" | "motionprefs" | "exclusions" | "ui";
 export interface StageSnapshot {
+  ui: UIMode;
   phase: PlaybackPhase;
   phaseSince: number;
   positionSec: number;
@@ -78,6 +83,7 @@ export function createStageBridge(
 ) {
   const started = clock();
   const snapshot: StageSnapshot = {
+    ui: "browse",
     phase: "idle",
     phaseSince: started,
     positionSec: 0,
@@ -233,6 +239,11 @@ export function createStageBridge(
       snapshot.positionSec = position;
       emit("seek");
     },
+    ui(mode: UIMode) {
+      if (snapshot.ui === mode) return;
+      snapshot.ui = mode;
+      emit("ui");
+    },
     route(route: RoutePose) {
       if (route === snapshot.route) return;
       snapshot.route = route;
@@ -266,6 +277,11 @@ export const stageWriter = createStageBridge();
 export const stageBridge: StageBridge = stageWriter.bridge;
 let bound = false;
 let refreshMotion = () => {};
+let recomputeExclusions = () => {};
+/** Recompute text exclusion zones now (e.g. when play mode hides content). */
+export function refreshExclusions() {
+  recomputeExclusions();
+}
 /** Sets the persisted "pause animation" preference and applies it now. */
 export function setAnimationPaused(paused: boolean) {
   try {
@@ -282,9 +298,11 @@ export function bindStageBridge() {
     scheduled = true;
     requestAnimationFrame(() => {
       scheduled = false;
-      const elements = Array.from(
-        document.querySelectorAll("[data-stage-exclude]"),
-      );
+      // Play mode hides every text block, so the scene gets the whole sky.
+      const elements =
+        document.documentElement.dataset.ui === "storyboard"
+          ? []
+          : Array.from(document.querySelectorAll("[data-stage-exclude]"));
       // Nested marked groups are covered by their outer group.
       stageWriter.exclusions(
         elements.filter(
@@ -293,6 +311,7 @@ export function bindStageBridge() {
       );
     });
   };
+  recomputeExclusions = updateExclusions;
   const resize = new ResizeObserver(updateExclusions);
   const observePage = () => {
     mutations.disconnect();

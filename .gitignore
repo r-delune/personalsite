@@ -12,3 +12,7 @@ dist/
 *.wav
 *.flac
 *.aiff
+
+# Wrangler local state and credentials are never release source.
+.wrangler/
+.dev.vars

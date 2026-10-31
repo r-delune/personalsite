@@ -30,11 +30,19 @@
     "@tweakpane/core": "2.0.5",
     "@types/node": "24",
     "@types/three": "0.186.0",
+    "es-module-lexer": "2.0.0",
+    "esbuild": "0.28.2",
     "playwright": "1.62.1",
     "prettier": "3.9.10",
     "prettier-plugin-astro": "1.1.2",
     "tweakpane": "4.0.5",
     "typescript": "6.0.3",
-    "vite": "8.3.5"
+    "vite": "8.3.5",
+    "workbox-build": "7.4.1",
+    "workbox-core": "7.4.1",
+    "workbox-expiration": "7.4.1",
+    "workbox-precaching": "7.4.1",
+    "workbox-routing": "7.4.1",
+    "workbox-strategies": "7.4.1"
   }
 }

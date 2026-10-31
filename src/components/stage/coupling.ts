@@ -292,7 +292,14 @@ export const rippleBudget = (rimGain: number) =>
 // ---------------------------------------------------------------------------
 // Route poses
 
-export type RouteGroup = "home" | "listen" | "mixes" | "read";
+export type RouteGroup =
+  | "home"
+  | "listen"
+  | "mixes"
+  | "read"
+  | "storyboard-0"
+  | "storyboard-1"
+  | "storyboard-2";
 export interface Pose {
   /** Planet centre x in half-height units (screen half-width = aspect). */
   cx: number;
@@ -305,7 +312,9 @@ export interface Pose {
 
 export function routeGroup(route: string): RouteGroup {
   if (route === "home") return "home";
-  if (route === "music" || route === "release") return "listen";
+  if (route.startsWith("storyboard-"))
+    return `storyboard-${Number(route.slice(11)) % 3}` as RouteGroup;
+  if (route === "listen" || route === "music" || route === "release") return "listen";
   if (route === "mixes" || route === "mix") return "mixes";
   return "read";
 }
@@ -319,18 +328,27 @@ const POSES: Record<"desktop" | "tablet" | "mobile", Record<RouteGroup, PoseSpec
     listen: { ax: 0.92, bx: 0.04, cy: -1.24, r: 1.26, calm: 0.92 },
     mixes: { ax: 0.98, bx: 0.02, cy: -1.62, r: 1.22, calm: 0.85 },
     read: { ax: 1.04, bx: 0.02, cy: -1.36, r: 1.08, calm: 0.75 },
+    "storyboard-0": { ax: 0, bx: 0, cy: -0.04, r: 0.74, calm: 1 },
+    "storyboard-1": { ax: 0, bx: 0, cy: -2.32, r: 1.92, calm: 1 },
+    "storyboard-2": { ax: 0.42, bx: 0, cy: -0.5, r: 1.55, calm: 1 },
   },
   tablet: {
     home: { ax: 0.86, bx: 0.08, cy: -1.12, r: 1.15, calm: 1 },
     listen: { ax: 0.98, bx: 0.06, cy: -1.32, r: 1.06, calm: 0.92 },
     mixes: { ax: 1.0, bx: 0.04, cy: -1.55, r: 1.06, calm: 0.85 },
     read: { ax: 1.08, bx: 0.04, cy: -1.42, r: 0.92, calm: 0.75 },
+    "storyboard-0": { ax: 0, bx: 0, cy: -0.06, r: 0.66, calm: 1 },
+    "storyboard-1": { ax: 0, bx: 0, cy: -2.1, r: 1.7, calm: 1 },
+    "storyboard-2": { ax: 0.36, bx: 0, cy: -0.55, r: 1.3, calm: 1 },
   },
   mobile: {
     home: { ax: 0.92, bx: 0.04, cy: -1.28, r: 0.86, calm: 1 },
     listen: { ax: 1.08, bx: 0.02, cy: -1.48, r: 0.8, calm: 0.92 },
     mixes: { ax: 1.12, bx: 0, cy: -1.66, r: 0.82, calm: 0.85 },
     read: { ax: 1.2, bx: 0, cy: -1.62, r: 0.74, calm: 0.75 },
+    "storyboard-0": { ax: 0, bx: 0, cy: 0.04, r: 0.5, calm: 1 },
+    "storyboard-1": { ax: 0, bx: 0, cy: -1.7, r: 1.18, calm: 1 },
+    "storyboard-2": { ax: 0.3, bx: 0, cy: -0.4, r: 0.95, calm: 1 },
   },
 };
 
@@ -357,6 +375,15 @@ export function mixPose(a: Pose, b: Pose, t: number, out: Pose) {
 }
 
 export const POSE_MOVE_SECONDS = 0.9;
+/** Route moves are quick; entering play mode is a glide; shots drift slowly. */
+export function poseSecondsFor(from: string, to: string) {
+  const a = from.startsWith("storyboard-"),
+    b = to.startsWith("storyboard-");
+  if (a && b) return 11;
+  if (b) return 2.4;
+  if (a) return 1.4;
+  return POSE_MOVE_SECONDS;
+}
 
 // ---------------------------------------------------------------------------
 // Quality governor (frame-local only: draw count and DPR)

@@ -1,6 +1,6 @@
-# Brian's personal site — M1 preview
+# Brían Diolún — music, mixes and software
 
-The first layout/background pass is ready for Brian and Claude to review. The authoritative build brief is `SPEC.md`. This is a local visual prototype, not a launch-ready site.
+Static Astro site with a persistent native audio player, ambient visuals, selected work and installable PWA browsing. The authoritative product brief is `SPEC.md`; release operations are documented in `LAUNCH.md`. Audio streams separately from the site and is never included in the offline cache.
 
 ## Local preview
 
@@ -19,11 +19,13 @@ node scripts/astro.mjs dev stop
 
 Use Node >=22.23.4. The launcher first checks your current Node, then `PERSONALSITE_NODE`, then the compatible Codex runtime already installed on this Mac. It does not install Node or modify shell/global settings. On this Mac it uses Node 24.22.1; the default Node 22.22.1 is too old for the pinned Astro release.
 
+See [LAUNCH.md](LAUNCH.md) for the production domain, security headers, preview indexing policy, CI, and deployment checks.
+
 ## Commands
 
 - `pnpm check` — prepare the minimal client fixture and type-check Astro/TypeScript.
 - `pnpm run build:preview` — generate local static review output in `dist/`. This intentionally permits preview copy; do not publish this output.
-- `pnpm build` — content approval guard, then production build. Currently expected to fail because the About page contains `TODO(copy)`.
+- `pnpm build` — production build followed by content and site checks; any failure removes `dist`. Rejects any rendered `TODO(copy)` placeholders.
 - `pnpm posters` — regenerate desktop/mobile AVIF scene fallbacks from deterministic code-generated point geometry. Uses Astro's installed Sharp dependency; no browser automation required.
 - `node scripts/prepare-fixture.mjs` — validate the fields needed by this prototype and project eligible upstream tracks into minimal client data. Full upstream JSON Schema validation remains for the content-integration stage.
 

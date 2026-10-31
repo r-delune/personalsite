@@ -1,5 +1,7 @@
 # Astro transition polish
 
+Implemented 31 October 2026. See `CODEX-TRANSITIONS-VERIFIED.md` for the final behaviour and checks. Browser testing led to one deliberate change from this proposal: page/title/list reveals animate the live DOM with the root/content snapshot disabled; only the selected artwork uses a native shared-element snapshot. This keeps controls usable during navigation. The original review below is retained as planning context.
+
 30 October 2026. Source review of the current working tree and installed Astro 7.4.4 router, checked against official documentation. This is a focused implementation handoff under the user's existing instruction that the other chat owns application changes. No application code changed here. This review does not establish frame-rate or browser acceptance.
 
 ## Intended experience

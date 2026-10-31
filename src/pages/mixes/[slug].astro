@@ -9,7 +9,7 @@ const { mix } = Astro.props;
 
 <Shell title={`${mix.title} — Brían Diolún`} section="mixes" description={`Listen to ${mix.title}, a DJ mix by Roam${mix.year ? ` from ${mix.year}` : ""}. Explore the tracklist and share timestamped listening links.`}>
   <div class="page-column inner-page mix-detail">
-    <a href="/mixes" class="back-link micro">
+    <a href="/mixes" class="back-link micro" data-astro-prefetch>
       ← MIXES
     </a>
     <div class="mix-heading">

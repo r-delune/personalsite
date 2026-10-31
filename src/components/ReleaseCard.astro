@@ -30,7 +30,7 @@ const { release } = Astro.props as { release: (typeof releases)[number] };
     </button>
   </div>
   <p class="release-caption micro">
-    <a href={`/music/${release.slug}`}>{release.title}</a> · {release.year}
+    <a href={`/music/${release.slug}`} data-astro-prefetch>{release.title}</a> · {release.year}
   </p>
   <p class="release-credit micro">{release.artist}</p>
 </article>

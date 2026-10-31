@@ -6,7 +6,7 @@ import {
   ARC_LOOKAHEAD_SEC,
   DEFAULT_SEED,
   PhaseEnvelopes,
-  POSE_MOVE_SECONDS,
+  poseSecondsFor,
   QualityGovernor,
   activeBoundaries,
   approach,
@@ -148,6 +148,7 @@ async function start(options: StageOptions): Promise<StageController | null> {
   const poseTo: Pose = { cx: 0, cy: 0, r: 1, calm: 1 };
   const pose: Pose = { cx: 0, cy: 0, r: 1, calm: 1 };
   let poseStart = -1;
+  let poseSeconds = 0.9;
   let poseRoute = bridge.getSnapshot().route;
   // Tonight's moon eases in after the poster swap (lab: ?moon=0..1).
   const moonOverride = import.meta.env.DEV && query.has("moon") ? Number(query.get("moon")) : null;
@@ -200,6 +201,7 @@ async function start(options: StageOptions): Promise<StageController | null> {
   };
   const glideTo = (route: string, now: number) => {
     Object.assign(poseFrom, pose);
+    poseSeconds = poseSecondsFor(poseRoute, route);
     poseFor(route, width / Math.max(1, height), poseTo);
     poseStart = now;
     poseRoute = route as StageSnapshot["route"];
@@ -318,7 +320,7 @@ async function start(options: StageOptions): Promise<StageController | null> {
     // ---- pose (route camera move, ease-in-out)
     if (snap.route !== poseRoute) glideTo(snap.route, now);
     if (poseStart >= 0) {
-      const t = (now - poseStart) / 1000 / POSE_MOVE_SECONDS;
+      const t = (now - poseStart) / 1000 / poseSeconds;
       mixPose(poseFrom, poseTo, easeInOut(t), pose);
       if (t >= 1) poseStart = -1;
     }

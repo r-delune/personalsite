@@ -1,22 +1,73 @@
-::view-transition-old(content) {
-  animation: route-exit 120ms ease-out both;
+/* Persistent shell and page controls stay live and interactive during swaps.
+   Reserve browser snapshots for the selected, non-control artwork pair. */
+:root,
+#main,
+.stage,
+.player,
+.rail {
+  view-transition-name: none !important;
 }
-::view-transition-new(content) {
-  animation: none;
-}
-/* Every transition surface is decorative; clicks always reach the live UI. */
+:root::view-transition,
 ::view-transition-group(*),
 ::view-transition-image-pair(*),
 ::view-transition-old(*),
 ::view-transition-new(*) {
   pointer-events: none;
 }
-::view-transition-group(content) {
-  animation-duration: 0s;
+::view-transition-group(release-cover) {
+  animation-duration: 280ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+::view-transition-old(release-cover),
+::view-transition-new(release-cover) {
+  height: 100%;
+  object-fit: cover;
+  mix-blend-mode: normal;
+}
+::view-transition-old(release-cover) {
+  animation: route-exit 120ms ease-out both;
+}
+::view-transition-new(release-cover) {
+  animation: route-fade 180ms ease-out both;
+}
+html.route-enter main {
+  animation: route-fade 180ms ease-out both;
+}
+html.route-enter .page-title {
+  animation: title-reveal 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+html.route-enter .route-body {
+  animation: row-reveal 200ms cubic-bezier(0.16, 1, 0.3, 1) 60ms both;
+}
+html.route-enter [data-route-row] {
+  animation: row-reveal 140ms cubic-bezier(0.16, 1, 0.3, 1) 60ms both;
+}
+html.route-enter [data-route-row="1"] {
+  animation-delay: 90ms;
+}
+html.route-enter [data-route-row="2"] {
+  animation-delay: 120ms;
+}
+html.route-enter [data-route-row="3"] {
+  animation-delay: 150ms;
+}
+html.route-enter [data-route-row="4"] {
+  animation-delay: 180ms;
+}
+html.route-enter [data-route-row="5"] {
+  animation-delay: 210ms;
 }
 @keyframes route-exit {
   to {
     opacity: 0;
+  }
+}
+@keyframes route-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 @keyframes title-reveal {
@@ -31,7 +82,7 @@
     transform: none;
   }
 }
-@keyframes body-reveal {
+@keyframes row-reveal {
   from {
     opacity: 0;
     transform: translateY(5px);
@@ -41,49 +92,15 @@
     transform: none;
   }
 }
-html.route-enter .page-title {
-  animation: title-reveal 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-html.route-enter .route-body {
-  animation: body-reveal 200ms cubic-bezier(0.16, 1, 0.3, 1) 60ms both;
-}
-html.route-enter [data-row]:nth-child(-n + 6) {
-  animation: body-reveal 140ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: 60ms;
-}
-html.route-enter [data-row]:nth-child(2) {
-  animation-delay: 90ms;
-}
-html.route-enter [data-row]:nth-child(3) {
-  animation-delay: 120ms;
-}
-html.route-enter [data-row]:nth-child(4) {
-  animation-delay: 150ms;
-}
-html.route-enter [data-row]:nth-child(5) {
-  animation-delay: 180ms;
-}
-html.route-enter [data-row]:nth-child(6) {
-  animation-delay: 210ms;
-}
-@keyframes reduced-fade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
 @media (prefers-reduced-motion: reduce) {
+  html.route-enter main,
   html.route-enter .page-title,
   html.route-enter .route-body,
-  html.route-enter [data-row] {
-    animation: reduced-fade 120ms linear both !important;
-    clip-path: none !important;
-    transform: none !important;
-  }
-  ::view-transition-old(content) {
-    animation: route-exit 120ms linear both !important;
+  html.route-enter [data-route-row],
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
   .rail-active {
     transition: none !important;

@@ -17,12 +17,3 @@
   height: 100%;
   object-fit: cover;
 }
-::view-transition-old(root) {
-  display: none;
-}
-::view-transition-new(root) {
-  animation: none;
-}
-::view-transition-group(root) {
-  animation-duration: 0s;
-}

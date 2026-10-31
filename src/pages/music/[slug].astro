@@ -11,7 +11,7 @@ const { release } = Astro.props;
 
 <Shell title={`${release.title} — Brían Diolún`} section="music" description={`Listen to ${release.title} by ${release.artist}. ${release.tracks.length} tracks${release.year ? ` · ${release.year}` : ""}.`} image={release.artwork}>
   <div class="page-column inner-page">
-    <a href="/music" class="back-link micro">
+    <a href="/music" class="back-link micro" data-astro-prefetch>
       ← MUSIC
     </a>
     <div class="release-detail">

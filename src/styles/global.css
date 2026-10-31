@@ -978,39 +978,6 @@ input[type="range"] {
 .framing-toggle[aria-pressed="true"] {
   color: var(--accent);
 }
-::view-transition-old(stage),
-::view-transition-old(player) {
-  display: none;
-}
-::view-transition-new(stage),
-::view-transition-new(player) {
-  animation: none;
-}
-::view-transition-group(stage),
-::view-transition-group(player) {
-  animation-duration: 0s;
-}
-:root::view-transition {
-  pointer-events: none;
-}
-::view-transition-old(content) {
-  animation: content-out 0.14s ease-out both;
-}
-::view-transition-new(content) {
-  animation: content-in 0.2s ease-out both;
-}
-@keyframes content-out {
-  to {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-}
-@keyframes content-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-}
 @keyframes player-in {
   from {
     opacity: 0;
@@ -1390,10 +1357,6 @@ input[type="range"] {
   }
   .cover-wrap:hover img {
     transform: none;
-  }
-  ::view-transition-old(content),
-  ::view-transition-new(content) {
-    animation: none !important;
   }
 }
 @media print {
